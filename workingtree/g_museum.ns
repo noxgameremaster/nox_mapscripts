@@ -1,0 +1,3434 @@
+//@ignore_object_type
+
+int LastUnitID = 2857;
+int SewerRotTrap[10], MAGIC_GEN, EX_STATUE, WALL_X, WALL_Y[2], STOP_COUNT;
+int ST_ROW[6], ARWTRP_PTR;
+int NewSentry, NewPusherTrap[2];
+float Movement[2], CrashMove[2];
+
+
+int EnableMemoryReadWriteFunction(int t) {}
+
+int ImportUnitToPtrFunc()
+{
+    int arr[10], ptr, link;
+
+    if (!link)
+    {
+        arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
+        arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3; 
+        CancelTimer(FrameTimerWithArg(10, ImportUnitToPtrFunc, ImportUnitToPtrFunc));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+int UnitToPtr(int unit)
+{
+    int temp = GetMemory(0x5c336c), res;
+    SetMemory(0x5c336c, ImportUnitToPtrFunc());
+    res = Unknownb8(unit);
+    SetMemory(0x5c336c, temp);
+	return res;
+}
+
+int ImportCreateAtFunc()
+{
+    int arr[20], link;
+
+    if (!link)
+    {
+        arr[0] = 0xAA506856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xFF502414; arr[4] = 0x50042454;
+        arr[5] = 0x082454FF; arr[6] = 0x4085048B; arr[7] = 0x680097BB; arr[8] = 0x004E3810; arr[9] = 0x2454FF50;
+        arr[10] = 0x08C48304; arr[11] = 0xF685F08B; arr[12] = 0x006A0A74; arr[13] = 0x2454FF56; arr[14] = 0x08C48314;
+        arr[15] = 0x50723068; arr[16] = 0x54FF5600; arr[17] = 0xC4830424; arr[18] = 0x5EC03118; arr[19] = 0x909090C3; 
+        CancelTimer(FrameTimerWithArg(10, ImportCreateAtFunc, ImportCreateAtFunc));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+int CreateObjectAt(string name, float x, float y)
+{
+    int temp = GetMemory(0x5c3160), res;
+
+    SetMemory(0x5c3160, ImportCreateAtFunc());
+    res = CreateMover(SToInt(name), ToInt(x), y);
+    SetMemory(0x5c3160, temp);
+    if (res) return GetMemory(res + 0x2c);
+    else return 0;
+}
+
+void UnitZeroFleeRange(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0); //Flee Range set to 0
+}
+
+int LichLordBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1751345484; arr[1] = 1685221196; arr[2] = 0; arr[3] = 0; arr[4] = 0; 
+		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
+		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
+		arr[15] = 0; arr[16] = 0; arr[17] = 20; arr[18] = 0; arr[19] = 100; 
+		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 0; arr[24] = 1065353216; 
+		arr[25] = 1; arr[26] = 4; arr[27] = 7; arr[28] = 1108082688; arr[29] = 40; 
+		arr[30] = 1092616192; arr[31] = 0; arr[32] = 9; arr[33] = 17; arr[34] = 0; 
+		arr[35] = 0; arr[36] = 0; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
+		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
+		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
+		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 0; arr[54] = 0; 
+		arr[55] = 0; arr[56] = 0; arr[57] = 5548288; arr[58] = 0; arr[59] = 5542784; 
+		arr[60] = 0; arr[61] = 0; 
+		CancelTimer(FrameTimerWithArg(10, LichLordBinTable, LichLordBinTable));
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+void SetUnitMaxHealth(int unit, int amount)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+    {
+        SetMemory(GetMemory(ptr + 0x22c), amount);
+        SetMemory(GetMemory(ptr + 0x22c) + 0x4, amount);
+    }
+}
+
+int GetUnitThingID(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 4);
+    return 0;
+}
+
+void SetUnitStatus(int unit, int stat)
+{
+    int temp, ptr = UnitToPtr(unit);
+
+    if (ptr)
+    {
+        temp = GetMemory(ptr + 0x2ec);
+        if (temp)
+            SetMemory(temp + 0x5a0, stat);
+    }
+}
+
+int GetUnitStatus(int unit)
+{
+    int temp, ptr = UnitToPtr(unit);
+
+    if (ptr)
+    {
+        temp = GetMemory(ptr + 0x2ec);
+        if (temp)
+            return GetMemory(temp + 0x5a0);
+    }
+    return 0;
+}
+
+void UnitLinkBinScript(int unit, int binAddr)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, binAddr);
+}
+
+void SetUnitSpeed(int unit, float amount)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(ptr + 0x224, ToInt(amount));
+}
+
+int GetOwner(int unit)
+{
+    int ptr = UnitToPtr(unit), res;
+
+    if (ptr)
+    {
+        res = GetMemory(ptr + 0x1fc);
+        if (res)
+            return GetMemory(res + 0x2c);
+    }
+    return 0;
+}
+
+int CreateMoverFix(int targetUnit, int destLocation, float speed)
+{
+    int unitMover = CreateMover(targetUnit, destLocation, speed), unitPtr = UnitToPtr(targetUnit);
+    int movPtr;
+
+    if (unitMover)
+    {
+        movPtr = UnitToPtr(unitMover);
+        if (movPtr && unitPtr)
+        {
+            SetMemory(unitPtr + 0x28, LastUnitID);
+            movPtr = GetMemory(movPtr + 0x2ec);
+            SetMemory(movPtr + 0x20, LastUnitID);
+        }
+    }
+    LastUnitID ++;
+
+    return unitMover;
+}
+
+int GetMemory(int addr)
+{
+    return Unknownb9(addr);
+}
+
+void SetMemory(int addr, int value)
+{
+    Unused59(addr, value);
+}
+
+void ImageSetupInit()
+{
+    DrawImageAtLocation(348, 2558);
+    DrawImageAtLocation(349, 2507); //here
+    DrawImageAtLocation(350, 2516);
+    DrawImageAtLocation(351, 2516);
+    DrawImageAtLocation(352, 2517);
+    DrawImageAtLocation(353, 2518);
+}
+
+void InitPickets()
+{
+    RegistSignMessage(Object("GasNotify1"), "출입 제한구역: 유독가스 생체 실험실");
+    RegistSignMessage(Object("GasNotify2"), "출입 제한구역: 유독가스 생체 실험실");
+    RegistSignMessage(Object("marketSign"), "길드 박물관 입구앞 스토리웨이 편의점: 다른 곳보다 비쌀 수 있으니 주의");
+    ImageSetupInit();
+}
+
+void MapInitialize()
+{
+    int var0 = EnableMemoryReadWriteFunction(0);
+
+    ImportUnitToPtrFunc();
+    ImportCreateAtFunc();
+    ImportUniChatCore();
+    ImportUniPrintCore();
+    ImportUseItemFunc();
+    MusicEvent();
+    Movement[0] = 1.0;
+    Movement[1] = -1.0;
+    CrashMove[0] = 3.0;
+    CrashMove[1] = -3.0;
+    WALL_X = 182;
+    WALL_Y[0] = 74;
+    WALL_Y[1] = 86;
+    MapWaypointInit();
+    EX_STATUE = Object("BreakStatue");
+    Enchant(Object("LastInviso1"), "ENCHANT_INVISIBLE", 0.0);
+    Enchant(Object("LastInviso2"), "ENCHANT_INVISIBLE", 0.0);
+    DefLockedDoor();
+    DefStreetRow();
+    CounterWalls();
+    TurnRow();
+    Pusher(0);
+    FlameTrap();
+    PoisonTrap();
+    RemoveTimeTable(0);
+    FrameTimer(1, DelayRun);
+    FrameTimerWithArg(10, 0, PassageWalls);
+    FrameTimer(3, InitPickets);
+    FrameTimer(2, LoopRun);
+}
+
+void DelayRun()
+{
+    InitPackRots();
+    NewPartRowTrapSetup();
+    WayPusher();
+    CrasherRow();
+    LastPusher();
+    MecaRow();
+    DefMapAllArrowTraps();
+    NewSentry = NewSentryTrapSetup();
+}
+
+void BreakRockGensWall()
+{
+    ObjectOff(self);
+    Effect("JIGGLE", GetObjectX(self), GetObjectY(self), 40.0, 0.0);
+    WallBreak(Wall(29, 65));
+    WallBreak(Wall(30, 66));
+    WallBreak(Wall(31, 67));
+    WallBreak(Wall(30, 68));
+    WallBreak(Wall(29, 69));
+    WallBreak(Wall(28, 68));
+    WallBreak(Wall(27, 67));
+    WallBreak(Wall(28, 66));
+
+    WallBreak(Wall(35, 71));
+    WallBreak(Wall(36, 72));
+    WallBreak(Wall(37, 73));
+    WallBreak(Wall(36, 74));
+    WallBreak(Wall(35, 75));
+    WallBreak(Wall(34, 74));
+    WallBreak(Wall(33, 73));
+    WallBreak(Wall(34, 72));
+
+    WallBreak(Wall(29, 77));
+    WallBreak(Wall(30, 78));
+    WallBreak(Wall(31, 79));
+    WallBreak(Wall(30, 80));
+    WallBreak(Wall(29, 81));
+    WallBreak(Wall(28, 80));
+    WallBreak(Wall(27, 79));
+    WallBreak(Wall(28, 78));
+
+    WallBreak(Wall(23, 71));
+    WallBreak(Wall(24, 72));
+    WallBreak(Wall(25, 73));
+    WallBreak(Wall(24, 74));
+    WallBreak(Wall(23, 75));
+    WallBreak(Wall(22, 74));
+    WallBreak(Wall(21, 73));
+    WallBreak(Wall(22, 72));
+}
+
+void BreakGensWalls()
+{
+    int k;
+    ObjectOff(self);
+    if (!k)
+    {
+        for (k = 0 ; k < 8 ; k ++)
+            WallBreak(Wall(155 + k, 119 + k));
+        Effect("JIGGLE", GetObjectX(self), GetObjectY(self), 35.0, 0.0);
+        FrameTimerWithArg(25, 0, ControlPackLoop);
+    }
+}
+
+void Remove2FPointWayWalls()
+{
+    int i;
+
+    ObjectOff(self);
+    for (i = 0 ; i < 4 ; i ++)
+        WallOpen(Wall(166 + i, 42 - i));
+}
+
+int NewSentryTrapSetup()
+{
+    int unit = CreateObject("InvisibleLightBlueLow", 1);
+
+    Raise(CreateObject("InvisibleLightBlueLow", 1), Object("NewPartSentry2"));
+    Raise(CreateObject("InvisibleLightBlueLow", 1), Object("NewPartSentry3"));
+    Raise(unit, Object("NewPartSentry1"));
+
+    return unit;
+}
+
+void NewSentryTrapSetStatus(int ptr)
+{
+    int stat = GetDirection(ptr + 1);
+
+    if (stat)
+    {
+        ObjectOn(ToInt(GetObjectZ(ptr)));
+        ObjectOn(ToInt(GetObjectZ(ptr + 1)));
+        ObjectOn(ToInt(GetObjectZ(ptr + 2)));
+        LookWithAngle(ptr + 1, 0);
+    }
+    else
+    {
+        ObjectOff(ToInt(GetObjectZ(ptr)));
+        ObjectOff(ToInt(GetObjectZ(ptr + 1)));
+        ObjectOff(ToInt(GetObjectZ(ptr + 2)));
+    }
+}
+
+void NewSentryTrapReset(int ptr)
+{
+    LookWithAngle(ptr, 0);
+}
+
+void ShotNewPartLaiser()
+{
+    int ptr = NewSentry;
+
+    if (!GetDirection(ptr))
+    {
+        LookWithAngle(ptr, 1);
+        LookWithAngle(ptr + 1, 1);
+        FrameTimerWithArg(30, ptr, NewSentryTrapSetStatus);
+        FrameTimerWithArg(90, ptr, NewSentryTrapSetStatus);
+        FrameTimerWithArg(100, ptr, NewSentryTrapReset);
+        UniPrint(other, "트랩을 건드리셨습니다");
+    }
+}
+
+void NewTrapHomeSlide(int ptr)
+{
+    int count = GetDirection(ptr);
+
+    if (IsObjectOn(ptr))
+    {
+        if (count < 23)
+        {
+            MoveObject(ptr, GetObjectX(ptr) + 4.0, GetObjectY(ptr) - 4.0);
+            MoveObject(ptr + 1, GetObjectX(ptr + 1) + 4.0, GetObjectY(ptr + 1) - 4.0);
+            MoveObject(ptr + 2, GetObjectX(ptr + 2) + 4.0, GetObjectY(ptr + 2) - 4.0);
+            MoveObject(ptr + 3, GetObjectX(ptr + 3) + 4.0, GetObjectY(ptr + 3) - 4.0);
+            LookWithAngle(ptr, count + 1);
+            FrameTimerWithArg(1, ptr, NewTrapHomeSlide);
+        }
+        else
+        {
+            LookWithAngle(ptr, 0);
+            LookWithAngle(ptr - 1, 0);
+        }
+    }
+}
+
+void NewTrapFrontSlide(int ptr)
+{
+    int count = GetDirection(ptr);
+
+    if (IsObjectOn(ptr))
+    {
+        if (count < 23)
+        {
+            MoveObject(ptr, GetObjectX(ptr) - 4.0, GetObjectY(ptr) + 4.0);
+            MoveObject(ptr + 1, GetObjectX(ptr + 1) - 4.0, GetObjectY(ptr + 1) + 4.0);
+            MoveObject(ptr + 2, GetObjectX(ptr + 2) - 4.0, GetObjectY(ptr + 2) + 4.0);
+            MoveObject(ptr + 3, GetObjectX(ptr + 3) - 4.0, GetObjectY(ptr + 3) + 4.0);
+            LookWithAngle(ptr, count + 1);
+            FrameTimerWithArg(1, ptr, NewTrapFrontSlide);
+        }
+        else
+        {
+            TeleportLocation(1, GetObjectX(ptr), GetObjectY(ptr));
+            AudioEvent("MechGolemHitting", 1);
+            AudioEvent("HammerMissing", 1);
+            Effect("JIGGLE", LocationX(1), LocationY(1), 24.0, 0.0);
+            LookWithAngle(ptr, 0);
+            FrameTimerWithArg(22, ptr, NewTrapHomeSlide);
+        }
+    }
+}
+
+int NewPartRowTrap(int location)
+{
+    int unit = CreateObject("InvisibleLightBlueHigh", location);
+
+    Frozen(CreateObject("SpikeBlock", location), 1);
+    Frozen(CreateObject("SpikeBlock", location + 1), 1);
+
+    TeleportLocationVector(location, 46.0, -46.0);
+    TeleportLocationVector(location + 1, 46.0, -46.0);
+    Frozen(CreateObject("SpikeBlock", location), 1);
+    Frozen(CreateObject("SpikeBlock", location + 1), 1);
+
+    return unit;
+}
+
+void NewPartRowTrapSetup()
+{
+    NewPusherTrap[0] = NewPartRowTrap(344);
+    NewPusherTrap[1] = NewPartRowTrap(346);
+}
+
+void StartNewPusher1()
+{
+    int ptr = NewPusherTrap[0];
+
+    if (!GetDirection(ptr))
+    {
+        LookWithAngle(ptr, 1);
+        FrameTimerWithArg(1, ptr + 1, NewTrapFrontSlide);
+    }
+}
+
+void StartNewPusher2()
+{
+    int ptr = NewPusherTrap[1];
+
+    if (!GetDirection(ptr))
+    {
+        LookWithAngle(ptr, 1);
+        FrameTimerWithArg(1, ptr + 1, NewTrapFrontSlide);
+    }
+}
+
+void GenLichSummonHandler()
+{
+    if (GetUnitThingID(other) == 1342)
+    {
+        UnitZeroFleeRange(other);
+        SetUnitStatus(other, GetUnitStatus(other) ^ 0x20);
+        UnitLinkBinScript(other, LichLordBinTable());
+        RetreatLevel(other, 0.0);
+        ResumeLevel(other, 1.0);
+        AggressionLevel(other, 1.0);
+    }
+}
+
+void GenHorrendousSummonHandler()
+{
+    if (GetUnitThingID(other) == 1386)
+    {
+        SetUnitMaxHealth(other, CurrentHealth(other) / 4);
+        SetUnitSpeed(other, 1.3);
+        RetreatLevel(other, 0.0);
+        ResumeLevel(other, 1.0);
+        AggressionLevel(other, 1.0);
+    }
+}
+
+void DefLockedDoor()
+{
+    LockDoor(Object("TimerLock1"));
+    LockDoor(Object("TimerLock2"));
+}
+
+void InitPackRots()
+{
+    int i;
+
+    for (i = 0 ; i < 10 ; i ++)
+    { //10.0
+        SewerRotTrap[i] = Object("PackRot" + IntToString(i + 1));
+        LookWithAngle(SewerRotTrap[i], 124 + i);
+    }
+}
+
+void ControlPackLoop(int arg)
+{
+    int i;
+
+    for (i = 0 ; i < 10 ; i ++)
+    {
+        Move(SewerRotTrap[i], GetDirection(SewerRotTrap[i]) + (arg * 10) + 200);
+    }
+    FrameTimerWithArg(60 + (35 * arg), (arg + 1) % 2, ControlPackLoop);
+}
+
+void StartSubRows()
+{
+    int tog;
+
+    if (!tog)
+    {
+        tog = 1;
+        UniPrint(other, "동력장치가 움직입니다");
+        AudioEvent("Gear3", 86);
+        AudioEvent("CreatureCageAppears", 86);
+        Move(Object("MovingSub1"), 3);
+        Move(Object("MovingSub2"), 4);
+        Move(Object("MovingSub3"), 5);
+    }
+    else
+    {
+        ObjectToggle(Object("SubMoivng1"));
+        ObjectToggle(Object("SubMoivng2"));
+        ObjectToggle(Object("SubMoivng3"));
+    }
+}
+
+int TurnRow()
+{
+    int ptr;
+
+    if (!ptr)
+    {
+        ptr = CreateObject("RotatingSpikes", 9);
+        TeleportLocationVector(9, 23.0, 23.0);
+        CreateObject("RotatingSpikes", 9);
+        TeleportLocationVector(9, 23.0, 23.0);
+        CreateObject("RotatingSpikes", 9);
+        TeleportLocationVector(9, 23.0, 23.0);
+        CreateObject("RotatingSpikes", 9);
+        TeleportLocationVector(9, 23.0, 23.0);
+        CreateObject("RotatingSpikes", 9);
+    }
+    return ptr;
+}
+
+void ActivateLeftTurnRows()
+{
+    int ptr = TurnRow();
+    if (!GetDirection(ptr))
+    {
+        LookWithAngle(ptr, 1);
+        FrameTimerWithArg(10, ptr, ControlLeftRows);
+    }
+}
+
+void ControlLeftRows(int ptr)
+{
+    int k;
+    if (GetObjectY(ptr) > 3668.0)
+    {
+        if (GetObjectY(ptr) > 3852.0)
+        {
+            for (k = 4 ; k >= 0 ; k --)
+                MoveObject(ptr + k, GetObjectX(ptr + k) - 5.0, GetObjectY(ptr + k) - 5.0);
+        }
+        else
+        {
+            for (k = 4 ; k >= 0 ; k --)
+                MoveObject(ptr + k, GetObjectX(ptr + k) + 4.0, GetObjectY(ptr + k) - 4.0);
+        }
+        FrameTimerWithArg(1, ptr, ControlLeftRows);
+    }
+    else
+    {
+        FrameTimerWithArg(10, ptr, BackLeftRows);
+    }
+}
+
+void BackLeftRows(int ptr)
+{
+    int k;
+
+    if (GetObjectY(ptr) < 3967.0)
+    {
+        if (GetObjectY(ptr) < 3852.0)
+        {
+            for (k = 4 ; k >= 0 ; k --)
+                MoveObject(ptr + k, GetObjectX(ptr + k) - 4.0, GetObjectY(ptr + k) + 4.0);
+        }
+        else
+        {
+            for (k = 4 ; k >= 0 ; k --)
+                MoveObject(ptr + k, GetObjectX(ptr + k) + 5.0, GetObjectY(ptr + k) + 5.0);
+        }
+        FrameTimerWithArg(1, ptr, BackLeftRows);
+    }
+    else
+        LookWithAngle(ptr, 0);
+}
+
+void ToggleWalls()
+{
+    int k, tog;
+
+    for (k = 11 ; k >= 0 ; k --)
+        WallToggle(Wall(153 + k, 93 + k));
+    ObjectToggle(Object("Brightness1"));
+    ObjectToggle(Object("Brightness2"));
+    ObjectToggle(Object("Brightness3"));
+    ObjectToggle(Object("DarknessLight1"));
+    ObjectToggle(Object("DarknessLight2"));
+    ObjectToggle(Object("DarknessLight3"));
+    if (!tog)
+    {
+        tog = Object("LastInviso1");
+        ObjectOn(tog);
+        EnchantOff(tog, "ENCHANT_INVISIBLE");
+        EnchantOff(Object("LastInviso2"), "ENCHANT_INVISIBLE");
+        ObjectOn(Object("LastInviso2"));
+    }
+}
+
+void GuardGenInviso()
+{
+    if (CurrentHealth(other) > 10)
+        SetUnitHealth(other, MaxHealth(other) + 100);
+    Enchant(other, "ENCHANT_INVISIBLE", 0.0);
+}
+
+void SetUnitHealth(int unit, int amount)
+{
+    Damage(unit, 0, CurrentHealth(unit) - 1, -1);
+    Pickup(unit, CreateObject("RottenMeat", 9));
+    Damage(unit, 0, CurrentHealth(unit) - amount, -1);
+}
+
+void StartEastMovingGen()
+{
+    ObjectOff(self);
+    if (CurrentHealth(MAGIC_GEN))
+    {
+        GeneratorPusherToEast(MAGIC_GEN);
+    }
+}
+
+void GeneratorPusherToEast(int unit)
+{
+    if (CurrentHealth(unit))
+    {
+        if (GetObjectX(unit) < 3691.0)
+        {
+            MoveObject(unit, GetObjectX(unit) + 4.0, GetObjectY(unit) - 4.0);
+            FrameTimerWithArg(1, unit, GeneratorPusherToEast);
+        }
+        else
+        {
+            Frozen(unit, 0);
+            ObjectOn(unit);
+        }
+    }
+}
+
+void GetGeneratorPosition2()
+{
+    MAGIC_GEN = GetCaller();
+    Frozen(other, 1);
+    ObjectOff(other);
+    ObjectOff(self);
+}
+
+void GetGeneratorPosition()
+{
+    ObjectOff(self);
+    if (GetObjectY(self) > LocationY(55))
+    {
+        if (Random(0, 1))
+            MoveObject(other, 540.0, 1690.0);
+    }
+    else
+    {
+        if (Random(0, 1))
+            MoveObject(other, 816.0, 1690.0);
+    }
+}
+
+void StartBreakStatueEvent()
+{
+    ObjectOff(self);
+    StatuePusher(EX_STATUE);
+}
+
+void StatuePusher(int st)
+{
+    int count;
+    if (GetObjectY(st) < 1713.0)
+    {
+        if (GetObjectY(st) < 1506.0)
+            MoveObject(st, GetObjectX(st) - 4.0, GetObjectY(st) + 4.0);
+        else
+            MoveObject(st, GetObjectX(st) + 4.0, GetObjectY(st) + 4.0);
+        FrameTimerWithArg(1, st, StatuePusher);
+    }
+    else if (count < 90)
+    {
+        count ++;
+        TeleportLocation(10, GetObjectX(st), GetObjectY(st));
+        AudioEvent("EarthRumbleMajor", 10);
+        Effect("JIGGLE", GetObjectX(st), GetObjectY(st), 50.0, 0.0);
+        Effect("DAMAGE_POOF", GetObjectX(st), GetObjectY(st), 0.0, 0.0);
+        FrameTimerWithArg(2, st, StatuePusher);
+    }
+    else
+    {
+        TeleportLocation(10, GetObjectX(st), GetObjectY(st));
+        DeleteObjectTimer(CreateObject("Explosion", 10), 16);
+        AudioEvent("PowderBarrelExplode", 10);
+        NoWallSound(1);
+        WallOpen(Wall(161, 73));
+        WallOpen(Wall(160, 74));
+        WallOpen(Wall(159, 75));
+        WallOpen(Wall(158, 76));
+        WallBreak(Wall(163, 73));
+        WallBreak(Wall(162, 74));
+        WallBreak(Wall(161, 75));
+        WallBreak(Wall(160, 76));
+        WallBreak(Wall(159, 77));
+        NoWallSound(0);
+    }
+}
+
+void StartMagicWallCount()
+{
+    int start;
+    ObjectOff(self);
+    if (!start)
+    {
+        start = 1;
+        AudioEvent("BearTrapTriggered", 11);
+        FrameTimer(20, CloseStepByStep);
+    }
+}
+
+void CloseStepByStep()
+{
+    int count, fast;
+
+    if (!STOP_COUNT)
+    {
+        if (count < 7)
+        {
+            if (fast < 5)
+                fast ++;
+            else
+            {
+                WallClose(Wall(WALL_X, WALL_Y[0]));
+                if (count < 6)
+                    WallClose(Wall(WALL_X, WALL_Y[1]));
+                WALL_X --;
+                WALL_Y[0] ++;
+                WALL_Y[1] --;
+                fast = 0;
+                count ++;
+            }
+            AudioEvent("Gear1", 11);
+        }
+        FrameTimer(20, CloseStepByStep);
+    }
+}
+
+void StopWallsCountDown()
+{
+    ObjectOff(self);
+    STOP_COUNT = 1;
+    CounterWalls();
+    UnlockDoor(Object("TimerLock1"));
+    UnlockDoor(Object("TimerLock2"));
+    WallOpen(Wall(164, 56));
+    WallOpen(Wall(163, 57));
+    WallOpen(Wall(162, 58));
+    WallOpen(Wall(161, 59));
+}
+
+void CounterWalls()
+{
+    WallOpen(Wall(182, 74));
+    WallOpen(Wall(181, 75));
+    WallOpen(Wall(180, 76));
+    WallOpen(Wall(179, 77));
+    WallOpen(Wall(178, 78));
+    WallOpen(Wall(177, 79));
+    WallOpen(Wall(176, 80));
+    WallOpen(Wall(177, 81));
+    WallOpen(Wall(178, 82));
+    WallOpen(Wall(179, 83));
+    WallOpen(Wall(180, 84));
+    WallOpen(Wall(181, 85));
+    WallOpen(Wall(182, 86));
+}
+
+void OpenSecretBookcase()
+{
+    int ptr;
+    ObjectOff(self);
+
+    ptr = CreateObject("InvisibleLightBlueHigh", 119);
+    CreateObject("InvisibleLightBlueHigh", 120);
+    Raise(ptr, ToFloat(Object("LeftBook")));
+    Raise(ptr + 1, ToFloat(Object("RightBook")));
+    FrameTimerWithArg(1, ptr, LeftMoving);
+    FrameTimerWithArg(1, ptr + 1, RightMoving);
+    FrameTimer(15, DelayRemoveSecretLibraryWalls);
+}
+
+void DelayRemoveSecretLibraryWalls()
+{
+    WallOpen(Wall(144, 50));
+}
+
+int ToInt(float x)
+{
+    StopScript(x);
+}
+
+float ToFloat(int x)
+{
+    StopScript(x);
+}
+
+void LeftMoving(int ptr)
+{
+    int unit = ToInt(GetObjectZ(ptr)), count = GetDirection(ptr);
+
+    if (count < 38)
+    {
+        MoveObject(unit, GetObjectX(unit) - 1.0, GetObjectY(unit) + 1.0);
+        LookWithAngle(ptr, count + 1);
+        FrameTimerWithArg(1, ptr, LeftMoving);
+    }
+}
+
+void RightMoving(int ptr)
+{
+    int unit = ToInt(GetObjectZ(ptr)), count = GetDirection(ptr);
+
+    if (count < 38)
+    {
+        MoveObject(unit, GetObjectX(unit) + 1.0, GetObjectY(unit) - 1.0);
+        LookWithAngle(ptr, count + 1);
+        FrameTimerWithArg(1, ptr, RightMoving);
+    }
+}
+
+void DefStreetRow()
+{
+    int k;
+
+    for (k = 4 ; k >= 0 ; k --)
+    {
+        ST_ROW[k] = Object("StreetRow" + IntToString(k + 1));
+        Frozen(ST_ROW[k], 1);
+    }
+    FrameTimer(10, StreetRowLoop);
+}
+
+void StreetRowLoop()
+{
+    if (CurrentHealth(ST_ROW[5]))
+        FrameTimer(60, StreetRowLoop);
+    else
+    {
+        Move(ST_ROW[0], 12);
+        Move(ST_ROW[1], 36);
+        Move(ST_ROW[2], 37);
+        Move(ST_ROW[3], 38);
+        Move(ST_ROW[4], 39);
+        FrameTimer(180, StreetRowLoop);
+    }
+}
+
+void GetGeneratorPosition3()
+{
+    if (HasClass(other, "MONSTERGENERATOR"))
+    {
+        ObjectOff(self);
+        ST_ROW[5] = GetCaller();
+        if (Random(0, 1))
+            MoveObject(other, 3644.0, 735.0);
+    }
+}
+
+int MagicGen(int id)
+{
+    int temp;
+
+    if (id) temp = id;
+    return temp;
+}
+
+void GetGeneratorPosition4()
+{
+    if (HasClass(other, "MONSTERGENERATOR"))
+    {
+        ObjectOff(self);
+        MagicGen(GetCaller());
+    }
+}
+
+void MovingChessGen()
+{
+    ObjectOff(self);
+    FrameTimerWithArg(30, MagicGen(0), MovingLoop);
+}
+
+void MovingLoop(int unit)
+{
+    if (CurrentHealth(unit))
+    {
+        if (GetObjectX(unit) < 4234.0)
+        {
+            if (GetObjectX(unit) < 3990.0)
+                MoveObject(unit, GetObjectX(unit) + 2.0, GetObjectY(unit) + 2.0);
+            else
+                MoveObject(unit, GetObjectX(unit) + 4.0, GetObjectY(unit) - 4.0);
+            FrameTimerWithArg(1, unit, MovingLoop);
+        }
+        else
+            MovingBackLoop(unit);
+    }
+}
+
+void MovingBackLoop(int unit)
+{
+    if (CurrentHealth(unit))
+    {
+        if (GetObjectX(unit) > 3898.0)
+        {
+            if (GetObjectX(unit) > 3990.0)
+                MoveObject(unit, GetObjectX(unit) - 4.0, GetObjectY(unit) + 4.0);
+            else
+                MoveObject(unit, GetObjectX(unit) - 2.0, GetObjectY(unit) - 2.0);
+            FrameTimerWithArg(1, unit, MovingBackLoop);
+        }
+        else
+            MovingLoop(unit);
+    }
+}
+
+void OpenLibrarySecret()
+{
+    int ptr;
+
+    ObjectOff(self);
+    ptr = CreateObject("InvisibleLightBlueHigh", 139);
+    CreateObject("InvisibleLightBlueHigh", 139);
+    CreateObject("InvisibleLightBlueHigh", 139);
+    CreateObject("InvisibleLightBlueHigh", 139); //+3
+    CreateObject("InvisibleLightBlueHigh", 139);
+    CreateObject("InvisibleLightBlueHigh", 139);
+    Raise(ptr, ToFloat(Object("SecretLibrary1")));
+    Raise(ptr + 1, 1.0);
+    Raise(ptr + 2, 1.0);
+    LookWithAngle(ptr + 1, 28);
+    Raise(ptr + 3, ToFloat(Object("SecretLibrary2")));
+    Raise(ptr + 4, -1.0);
+    Raise(ptr + 5, -1.0);
+    LookWithAngle(ptr + 4, 28);
+    FrameTimerWithArg(1, ptr, MovingToDirection);
+    FrameTimerWithArg(1, ptr + 3, MovingToDirection);
+    WallOpen(Wall(48, 156));
+    WallOpen(Wall(49, 157));
+}
+
+void MovingToDirection(int ptr)
+{
+    int unit = ToInt(GetObjectZ(ptr)), count = GetDirection(ptr), max = GetDirection(ptr + 1);
+
+    if (count < max)
+    {
+        MoveObject(unit, GetObjectX(unit) - GetObjectZ(ptr + 1), GetObjectY(unit) - GetObjectZ(ptr + 2));
+        LookWithAngle(ptr, count + 1);
+        FrameTimerWithArg(1, ptr, MovingToDirection);
+    }
+    else
+    {
+        Delete(ptr);
+        Delete(ptr + 1);
+        Delete(ptr + 2);
+    }
+}
+
+int Pusher(int num)
+{
+    int arr[2];
+
+    if (!arr[0])
+    {
+        arr[0] = Object("FirstBlock");
+        arr[1] = Object("SecondBlock");
+    }
+    return arr[num];
+}
+
+void StartPusherRow()
+{
+    if (!GetDirection(Pusher(0)))
+    {
+        Move(Pusher(0), Waypoint("FirstGo"));
+        LookWithAngle(Pusher(0), 1);
+        FrameTimer(1, ControlPusherRow);
+    }
+}
+
+void ControlPusherRow()
+{
+    if (GetObjectY(Pusher(0)) > 2657.0)
+    {
+        Move(Pusher(1), Waypoint("SecondGo"));
+        FrameTimer(1, WaitForBack);
+    }
+    else
+        FrameTimer(1, ControlPusherRow);
+}
+
+void WaitForBack()
+{
+    if (GetObjectY(Pusher(0)) > 2835.0)
+        FrameTimer(60, BackControl);
+    else
+        FrameTimer(1, WaitForBack);
+}
+
+void BackControl()
+{
+    int k;
+
+    if (!k)
+    {
+        Move(Pusher(0), Waypoint("FirstBack"));
+        FrameTimer(25, BackControl);
+    }
+    else
+    {
+        Move(Pusher(1), Waypoint("SecondBack"));
+        FrameTimerWithArg(1, Pusher(0), ControllerReset);
+    }
+    k = (k + 1) % 2;
+}
+
+void ControllerReset(int unit)
+{
+    int k;
+    if (GetObjectX(unit) <= 2575.0)
+    {
+        if (!k) k = FrameTimerWithArg(150, unit, ControllerReset);
+        else
+        {
+            LookWithAngle(unit, 0);
+            k = 0;
+        }
+    }
+    else
+        FrameTimerWithArg(1, unit, ControllerReset);
+}
+
+int DarknessGen(int id)
+{
+    int arr[2], cur;
+
+    if (id > 0xff)
+    {
+        arr[cur] = id;
+        cur ++;
+        return 0;
+    }
+    return arr[id];
+}
+
+void GetGeneratorPosition5()
+{
+    if (HasClass(other, "MONSTERGENERATOR"))
+    {
+        Enchant(other, "ENCHANT_INVISIBLE", 0.0);
+        ObjectOff(other);
+        ObjectOff(self);
+        DarknessGen(GetCaller());
+        if (Random(0, 1))
+            MoveObject(other, 908.0, 2081.0);
+    }
+}
+
+void GetGeneratorPosition6()
+{
+    if (HasClass(other, "MONSTERGENERATOR"))
+    {
+        Enchant(other, "ENCHANT_INVISIBLE", 0.0);
+        ObjectOff(other);
+        ObjectOff(self);
+        DarknessGen(GetCaller());
+        if (Random(0, 1))
+            MoveObject(other, 1253.0, 2426.0);
+    }
+}
+
+void HurtDarknessGen()
+{
+    if (!IsObjectOn(self))
+        ObjectOn(self);
+}
+
+void TurnOnLight()
+{
+    ObjectOff(self);
+    if (!IsObjectOn(DarknessGen(0)))
+    {
+        EnchantOff(DarknessGen(0), "ENCHANT_INVISIBLE");
+        ObjectOn(DarknessGen(0));
+    }
+    if (!IsObjectOn(DarknessGen(1)))
+    {
+        EnchantOff(DarknessGen(1), "ENCHANT_INVISIBLE");
+        ObjectOn(DarknessGen(1));
+    }
+    ObjectOff(Object("DarknessPoint1"));
+    ObjectOff(Object("DarknessPoint2"));
+    ObjectOff(Object("DarknessPoint3"));
+    ObjectOff(Object("DarknessPoint4"));
+    ObjectOff(Object("DarknessPoint5"));
+    ObjectOff(Object("DarknessPoint6"));
+    ObjectOn(Object("SouthTorch"));
+    ObjectOn(Object("NorthTorch"));
+    ObjectOn(Object("EastTorch"));
+    ObjectOn(Object("LightPoint3"));
+    ObjectOn(Object("LightPoint2"));
+    ObjectOn(Object("LightPoint1"));
+}
+
+void EnableSemiFireTrap()
+{
+    ObjectOn(Object("SemiFireTrap"));
+}
+
+void DisableSemiFireTrap()
+{
+    ObjectOff(Object("SemiFireTrap"));
+}
+
+void HurtLightning()
+{
+    int st;
+    if (CurrentHealth(other))
+    {
+        TeleportLocation(22, GetObjectX(other), GetObjectY(other));
+        AudioEvent("LightningBolt", 22);
+        AudioEvent("PlasmaSustain", 22);
+        Effect("RICOCHET", LocationX(22), LocationY(22), 0.0, 0.0);
+        st = Object("Lightning" + IntToString(Random(1, 4)));
+        Damage(other, st, 15, 9);
+        Effect("LIGHTNING", GetObjectX(st), GetObjectY(st), GetObjectX(other), GetObjectY(other));
+    }
+}
+
+int FlameTrap()
+{
+    int ptr;
+
+    if (!ptr)
+    {
+        ptr = CreateObject("InvisibleLightBlueLow", 24);
+        CreateObject("InvisibleLightBlueLow", 24);
+        CreateObject("InvisibleLightBlueLow", 25);
+        CreateObject("InvisibleLightBlueLow", 26);
+        CreateObject("InvisibleLightBlueLow", 27);
+        CreateObject("InvisibleLightBlueLow", 24);
+        CreateObject("InvisibleLightBlueLow", 25);
+        CreateObject("InvisibleLightBlueLow", 26);
+        CreateObject("InvisibleLightBlueLow", 27);
+        LookWithAngle(ptr + 1, 24);
+        LookWithAngle(ptr + 2, 25);
+        LookWithAngle(ptr + 3, 26);
+        LookWithAngle(ptr + 4, 27);
+    }
+    return ptr;
+}
+
+void ActivateFlameWay()
+{
+    int ptr = FlameTrap();
+    if (!GetDirection(ptr))
+    {
+        RiseFlameAt(ptr + 1);
+        RiseFlameAt(ptr + 2);
+        RiseFlameAt(ptr + 3);
+        RiseFlameAt(ptr + 4);
+        LookWithAngle(ptr, 1);
+        FrameTimerWithArg(18 * 4, ptr, ResetFlameTrap);
+    }
+}
+
+void ResetFlameTrap(int ptr)
+{
+    LookWithAngle(ptr, 0);
+}
+
+void RiseFlameAt(int ptr)
+{
+    int wp = GetDirection(ptr), k, unit, count = GetDirection(ptr + 4);
+
+    if (count < 3)
+    {
+        TeleportLocation(wp, GetObjectX(ptr), GetObjectY(ptr));
+        unit = CreateObject("InvisibleLightBlueLow", wp);
+        for (k = 4 ; k >= 0 ; k --)
+        {
+            CreateObject(FlameType(count), wp);
+            TeleportLocationVector(wp, -23.0, -23.0);
+        }
+        AudioEvent("FireballCast", wp);
+        LookWithAngle(ptr + 4, count + 1);
+        FrameTimerWithArg(RemoveTimeTable(count), unit, RemoveFlames);
+        FrameTimerWithArg(9, ptr, RiseFlameAt);
+    }
+    else
+    {
+        LookWithAngle(ptr + 4, 0);
+    }
+}
+
+void RemoveFlames(int ptr)
+{
+    int k;
+    for (k = 5 ; k >= 0 ; k --)
+        Delete(ptr + k);
+}
+
+int RemoveTimeTable(int num)
+{
+    int time[3];
+
+    if (!time[0])
+    {
+        time[0] = 54; time[1] = 36; time[2] = 18;
+    }
+    return time[num];
+}
+
+string FlameType(int num)
+{
+    string table = {
+        "SmallFlame", "MediumFlame", "Flame"
+    };
+    return ToStr(SToInt(table) + num);
+}
+
+int SToInt(string x)
+{
+    StopScript(x);
+}
+
+string ToStr(int x)
+{
+    StopScript(x);
+}
+
+void PassageWalls(int stat)
+{
+    int k;
+    if (!stat)  //open
+    {
+        for (k = 5 ; k >= 0 ; k --)
+        {
+            WallOpen(Wall(103 + k, 153 + k));
+            WallOpen(Wall(95 + k, 161 + k));
+        }
+    }
+    else        //close
+    {
+        for (k = 5 ; k >= 0 ; k --)
+        {
+            WallClose(Wall(103 + k, 153 + k));
+            WallClose(Wall(95 + k, 161 + k));
+        }
+    }
+}
+
+int PoisonTrap()
+{
+    int ptr;
+
+    if (!ptr)
+    {
+        ptr = CreateObject("InvisibleLightBlueHigh", 28);
+        CreateObject("InvisibleLightBlueHigh", 181);
+    }
+    return ptr;
+}
+
+void RemoveWallsByHand()
+{
+    int ptr = PoisonTrap(), time = ToInt(GetObjectZ(ptr));
+    if (IsObjectOn(time))
+    {
+        UniPrint(other, "가스실 함정이 해제되었습니다");
+        Delete(time);
+        PassageWalls(0);
+        LookWithAngle(ptr, 0);
+    }
+}
+
+void CloseWayGate()
+{
+    int ptr = PoisonTrap(), time;
+
+    if (!GetDirection(ptr))
+    {
+        PassageWalls(1);
+        time = CreateObject("InvisibleLightBlueHigh", 181);
+        Raise(ptr, ToFloat(time));
+        Raise(time, ToFloat(ptr));
+        FrameTimerWithArg(30, time, Countdown);
+        LookWithAngle(ptr, 1);
+    }
+}
+
+void Countdown(int time)
+{
+    int count = GetDirection(time);
+
+    if (IsObjectOn(time))
+    {
+        if (count < 15)
+        {
+            AudioEvent("GenerateTick", 28);
+            LookWithAngle(time, count + 1);
+            FrameTimerWithArg(30, time, Countdown);
+        }
+        else
+        {
+            SpreadGasOnRoom();
+            FrameTimerWithArg(60, ToInt(GetObjectZ(time)), DisableGasTrap);
+            Delete(time);
+        }
+    }
+}
+
+void SpreadGasOnRoom()
+{
+    string name = "Polyp";
+    int k;
+
+    for (k = 268 ; k <= 288 ; k ++)
+        Damage(CreateObject(name, k), 0, 100, 0);
+    Damage(CreateObject(name, 300), 0, 100, 0);
+    Damage(CreateObject(name, 301), 0, 100, 0);
+    Damage(CreateObject(name, 302), 0, 100, 0);
+}
+
+void DisableGasTrap(int ptr)
+{
+    PassageWalls(0);
+    LookWithAngle(ptr, 0);
+}
+
+int WayPusher()
+{
+    int ptr;
+
+    if (!ptr)
+    {
+        ptr = CreateObject("IronBlock", 304);
+        CreateObject("IronBlock", 303);
+        CreateObject("StoneBlock", 305);
+        CreateMoverFix(ptr, 0, 30.0);
+        CreateMoverFix(ptr + 1, 0, 30.0);
+    }
+    return ptr;
+}
+
+void GoWayBlocks()
+{
+    ObjectOff(self);
+    AudioEvent("SpikeBlockMove", 304);
+    FrameTimerWithArg(10, WayPusher(), ControlTwoWays);
+}
+
+void ControlTwoWays(int ptr)
+{
+    if (GetObjectY(ptr + 1) < 4246.0)
+        MoveObject(ptr + 1, GetObjectX(ptr + 1) + 4.0, GetObjectY(ptr + 1) + 4.0);
+    if (GetObjectY(ptr) < 4312.0)
+    {
+        if (GetObjectY(ptr) < 4264.0)
+            MoveObject(ptr, GetObjectX(ptr) + 4.0, GetObjectY(ptr) + 4.0);
+        else
+            MoveObject(ptr, GetObjectX(ptr) - 4.0, GetObjectY(ptr) + 4.0);
+        FrameTimerWithArg(1, ptr, ControlTwoWays);
+    }
+    else
+    {
+        Move(ptr, 307);
+        Move(ptr + 1, 306);
+    }
+}
+
+void OpenSecretElevatorWalls()
+{
+    int k;
+    ObjectOff(self);
+    for (k = 3 ; k >= 0 ; k --)
+        WallOpen(Wall(105 - k, 199 + k));
+}
+
+void ActivateMonoBlockDrift()
+{
+    int ptr = WayPusher() + 2;
+
+    if (!GetDirection(ptr))
+    {
+        LookWithAngle(ptr, 1);
+        FrameTimerWithArg(6, ptr, ControlMonoBlock);
+    }
+}
+
+void ControlMonoBlock(int ptr)
+{
+    float pos_x = GetObjectX(ptr);
+    if (pos_x < 2128.0)
+    {
+        if (pos_x < 2058.0)
+        {
+            if (pos_x < 1864.0)
+                MoveObject(ptr, GetObjectX(ptr) + 2.0, GetObjectY(ptr) - 2.0);
+            else
+                MoveObject(ptr, GetObjectX(ptr) + 2.0, GetObjectY(ptr) + 2.0);
+        }
+        else
+            MoveObject(ptr, GetObjectX(ptr) + 2.0, GetObjectY(ptr) - 2.0);
+        FrameTimerWithArg(1, ptr, ControlMonoBlock);
+    }
+    else
+        FrameTimerWithArg(60, ptr, MonoBlockComebackHome);
+}
+
+void MonoBlockComebackHome(int ptr)
+{
+    float pos_x = GetObjectX(ptr);
+
+    if (pos_x > 1828.0)
+    {
+        if (pos_x > 1864.0)
+        {
+            if (pos_x > 2058.0)
+                MoveObject(ptr, GetObjectX(ptr) - 2.0, GetObjectY(ptr) + 2.0);
+            else
+                MoveObject(ptr, GetObjectX(ptr) - 2.0, GetObjectY(ptr) - 2.0);
+        }
+        else
+            MoveObject(ptr, GetObjectX(ptr) - 2.0, GetObjectY(ptr) + 2.0);
+        FrameTimerWithArg(1, ptr, MonoBlockComebackHome);
+    }
+    else
+        LookWithAngle(ptr, 0);
+}
+
+void SurpriseGenWalls()
+{
+    int k;
+    ObjectOff(self);
+    if (!k)
+    {
+        Effect("JIGGLE", GetObjectX(self), GetObjectY(self), 42.0, 0.0);
+        NoWallSound(1);
+        for (k = 0 ; k < 8 ; k ++)
+        {
+            WallOpen(Wall(69 - k, 207 + k));
+            WallOpen(Wall(74 - k, 212 + k));
+            WallBreak(Wall(68 - k, 206 + k));
+            WallBreak(Wall(75 - k, 213 + k));
+        }
+        NoWallSound(0);
+    }
+}
+
+int BounceRow()
+{
+    int ptr;
+
+    if (!ptr)
+    {
+        ptr = CreateObject("SpikeBlock", 308);
+        TeleportLocationVector(308, 46.0, 46.0);
+        CreateObject("SpikeBlock", 308);
+        TeleportLocationVector(308, 46.0, 46.0);
+        CreateObject("SpikeBlock", 308);
+        CreateObject("SpikeBlock", 309);
+        TeleportLocationVector(309, 46.0, 46.0);
+        CreateObject("SpikeBlock", 309);
+        TeleportLocationVector(309, 46.0, 46.0);
+        CreateObject("SpikeBlock", 309);
+    }
+    return ptr;
+}
+
+void ActivateBounceBlocks()
+{
+    int ptr = BounceRow();
+    
+    ObjectOff(self);
+    if (!GetDirection(ptr))
+    {
+        LookWithAngle(ptr, 1);
+        FrameTimerWithArg(30, ptr, ControlBouncy);
+    }
+}
+
+void ControlBouncy(int ptr)
+{
+    int count = GetDirection(ptr + 2), mod = GetDirection(ptr + 1);
+
+    if (count < 57)
+    {
+        MoveObject(ptr, GetObjectX(ptr) - Movement[mod], GetObjectY(ptr) + Movement[mod]);
+        MoveObject(ptr + 1, GetObjectX(ptr + 1) - Movement[mod], GetObjectY(ptr + 1) + Movement[mod]);
+        MoveObject(ptr + 2, GetObjectX(ptr + 2) - Movement[mod], GetObjectY(ptr + 2) + Movement[mod]);
+        MoveObject(ptr + 3, GetObjectX(ptr + 3) + Movement[mod], GetObjectY(ptr + 3) - Movement[mod]);
+        MoveObject(ptr + 4, GetObjectX(ptr + 4) + Movement[mod], GetObjectY(ptr + 4) - Movement[mod]);
+        MoveObject(ptr + 5, GetObjectX(ptr + 5) + Movement[mod], GetObjectY(ptr + 5) - Movement[mod]);
+        LookWithAngle(ptr + 2, count + 1);
+        FrameTimerWithArg(1, ptr, ControlBouncy);
+    }
+    else
+    {
+        if (!mod)
+        {
+            AudioEvent("HammerMissing", 29);
+            Effect("JIGGLE", LocationX(29), LocationY(29), 50.0, 0.0);
+            FrameTimerWithArg(50, ptr, ControlBouncy);
+        }
+        else
+            FrameTimerWithArg(1, ptr, ControlBouncy);
+        mod = (mod + 1) % 2;
+        LookWithAngle(ptr + 1, mod);
+        LookWithAngle(ptr + 2, 0);
+    }
+}
+
+void Part2ElevatorOn()
+{
+    int gear = Object("AssistGear");
+    ObjectOff(self);
+    UniPrint(other, "엘리베이터가 작동합니다");
+    ObjectOn(Object("Part2StopElev"));
+    ObjectOn(gear);
+    TeleportLocation(22, GetObjectX(gear), GetObjectY(gear));
+    DeleteObjectTimer(CreateObject("BigSmoke", 22), 10);
+    AudioEvent("CreatureCageAppears", 207);
+    AudioEvent("MechGolemDie", 207);
+}
+
+void StartSpinGenerators()
+{
+    int k;
+    ObjectOff(self);
+    if (!k)
+    {
+        Move(CastleGen(0, 0), 311);
+        Move(CastleGen(0, 1), 315);
+        k = 1;
+    }
+}
+
+int CastleGen(int id, int idx)
+{
+    int gen[2];
+
+    if (id)
+    {
+        gen[idx] = id;
+        return 0;
+    }
+    return gen[idx];
+}
+
+void GetGeneratorPositionA()
+{
+    if (HasClass(other, "MONSTERGENERATOR"))
+    {
+        ObjectOff(self);
+        if (GetObjectX(self) < 4396.0)
+            CastleGen(GetCaller(), 0);
+        else
+            CastleGen(GetCaller(), 1);
+        CreateMoverFix(other, 0, 21.0);
+    }
+}
+
+void PushToNorth()
+{
+    if (!UnitCheckEnchant(other, GetLShift(10)) && IsObjectOn(other))
+    {
+        PushObjectTo(other, -30.0, -30.0);
+        Effect("DAMAGE_POOF", GetObjectX(self), GetObjectY(self), 0.0, 0.0);
+    }
+}
+
+void FFHitSouth()
+{
+    int unit;
+    if (CurrentHealth(other) && !UnitCheckEnchant(other, GetLShift(7)) && IsObjectOn(other))
+    {
+        Enchant(other, EnchantList(10), 0.15);
+        Enchant(other, EnchantList(7), 0.1);
+        TeleportLocation(32, GetObjectX(other) - 10.0, GetObjectY(other) - 10.0);
+        unit = CreateObject("Maiden", 32);
+        ObjectOff(unit);
+        Frozen(unit, 1);
+        DeleteObjectTimer(unit, 1);
+    }
+}
+
+void FFHitWest()
+{
+    int unit;
+    if (CurrentHealth(other) && !UnitCheckEnchant(other, GetLShift(7)) && IsObjectOn(other))
+    {
+        Enchant(other, EnchantList(10), 0.15);
+        Enchant(other, EnchantList(7), 0.1);
+        TeleportLocation(32, GetObjectX(other) + 10.0, GetObjectY(other) - 10.0);
+        unit = CreateObject("Maiden", 32);
+        ObjectOff(unit);
+        Frozen(unit, 1);
+        DeleteObjectTimer(unit, 1);
+    }
+}
+
+void FFHitEast()
+{
+    int unit;
+    if (CurrentHealth(other) && !UnitCheckEnchant(other, GetLShift(7)) && IsObjectOn(other))
+    {
+        Enchant(other, EnchantList(10), 0.15);
+        Enchant(other, EnchantList(7), 0.1);
+        TeleportLocation(32, GetObjectX(other) - 10.0, GetObjectY(other) + 10.0);
+        unit = CreateObject("Maiden", 32);
+        ObjectOff(unit);
+        Frozen(unit, 1);
+        DeleteObjectTimer(unit, 1);
+    }
+}
+
+int CrasherRow()
+{
+    int ptr, k;
+
+    if (!ptr)
+    {
+        ptr = CreateObject("InvisibleLightBlueHigh", 31) + 1;
+        Delete(ptr - 1);
+        for (k = 7 ; k >= 0 ; k --)
+        {
+            Frozen(CreateObject("SpikeBlock", 318), 1);
+            Frozen(CreateObject("SpikeBlock", 319), 1);
+            TeleportLocationVector(318, -46.0, 46.0);
+            TeleportLocationVector(319, -46.0, 46.0);
+        }
+    }
+    return ptr;
+}
+
+void ActivateFirstCrashRow()
+{
+    int ptr = CrasherRow();
+
+    if (!GetDirection(ptr))
+    {
+        LookWithAngle(ptr, 1);
+        FrameTimerWithArg(1, ptr, CrasherSection1);
+    }
+}
+
+void CrasherSection1(int ptr)
+{
+    int count = GetDirection(ptr + 1), mod = GetDirection(ptr + 2);
+
+    if (count < 23) //movement: 3
+    {
+        MoveObject(ptr, GetObjectX(ptr) + CrashMove[mod], GetObjectY(ptr) + CrashMove[mod]);
+        MoveObject(ptr + 1, GetObjectX(ptr + 1) - CrashMove[mod], GetObjectY(ptr + 1) - CrashMove[mod]);
+        MoveObject(ptr + 2, GetObjectX(ptr + 2) + CrashMove[mod], GetObjectY(ptr + 2) + CrashMove[mod]);
+        MoveObject(ptr + 3, GetObjectX(ptr + 3) - CrashMove[mod], GetObjectY(ptr + 3) - CrashMove[mod]);
+        LookWithAngle(ptr + 1, count + 1);
+        FrameTimerWithArg(1, ptr, CrasherSection1);
+    }
+    else
+    {
+        if (!mod)
+        {
+            AudioEvent("HammerMissing", 30);
+            Effect("DAMAGE_POOF", LocationX(30), LocationY(30), 50.0, 0.0);
+            Effect("JIGGLE", GetObjectX(ptr), GetObjectY(ptr), 50.0, 0.0);
+            FrameTimerWithArg(30, ptr, CrasherSection1);
+        }
+        else
+            LookWithAngle(ptr, 0);
+        mod = (mod + 1) % 2;
+        LookWithAngle(ptr + 2, mod);
+        LookWithAngle(ptr + 1, 0);
+    }
+}
+
+void ActivateSecondCrashRow()
+{
+    int ptr = CrasherRow() + 4;
+    
+    if (!GetDirection(ptr))
+    {
+        LookWithAngle(ptr, 1);
+        FrameTimerWithArg(1, ptr, GenericCrasher);
+    }
+}
+
+void ActivateThirdCrashRow()
+{
+    int ptr = CrasherRow() + 10;
+
+    if (!GetDirection(ptr))
+    {
+        LookWithAngle(ptr, 1);
+        FrameTimerWithArg(1, ptr, GenericCrasher);
+    }
+}
+
+void GenericCrasher(int ptr)
+{
+    int count = GetDirection(ptr + 1), mod = GetDirection(ptr + 2);
+
+    if (count < 23)
+    {
+        MoveObject(ptr, GetObjectX(ptr) + CrashMove[mod], GetObjectY(ptr) + CrashMove[mod]);
+        MoveObject(ptr + 1, GetObjectX(ptr + 1) - CrashMove[mod], GetObjectY(ptr + 1) - CrashMove[mod]);
+        MoveObject(ptr + 2, GetObjectX(ptr + 2) + CrashMove[mod], GetObjectY(ptr + 2) + CrashMove[mod]);
+        MoveObject(ptr + 3, GetObjectX(ptr + 3) - CrashMove[mod], GetObjectY(ptr + 3) - CrashMove[mod]);
+        MoveObject(ptr + 4, GetObjectX(ptr + 4) + CrashMove[mod], GetObjectY(ptr + 4) + CrashMove[mod]);
+        MoveObject(ptr + 5, GetObjectX(ptr + 5) - CrashMove[mod], GetObjectY(ptr + 5) - CrashMove[mod]);
+        LookWithAngle(ptr + 1, count + 1);
+        FrameTimerWithArg(1, ptr, GenericCrasher);
+    }
+    else
+    {
+        if (!mod)
+        {
+            TeleportLocation(31, GetObjectX(ptr + 2), GetObjectY(ptr + 2));
+            AudioEvent("HammerMissing", 31);
+            Effect("DAMAGE_POOF", LocationX(31), LocationY(31), 50.0, 0.0);
+            Effect("JIGGLE", LocationX(31), LocationY(31), 50.0, 0.0);
+            FrameTimerWithArg(30, ptr, GenericCrasher);
+        }
+        else
+            LookWithAngle(ptr, 0);
+        mod = (mod + 1) % 2;
+        LookWithAngle(ptr + 2, mod);
+        LookWithAngle(ptr + 1, 0);
+    }
+}
+
+int LastPusher()
+{
+    int ptr;
+
+    if (!ptr)
+    {
+        ptr = CreateObject("InvisibleLightBlueHigh", 116);
+        CreateObject("InvisibleLightBlueHigh", 289);
+        CreateObject("InvisibleLightBlueHigh", 290);
+        Raise(ptr, ToFloat(Object("LastPusher1")));
+        Raise(ptr + 1, ToFloat(Object("LastPusher2")));
+        Raise(ptr + 2, ToFloat(Object("LastPusher3")));
+    }
+    return ptr;
+}
+
+void ActivateLastPusherRow()
+{
+    int ptr = LastPusher();
+
+    if (!GetDirection(ptr))
+    {
+        Move(ToInt(GetObjectZ(ptr)), 116);
+        Move(ToInt(GetObjectZ(ptr + 1)), 289);
+        Move(ToInt(GetObjectZ(ptr + 2)), 290);
+        LookWithAngle(ptr, 1);
+    }
+}
+
+void BackLastPusher()
+{
+    int ptr = LastPusher(), count;
+
+    if (IsCaller(ToInt(GetObjectZ(ptr))))
+    {
+        count ++;
+        if (count == 2)
+        {
+            count = 0;
+            LookWithAngle(ptr, 0);
+            ObjectOff(self);
+        }
+        else
+        {
+            ObjectOn(Object("ResetPusherTrg"));
+            FrameTimerWithArg(60, ptr, BackToTheHome);
+        }
+    }
+}
+
+void BackToTheHome(int ptr)
+{
+    Move(ToInt(GetObjectZ(ptr)), 291);
+    Move(ToInt(GetObjectZ(ptr + 1)), 292);
+    Move(ToInt(GetObjectZ(ptr + 2)), 293);
+}
+
+int MecaRow()
+{
+    int ptr, k;
+
+    if (!ptr)
+    {
+        ptr = CreateObject("InvisibleLightBlueHigh", 320) + 1;
+        Delete(ptr - 1);
+        for (k = 2 ; k >= 0 ; k --)
+        {
+            Frozen(CreateObject("IronBlock", 320), 1);
+            Frozen(CreateObject("IronBlock", 321), 1);
+            Frozen(CreateObject("IronBlock", 322), 1);
+            Frozen(CreateObject("IronBlock", 323), 1);
+            TeleportLocationVector(320, 46.0, 46.0);
+            TeleportLocationVector(323, 46.0, 46.0);
+            TeleportLocationVector(321, -46.0, -46.0);
+            TeleportLocationVector(322, -46.0, -46.0);
+        }
+    }
+    return ptr;
+}
+
+void RollMechanicalBlocks()
+{
+    int ptr = MecaRow();
+
+    UniPrint(other, "동력장치가 움직입니다");
+    ObjectOff(self);
+    TeleportLocation(22, GetObjectX(other), GetObjectY(other));
+    AudioEvent("BoulderMove", 22);
+    FrameTimerWithArg(1, ptr, MecaBlocksWalkToLeft);
+    FrameTimerWithArg(1, ptr + 1, MecaBlocksWalkToRight);
+    FrameTimerWithArg(1, ptr + 2, MecaBlocksWalkToRight);
+    FrameTimerWithArg(1, ptr + 3, MecaBlocksWalkToLeft);
+}
+
+void MecaBlocksWalkToLeft(int ptr)
+{
+    int count = GetDirection(ptr);
+
+    if (count < 130)
+    {
+        MoveObject(ptr, GetObjectX(ptr) - 1.0, GetObjectY(ptr) - 1.0);
+        MoveObject(ptr + 4, GetObjectX(ptr + 4) - 1.0, GetObjectY(ptr + 4) - 1.0);
+        MoveObject(ptr + 8, GetObjectX(ptr + 8) - 1.0, GetObjectY(ptr + 8) - 1.0);
+        Effect("JIGGLE", GetObjectX(ptr + 4), GetObjectY(ptr + 4), 38.0, 0.0);
+        LookWithAngle(ptr, count + 1);
+        FrameTimerWithArg(1, ptr, MecaBlocksWalkToLeft);
+    }
+}
+
+void MecaBlocksWalkToRight(int ptr)
+{
+    int count = GetDirection(ptr);
+
+    if (count < 130)
+    {
+        MoveObject(ptr, GetObjectX(ptr) + 1.0, GetObjectY(ptr) + 1.0);
+        MoveObject(ptr + 4, GetObjectX(ptr + 4) + 1.0, GetObjectY(ptr + 4) + 1.0);
+        MoveObject(ptr + 8, GetObjectX(ptr + 8) + 1.0, GetObjectY(ptr + 8) + 1.0);
+        Effect("JIGGLE", GetObjectX(ptr + 4), GetObjectY(ptr + 4), 38.0, 0.0);
+        LookWithAngle(ptr, count + 1);
+        FrameTimerWithArg(1, ptr, MecaBlocksWalkToRight);
+    }
+}
+
+int LastGen(int id, int idx)
+{
+    int arr[2];
+
+    if (id)
+    {
+        arr[idx] = id;
+        return 0;
+    }
+    return arr[idx];
+}
+
+void GetGeneratorPositionB()
+{
+    if (HasClass(other, "MONSTERGENERATOR"))
+    {
+        if (GetObjectX(self) < 5552.0)
+            LastGen(GetCaller(), 0);
+        else
+            LastGen(GetCaller(), 1);
+        ObjectOff(self);
+        ObjectOff(other);
+    }
+}
+
+void OpenLastSurpriseGenWalls()
+{
+    ObjectOn(LastGen(0, 0));
+    ObjectOn(LastGen(0, 1));
+    WallOpen(Wall(238, 48));
+    WallOpen(Wall(243, 53));
+    FrameTimerWithArg(1, LastGen(0, 0), RespectHideLeftGen);
+    FrameTimerWithArg(1, LastGen(0, 1), RespectHideRightGen);
+    ObjectOff(self);
+}
+
+void RespectHideLeftGen(int gen)
+{
+    if (CurrentHealth(gen))
+    {
+        if (GetObjectX(gen) < 5554.0)
+        {
+            if (GetObjectX(gen) < 5508.0)
+                MoveObject(gen, GetObjectX(gen) + 2.0, GetObjectY(gen) + 2.0);
+            else
+                MoveObject(gen, GetObjectX(gen) + 1.0, GetObjectY(gen) - 1.0);
+            FrameTimerWithArg(1, gen, RespectHideLeftGen);
+        }
+    }
+}
+
+void RespectHideRightGen(int gen)
+{
+    if (CurrentHealth(gen))
+    {
+        if (GetObjectY(gen) > 1092.0)
+        {
+            if (GetObjectY(gen) > 1207.0)
+                MoveObject(gen, GetObjectX(gen) - 2.0, GetObjectY(gen) - 2.0);
+            else
+                MoveObject(gen, GetObjectX(gen) + 2.0, GetObjectY(gen) - 2.0);
+            FrameTimerWithArg(1, gen, RespectHideRightGen);
+        }
+    }
+}
+
+void DefMapAllArrowTraps()
+{
+    int ptr = CreateObject("InvisibleLightBlueHigh", 33), k;
+
+    ARWTRP_PTR = ptr;
+    for (k = 48 ; k >= 0 ; k --)
+    {
+        CreateObject("InvisibleLightBlueHigh", 33);
+        TeleportLocationVector(33, -7.0, 7.0);
+    }
+    FrameTimerWithArg(1, ptr, LinkUnitIdToPtr);
+}
+
+void LinkUnitIdToPtr(int ptr)
+{
+    Raise(ptr, ToFloat(Object("WestLine1Arrow1")));
+    Raise(ptr + 1, ToFloat(Object("WestLine1Arrow2")));
+    Raise(ptr + 2, ToFloat(Object("WestLine2Arrow1")));
+    Raise(ptr + 3, ToFloat(Object("WestLine2Arrow2")));
+    Raise(ptr + 4, ToFloat(Object("WestLine3Arrow1")));
+    Raise(ptr + 5, ToFloat(Object("WestLine3Arrow2")));
+    Raise(ptr + 6, ToFloat(Object("FloorTrap11")));
+    Raise(ptr + 7, ToFloat(Object("FloorTrap12")));
+    Raise(ptr + 8, ToFloat(Object("FloorTrap13")));
+    Raise(ptr + 9, ToFloat(Object("FloorTrap21")));
+    Raise(ptr + 10, ToFloat(Object("FloorTrap22")));
+    Raise(ptr + 11, ToFloat(Object("FloorTrap23")));
+    Raise(ptr + 12, ToFloat(Object("FloorTrap31")));
+    Raise(ptr + 13, ToFloat(Object("FloorTrap32")));
+    Raise(ptr + 14, ToFloat(Object("FloorTrap33")));
+    Raise(ptr + 15, ToFloat(Object("FloorTrap41")));
+    Raise(ptr + 16, ToFloat(Object("FloorTrap42")));
+    Raise(ptr + 17, ToFloat(Object("FloorTrap43")));
+    Raise(ptr + 18, ToFloat(Object("LibraryTrap11")));
+    Raise(ptr + 19, ToFloat(Object("LibraryTrap12")));
+    Raise(ptr + 20, ToFloat(Object("LibraryTrap13")));
+    Raise(ptr + 21, ToFloat(Object("LibraryTrap21")));
+    Raise(ptr + 22, ToFloat(Object("LibraryTrap22")));
+    Raise(ptr + 23, ToFloat(Object("LibraryTrap23")));
+    Raise(ptr + 24, ToFloat(Object("LibraryTrap24")));
+    Raise(ptr + 25, ToFloat(Object("LibraryTrap25")));
+    Raise(ptr + 26, ToFloat(Object("LibraryTrap26")));
+    Raise(ptr + 27, ToFloat(Object("LibraryTrap27")));
+    Raise(ptr + 28, ToFloat(Object("LibraryTrap31")));
+    Raise(ptr + 29, ToFloat(Object("LibraryTrap32")));
+    Raise(ptr + 30, ToFloat(Object("LibraryTrap33")));
+    Raise(ptr + 31, ToFloat(Object("LibraryTrap41")));
+    Raise(ptr + 32, ToFloat(Object("LibraryTrap42")));
+    Raise(ptr + 33, ToFloat(Object("LibraryTrap43")));
+    Raise(ptr + 34, ToFloat(Object("LibraryTrap51")));
+    Raise(ptr + 35, ToFloat(Object("LibraryTrap52")));
+    Raise(ptr + 36, ToFloat(Object("LibraryTrap53")));
+    Raise(ptr + 37, ToFloat(Object("SouthShot11")));
+    Raise(ptr + 38, ToFloat(Object("SouthShot12")));
+    Raise(ptr + 39, ToFloat(Object("SouthShot13")));
+    Raise(ptr + 40, ToFloat(Object("SouthShot21")));
+    Raise(ptr + 41, ToFloat(Object("SouthShot22")));
+    Raise(ptr + 42, ToFloat(Object("SouthShot23")));
+    Raise(ptr + 43, ToFloat(Object("SouthShot31")));
+    Raise(ptr + 44, ToFloat(Object("SouthShot32")));
+    Raise(ptr + 45, ToFloat(Object("SouthShot33")));
+}
+
+void EnableWest1Rows()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 0)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 1)));
+}
+
+void DisableWest1Rows()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 0)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 1)));
+}
+
+void EnableWest2Rows()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 2)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 3)));
+}
+
+void DisableWest2Rows()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 2)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 3)));
+}
+
+void EnableWest3Rows()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 4)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 5)));
+}
+
+void DisableWest3Rows()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 4)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 5)));
+}
+
+void EnableFloor1Row()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 6)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 7)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 8)));
+}
+
+void DisableFloor1Row()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 6)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 7)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 8)));
+}
+
+void EnableFloor2Row()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 9)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 10)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 11)));
+}
+
+void DisableFloor2Row()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 9)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 10)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 11)));
+}
+
+void EnableFloor3Row()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 12)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 13)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 14)));
+}
+
+void DisableFloor3Row()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 12)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 13)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 14)));
+}
+
+void EnableFloor4Row()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 15)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 16)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 17)));
+}
+
+void DisableFloor4Row()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 15)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 16)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 17)));
+}
+
+void EnableLibrary1Row()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 18)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 19)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 20)));
+}
+
+void DisableLibrary1Row()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 18)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 19)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 20)));
+}
+
+void EnableLibrary2Row()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 20)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 21)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 22)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 23)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 24)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 25)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 26)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 27)));
+}
+
+void DisableLibrary2Row()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 20)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 21)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 22)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 23)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 24)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 25)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 26)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 27)));
+}
+
+void EnableLibrary3Row()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 28)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 29)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 30)));
+}
+
+void DisableLibrary3Row()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 28)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 29)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 30)));
+}
+
+void EnableLibrary4Row()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 31)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 32)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 33)));
+}
+
+void DisableLibrary4Row()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 31)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 32)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 33)));
+}
+
+void EnableLibrary5Row()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 34)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 35)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 36)));
+}
+
+void DisableLibrary5Row()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 34)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 35)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 36)));
+}
+
+void EnableSouthShot1()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 37)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 38)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 39)));
+}
+
+void DisableSouthShot1()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 37)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 38)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 39)));
+}
+
+void EnableSouthShot2()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 40)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 41)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 42)));
+}
+
+void DisableSouthShot2()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 40)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 41)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 42)));
+}
+
+void EnableSouthShot3()
+{
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 43)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 44)));
+    ObjectOn(ToInt(GetObjectZ(ARWTRP_PTR + 45)));
+}
+
+void DisableSouthShot3()
+{
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 43)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 44)));
+    ObjectOff(ToInt(GetObjectZ(ARWTRP_PTR + 45)));
+}
+
+void GoToTest()
+{
+    MoveObject(other, LocationX(35), LocationY(35));
+}
+
+void RemoveExitSecretWalls()
+{
+    ObjectOff(self);
+    UniPrint(other, "비밀의 벽이 열립니다");
+    WallOpen(Wall(186, 10));
+    WallOpen(Wall(187, 11));
+}
+
+void RemoveNorthSecretSingleWall()
+{
+    ObjectOff(self);
+    WallOpen(Wall(238, 108));
+}
+
+int ImportUniChatCore()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0xC0685657; arr[1] = 0x6800528A; arr[2] = 0x00507250; arr[3] = 0x8B2414FF; arr[4] = 0x2414FFF8;
+        arr[5] = 0x14FFF08B; arr[6] = 0x56505724; arr[7] = 0x102454FF; arr[8] = 0x5E14C483; arr[9] = 0x9090C35F;
+        CancelTimer(FrameTimerWithArg(10, ImportUniChatCore, ImportUniChatCore));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void UniChatCore(int plrPtr, int sPtr, int sTime)
+{
+    int temp = GetMemory(0x5c3320);
+
+    SetMemory(0x5c3320, ImportUniChatCore());
+    GroupRunAway(sPtr, plrPtr, sTime);
+    SetMemory(0x5c3320, temp);
+}
+
+int ImportUniPrintCore()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x9EB06856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xF08B2414; arr[4] = 0x502414FF;
+        arr[5] = 0x2454FF56; arr[6] = 0x10C4830C; arr[7] = 0x9090C35E; 
+        CancelTimer(FrameTimerWithArg(10, ImportUniPrintCore, ImportUniPrintCore));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void UniPrintCore(int plrPtr, int sPtr)
+{
+    int temp = GetMemory(0x5c31f4);
+
+    SetMemory(0x5c31f4, ImportUniPrintCore());
+    Unused5a(sPtr, plrPtr);
+    SetMemory(0x5c31f4, temp);
+}
+
+int GetByteValue(int ptr)
+{
+    return GetMemory(ptr) & 0xff;
+}
+
+void WriteAddressWordValue(int addr, int word)
+{
+    int temp = GetMemory(addr) & 0xffff0000;
+    SetMemory(addr, temp | word);
+}
+
+void NoxUtf8ToUnicode(int src, int dest)
+{
+    int i = 0, byt;
+
+    while (1)
+    {
+        byt = GetByteValue(src + i);
+        if (!byt) break;
+        if (!(byt & 0x80))
+        {
+            WriteAddressWordValue(dest, byt);
+            i ++;
+        }
+        else if ((byt & 0xe0) == 0xc0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0x1f) <<6) | (GetByteValue(src + i + 1) & 0x3f));
+            i += 2;
+        }
+        else if ((byt & 0xf0) == 0xe0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0xf) << 12) | ((GetByteValue(src + i + 1) & 0x3f) << 6) | (GetByteValue(src + i + 2) & 0x3f));
+            i += 3;
+        }
+        dest += 2;
+    }
+    WriteAddressWordValue(dest, 0);
+}
+
+void UniPrint(int sUnit, string sMsg)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link)
+        {
+            CancelTimer(FrameTimerWithArg(10, UniPrint, UniPrint));
+            link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        }
+        NoxUtf8ToUnicode(str, link + 8);
+        UniPrintCore(ptr, link + 8);
+    }
+}
+
+void UniChatMessage(int sUnit, string sMsg, int duration)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link)
+        {
+            CancelTimer(FrameTimerWithArg(10, UniChatMessage, UniChatMessage));
+            link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        }
+        NoxUtf8ToUnicode(str, link + 12);
+        UniChatCore(ptr, link + 12, duration);
+    }
+}
+
+void UniPrintToAll(string sMsg)
+{
+    int wDest[200];
+    int plrPtr = 0x62f9e0, link, str = SToInt(sMsg), i;
+
+    if (!link)
+    {
+        CancelTimer(FrameTimerWithArg(10, UniPrint, UniPrint));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c)) + 4;
+    }
+    str = GetMemory(0x97bb40 + (str * 4));
+    NoxUtf8ToUnicode(str, link);
+    for (i = 0 ; i < 32 ; i ++)
+    {
+        if (GetMemory(plrPtr))
+            UniPrintCore(GetMemory(plrPtr), link);
+        plrPtr += 0x12dc;
+    }
+}
+
+int MathAbs(int num)
+{
+    if (num < 0)
+        num = -num;
+    return num;
+}
+
+int CheckSignDelay(int sPtr, int gap)
+{
+    int cFps = GetMemory(0x84ea04);
+
+    if (MathAbs(cFps - GetMemory(sPtr)) > gap)
+    {
+        SetMemory(sPtr, cFps);
+        return 1;
+    }
+    return 0;
+}
+
+void SignNotification()
+{
+    int otPtr = GetMemory(0x979720), sePtr = GetMemory(0x979724);
+
+    if (otPtr && sePtr)
+    {
+        if (CheckSignDelay(GetMemory(sePtr + 0x2e0) + 100, 60))
+            UniPrint(other, ToStr(GetMemory(sePtr + 0x2f0)));
+    }
+}
+
+void RegistSignMessage(int sUnit, string sMsg)
+{
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg);
+
+    if (ptr)
+    {
+        SetMemory(ptr + 0x2f0, str);
+        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
+        CancelTimer(FrameTimerWithArg(10, SignNotification, SignNotification));
+        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+    }
+}
+
+int ImportUseItemFunc()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x1424748B; arr[3] = 0x18246C8B;
+        arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
+        arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
+        CancelTimer(FrameTimerWithArg(10, ImportUseItemFunc, ImportUseItemFunc));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+string StringOverflow(int t)
+{
+	return ToStr((t - 0x97bb40) / 4);
+}
+
+string EnchantList(int sNumber)
+{
+	return StringOverflow(0x596f24 + (sNumber * 4));
+}
+
+int UnitCheckEnchant(int sUnit, int sMagicFlag)
+{
+    int ptr = UnitToPtr(sUnit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x154) & sMagicFlag;
+    return 0;
+}
+
+int GetLShift(int sCount)
+{
+    return (1 << sCount);
+}
+
+void SetUnitEnchantCopy(int sUnit, int sMagicFlag)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		Enchant(sUnit, EnchantList(6), 0.0);
+		SetMemory(ptr + 0x154, GetMemory(ptr + 0x154) | sMagicFlag);
+	}
+}
+
+void UnitSetEnchantTime(int unit, int enchantNumber, int durateTime)
+{
+	int ptr = UnitToPtr(unit), temp, tempPtr;
+
+	if (ptr)
+	{
+		SetUnitEnchantCopy(unit, GetLShift(enchantNumber));
+		tempPtr = ptr + 0x158 + ((enchantNumber / 2) * 4);
+		temp = GetMemory(tempPtr);
+		if (enchantNumber % 2)
+		{
+			SetMemory(tempPtr, (GetMemory(tempPtr) & 0xffff) | (durateTime << 0x10));
+		}
+		else
+			SetMemory(tempPtr, ((GetMemory(tempPtr) >> 0x10) << 0x10) | durateTime);
+	}
+}
+
+int MapWaypointTable(int idx)
+{
+    int table[600];
+
+    return table[idx - 1];
+}
+
+float LocationX(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 8));
+}
+
+float LocationY(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 12));
+}
+
+void TeleportLocation(int location, float xProfile, float yProfile)
+{
+    int wTable = MapWaypointTable(location);
+
+    SetMemory(wTable + 8, ToInt(xProfile));
+    SetMemory(wTable + 12, ToInt(yProfile));
+}
+
+void TeleportLocationVector(int location, float xVect, float yVect)
+{
+    int wTable = MapWaypointTable(location);
+
+    SetMemory(wTable + 8, ToInt(ToFloat(GetMemory(wTable + 8)) + xVect));
+    SetMemory(wTable + 12, ToInt(ToFloat(GetMemory(wTable + 12)) + yVect));
+}
+
+void MapWaypointFill(int wAddr, int tPtr)
+{
+    int num;
+
+    if (wAddr)
+    {
+        num = GetMemory(wAddr);
+        SetMemory(tPtr + (num * 4), wAddr);
+        MapWaypointFill(GetMemory(wAddr + 484), tPtr);
+    }
+}
+
+void MapWaypointInit()
+{
+    int tableLink;
+
+    CancelTimer(FrameTimerWithArg(10, MapWaypointTable, MapWaypointTable));
+    tableLink = GetMemory(GetMemory(0x75ae28) + ((0x30 * GetMemory(GetMemory(0x83395c) + 8)) + 0x1c));
+    MapWaypointFill(GetMemory(0x83c7fc), tableLink);
+}
+
+int GetUnitFlags(int unit)
+{
+	int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x10);
+    return 0;
+}
+
+void SetUnitFlags(int unit, int flag)
+{
+	int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(ptr + 0x10, flag);
+}
+
+int PlayerClassUserPtrTable()
+{
+    int userArr[32], link;
+
+    if (!link)
+    {
+        CancelTimer(FrameTimerWithArg(10, PlayerClassUserPtrTable, PlayerClassUserPtrTable));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+int GetPlayerCount()
+{
+    int ptr = GetMemory(0x97ec60);
+
+    if (ptr)
+        return GetMemory(ptr + 84) + 1;
+    return 0;
+}
+
+int PlayerClassUserCountCheck(int userTablePtr)
+{
+    int userCount, realCount = GetPlayerCount(), prevCount;
+
+    if ((realCount ^ userCount) && realCount)
+    {
+        prevCount = userCount;
+        userCount = realCount;
+        //PlayerClassMakeTable(userTablePtr);
+        return MathAbs(prevCount - realCount);
+    }
+    return 0;
+}
+
+int PlayerClassFlags(int pIndex, int setValue)
+{
+    int flags[32];
+
+    if (setValue)
+    {
+        if (setValue & (1 << 0x1c))
+            flags[pIndex] = 0;
+        else
+            flags[pIndex] = setValue;
+    }
+    return flags[pIndex];
+}
+
+int PlayerClassObserverFlagCheck(int pIndex)
+{
+    return PlayerClassFlags(pIndex, 0) & 0x02;
+}
+
+void PlayerClassObserverFlagSet(int pIndex)
+{
+    PlayerClassFlags(pIndex, PlayerClassFlags(pIndex, 0) ^ 0x02);
+}
+
+int PlayerClassDuelFlagCheck(int pIndex)
+{
+    return PlayerClassFlags(pIndex, 0) & 0x04;
+}
+
+void PlayerClassDuelFlagSet(int pIndex)
+{
+    PlayerClassFlags(pIndex, PlayerClassFlags(pIndex, 0) ^ 0x04);
+}
+
+int PlayerClassCamUserFlagCheck(int pIndex)
+{
+    return PlayerClassFlags(pIndex, 0) & 0x08;
+}
+
+void PlayerClassCamUserFlagSet(int pIndex)
+{
+    PlayerClassFlags(pIndex, PlayerClassFlags(pIndex, 0) ^ 0x08);
+}
+
+int PlayerClassDeathFlagCheck(int pIndex)
+{
+    return PlayerClassFlags(pIndex, 0) & 0x80;
+}
+
+void PlayerClassDeathFlagSet(int pIndex)
+{
+    PlayerClassFlags(pIndex, PlayerClassFlags(pIndex, 0) ^ 0x80);
+}
+
+void PlayerClassOnInit(int plrUnit, int pIndex)
+{
+    PlayerClassFlags(pIndex, 1);
+    if (plrUnit ^ 1000000001)
+        ClientEntry(plrUnit);
+    else
+        PlayerClassCommonWhenEntry();
+    UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 지도에 입장하셨어요!");
+}
+
+void PlayerClassOnExit(int pIndex)
+{
+    PlayerClassFlags(pIndex, 1 << 0x1c);
+}
+
+int PlayerClassAssign(int destPtr, int plrPtr, int pIndex)
+{
+    int unitId;
+
+    if (plrPtr)
+    {
+        unitId = GetMemory(plrPtr + 0x2c);
+        if (GetMemory(destPtr) ^ unitId)
+        {
+            PlayerClassOnInit(unitId, pIndex);
+            SetMemory(destPtr, unitId);
+            return 1;
+        }
+    }
+    else if (GetMemory(destPtr))
+    {
+        PlayerClassOnExit(pIndex);
+        SetMemory(destPtr, 0);
+        return 1;
+    }
+    return 0;
+}
+
+int NetClassMapDownloading(int pIndex, int plrPtr)
+{
+    if (pIndex ^ 31)
+    {
+        if ((GetMemory(plrPtr + 128) & 0xff) || (GetMemory(plrPtr + 0x648) == 0xdeadface))
+            return 1;
+        return (GetMemory(0x81b260 + (pIndex * 0x30)) >> 0x10);
+    }
+    return 0;
+}
+
+void PlayerClassMakeTable(int userTablePtr)
+{
+    int plrPtr = 0x62f9e0, i;
+
+    for (i = 0 ; i < 32 ; i ++)
+    {
+        if (!NetClassMapDownloading(i, plrPtr))
+            PlayerClassAssign(userTablePtr + (4 * i), GetMemory(plrPtr), i);
+        plrPtr += 0x12dc;
+    }
+}
+
+int GetWordValue(int num)
+{
+	return num & 0xffff;
+}
+
+void WriteAddressByteValue(int addr, int byt)
+{
+	int temp = GetMemory(addr) & 0xffffff00;
+	SetMemory(addr, temp | byt);
+}
+
+int NoxUnicodeToUtf8(int src, int destPtr)
+{
+	int i, byt, dest = destPtr;
+
+	for (i = 0 ; i < 20 ; i ++)
+	{
+		byt = GetWordValue(GetMemory(src));
+        if (!byt) break;
+		if (byt < 0x80)
+		{
+			WriteAddressByteValue(dest, byt);
+			dest ++;
+		}
+		else if (byt < 0x800)
+		{
+			WriteAddressByteValue(dest, ((byt >> 6) & 0x1f) | 0xc0);
+			WriteAddressByteValue(dest + 1, (byt & 0x3f) | 0x80);
+			dest += 2;
+		}
+		else
+		{
+			WriteAddressByteValue(dest, ((byt >> 12) & 0x0f) | 0xe0);
+			WriteAddressByteValue(dest + 1, ((byt >> 6) & 0x3f) | 0x80);
+			WriteAddressByteValue(dest + 2, (byt & 0x3f) | 0x80);
+			dest += 3;
+		}
+        src += 2;
+	}
+    WriteAddressByteValue(dest, 0);
+	return dest - destPtr;
+}
+
+string PlayerIngameNick(int sUnit)
+{
+    string emptyName = {
+        "00:01234567890123456789abcd0123456789abxyz", "01:01234567890123456789abcd0123456789abxyz",
+        "02:01234567890123456789abcd0123456789abxyz", "03:01234567890123456789abcd0123456789abxyz",
+        "04:01234567890123456789abcd0123456789abxyz", "05:01234567890123456789abcd0123456789abxyz",
+        "06:01234567890123456789abcd0123456789abxyz", "07:01234567890123456789abcd0123456789abxyz",
+        "08:01234567890123456789abcd0123456789abxyz", "09:01234567890123456789abcd0123456789abxyz",
+        "10:01234567890123456789abcd0123456789abxyz", "11:01234567890123456789abcd0123456789abxyz",
+        "12:01234567890123456789abcd0123456789abxyz", "13:01234567890123456789abcd0123456789abxyz",
+        "14:01234567890123456789abcd0123456789abxyz", "15:01234567890123456789abcd0123456789abxyz",
+        "16:01234567890123456789abcd0123456789abxyz", "17:01234567890123456789abcd0123456789abxyz",
+        "18:01234567890123456789abcd0123456789abxyz", "19:01234567890123456789abcd0123456789abxyz",
+        "20:01234567890123456789abcd0123456789abxyz", "21:01234567890123456789abcd0123456789abxyz",
+        "22:01234567890123456789abcd0123456789abxyz", "23:01234567890123456789abcd0123456789abxyz",
+        "24:01234567890123456789abcd0123456789abxyz", "25:01234567890123456789abcd0123456789abxyz",
+        "26:01234567890123456789abcd0123456789abxyz", "27:01234567890123456789abcd0123456789abxyz",
+        "28:01234567890123456789abcd0123456789abxyz", "29:01234567890123456789abcd0123456789abxyz",
+        "30:01234567890123456789abcd0123456789abxyz", "31:01234567890123456789abcd0123456789abxyz"};
+    int ptr = UnitToPtr(sUnit), plrIndex, destPtr, srcPtr;
+    
+    if (ptr)
+    {
+        if (GetMemory(ptr + 0x08) & 4)
+        {
+            plrIndex = GetMemory(GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x810);
+            destPtr = GetMemory(0x97bb40 + ((SToInt(emptyName) + plrIndex) * 4));
+            srcPtr = GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x889;
+            NoxUnicodeToUtf8(srcPtr, destPtr);
+            return ToStr(SToInt(emptyName) + plrIndex);
+        }
+    }
+    return "NULL";
+}
+
+void PlayerClassOnDeath(int plrUnit, int pIndex)
+{
+    UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 적에게 격추되었습니다");
+}
+
+void PlayerClassOnRespawn(int plrUnit, int pIndex)
+{
+    return;
+}
+
+void PlayerClassOnGoObserver(int plrUnit, int pIndex)
+{
+    if (PlayerClassDeathFlagCheck(pIndex))
+    {
+        PlayerClassDeathFlagSet(pIndex);
+    }
+}
+
+void PlayerClassOnAlive(int plrUnit, int pIndex)
+{
+    if (MaxHealth(plrUnit))
+    {
+        if (GetUnitFlags(plrUnit) & 0x40)
+        {
+            if (!PlayerClassObserverFlagCheck(pIndex))
+            {
+                PlayerClassObserverFlagSet(pIndex);
+                PlayerClassOnGoObserver(plrUnit, pIndex);
+            }
+        }
+        else if (CurrentHealth(plrUnit))
+        {
+            if (PlayerClassDeathFlagCheck(pIndex))
+            {
+                PlayerClassDeathFlagSet(pIndex);
+                PlayerClassOnRespawn(plrUnit, pIndex);
+            }
+        }
+        else
+        {
+            if (PlayerClassDeathFlagCheck(pIndex)) 1;
+            else
+            {
+                PlayerClassDeathFlagSet(pIndex);
+                PlayerClassOnDeath(plrUnit, pIndex);
+            }
+        }
+    }
+}
+
+void PlayerClassUserHandle(int userTablePtr)
+{
+    int i;
+
+    for (i = 31 ; i >= 0 ; i --)
+    {
+        if (GetMemory(userTablePtr + (4 * i)))
+            PlayerClassOnAlive(GetMemory(userTablePtr + (4 * i)), i);
+    }
+}
+
+void PlayerClassLoop(int userTablePtr)
+{
+    PlayerClassMakeTable(userTablePtr);
+    PlayerClassUserHandle(userTablePtr);
+
+    FrameTimerWithArg(1, userTablePtr, PlayerClassLoop);
+}
+
+void LoopRun()
+{
+    FrameTimerWithArg(1, PlayerClassUserPtrTable(), PlayerClassLoop);
+}
+
+int ImportMemAlloc()
+{
+    int arr[7], link, fNumb;
+
+    if (!link)
+    {
+        arr[0] = 0x49E85055; arr[1] = 0x50FFDB62; arr[2] = 0xCB2553E8; arr[3] = 0x1DE850FF; arr[4] = 0x83FFDB62; arr[5] = 0x5D5808C4; arr[6] = 0x909090C3;
+        ImportMemAlloc;
+        fNumb = GetMemory(0x979740 + ((GetMemory(0x75ae40) - 4) * 4));
+        link = GetMemory(GetMemory(0x75ae28) + ((0x30 * fNumb) + 0x1c));
+        FixCallOpcode(link + 2, 0x507250);
+        FixCallOpcode(link + 8, 0x403560);
+        FixCallOpcode(link + 0x0e, 0x507230);
+    }
+    return link;
+}
+
+int MemAlloc(int size)
+{
+    int temp = GetMemory(0x5c3208), ptr;
+
+    SetMemory(0x5c3208, ImportMemAlloc());
+    ptr = GetCharacterData(size);
+    SetMemory(0x5c3208, temp);
+    return ptr;
+}
+
+int ImportMemFree()
+{
+    int arr[5], link, fNumb;
+
+    if (!link)
+    {
+        arr[0] = 0x624AE850; arr[1] = 0xE850FFDB; arr[2] = 0xFFCB3251; arr[3] = 0x5804C483; arr[4] = 0x909090C3;
+        ImportMemFree;
+        fNumb = GetMemory(0x979740 + ((GetMemory(0x75ae40) - 4) * 4));
+        link = GetMemory(GetMemory(0x75ae28) + ((0x30 * fNumb) + 0x1c));
+        FixCallOpcode(link + 1, 0x507250);
+        FixCallOpcode(link + 7, 0x40425d);
+    }
+    return link;
+}
+
+void MemFree(int ptr)
+{
+    int temp = GetMemory(0x5c3108);
+
+    SetMemory(0x5c3108, ImportMemFree());
+    Unused1f(ptr);
+    SetMemory(0x5c3108, temp);
+}
+
+int AnimateRealloc(int ptr, int imgCount)
+{
+    int alloc = MemAlloc(24);
+    int iLinkTable = MemAlloc((imgCount + 1) * 4);
+
+    SetMemory(alloc, 0x10);
+    SetMemory(alloc + 4, iLinkTable);
+    SetMemory(alloc + 8, imgCount);
+    SetMemory(alloc + 12, 2);
+    SetMemory(alloc + 16, 0);
+    SetMemory(alloc + 20, 0);
+    SetMemory(ptr + 92, alloc);
+    return iLinkTable;
+}
+
+void ImageTableMapping(int dest, int src, int count)
+{
+    int i;
+
+    for (i = 0 ; i < count ; i ++)
+        SetMemory(dest + (i * 4), GetMemory(src + (i * 4)));
+    SetMemory(dest + (i * 4), 0);
+}
+
+int MakeAnimateImage(int thingId, int imgTable)
+{
+    int ptr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
+    int imgPtr = GetMemory(ptr + 92), mapped, freePtr = 0;
+    int imgCount = GetMemory(imgTable);
+
+    while (1)
+    {
+        if (GetMemory(imgPtr) == 0x08)
+            1;
+        else if (GetMemory(imgPtr + 0x8) ^ imgCount)
+            freePtr = GetMemory(imgPtr + 4);
+        else
+        {
+            mapped = GetMemory(imgPtr + 4);
+            break;
+        }
+        mapped = AnimateRealloc(ptr, imgCount);
+        if (freePtr)
+            MemFree(freePtr);
+        break;
+    }
+    ImageTableMapping(mapped, imgTable + 4, imgCount);
+    SetMemory(ptr + 116, 134719);
+    SetMemory(ptr + 88, 0x4bbd60);
+}
+
+int DrawImageAt(float x, float y, int thingId)
+{
+    int unit = CreateObjectAt("AirshipBasketShadow", x, y);
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 0x04, thingId);
+    return unit;
+}
+
+int DrawImageAtLocation(int location, int thingId)
+{
+    return DrawImageAt(LocationX(location), LocationY(location), thingId);
+}
+
+int GetImageTableFirstImgPtr(int iTablePtr)
+{
+    return GetMemory(iTablePtr + 4);
+}
+
+int ImagePtrFromID(int imgId)
+{
+    return GetMemory(0x694864) + (12 * imgId);
+}
+
+void InnerImageZeroHeight(int thingId)
+{
+    int ptr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
+
+    if (GetMemory(ptr + 20) >> 0x10)
+        SetMemory(ptr + 20, GetMemory(ptr + 20) & 0xffff);
+    if (GetMemory(ptr + 32) & 0x400000)
+        SetMemory(ptr + 32, GetMemory(ptr + 32) ^ 0x400000);
+}
+
+void InnerImageSwap(int thingId, int imgId)
+{
+    int ptr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
+    int imgPtr = GetMemory(ptr + 92);
+    SetMemory(ptr + 116, imgId);
+
+    if (GetMemory(imgPtr) == 0x10)
+    {
+        SetMemory(imgPtr, 0x08);
+        MemFree(GetMemory(imgPtr + 4));
+    }
+    SetMemory(ptr + 88, 0x4bcc20);
+    SetMemory(imgPtr + 4, ImagePtrFromID(imgId));
+}
+
+int ImportRemoveSpriteFromThingId()
+{
+    int arr[16], link, fNumb;
+
+    if (!link)
+    {
+        arr[0] = 0x5008EC83; arr[1] = 0x6D3DC0A1; arr[2] = 0x24448900; arr[3] = 0x623EE808; arr[4] = 0x4489FFDB; arr[5] = 0x8B560424;
+        arr[6] = 0x850C2474; arr[7] = 0x8B1B74F6; arr[8] = 0xFF082444; arr[9] = 0x000170B6; arr[10] = 0x768B5600; arr[11] = 0x75F0396C;
+        arr[12] = 0x94AAE805; arr[13] = 0x5E58FFD0; arr[14] = 0x585EE1EB; arr[15] = 0xC308C483;
+        ImportRemoveSpriteFromThingId;
+        fNumb = GetMemory(0x979740 + ((GetMemory(0x75ae40) - 4) * 4));
+        link = GetMemory(GetMemory(0x75ae28) + ((0x30 * fNumb) + 0x1c));
+        FixCallOpcode(link + 0x0d, 0x507250);
+        FixCallOpcode(link + 0x31, 0x45a4e0);
+    }
+    return link;
+}
+
+void RemoveSpriteFromThingId(int thingId)
+{
+    int temp = GetMemory(0x5c3108);
+
+    SetMemory(0x5c3108, ImportRemoveSpriteFromThingId());
+    Unused1f(thingId);
+    SetMemory(0x5c3108, temp);
+}
+
+void MappingTextDrawCode(int ptr)
+{
+    SetMemory(ptr + 0, 0x8B20EC83); SetMemory(ptr + 4, 0x84EA040D);
+    SetMemory(ptr + 8, 0x56555300); SetMemory(ptr + 12, 0x3424748B); 
+    SetMemory(ptr + 16, 0xAC3D8B57); SetMemory(ptr + 20, 0x8B00853B);
+    SetMemory(ptr + 24, 0x00012086); SetMemory(ptr + 28, 0x72C83900); 
+    SetMemory(ptr + 32, 0xE03D8B06); SetMemory(ptr + 36, 0x570084C9);
+    SetMemory(ptr + 40, 0xCE336FE8); SetMemory(ptr + 44, 0x988e8bff); //SetMemory(ptr + 44, 0xC00D8BFF); 
+    SetMemory(ptr + 48, 0x51000000); //SetMemory(ptr + 48, 0x510083C8);
+    SetMemory(ptr + 52, 0xCE3293E8);
+    SetMemory(ptr + 56, 0x244C8BFF); SetMemory(ptr + 60, 0x0C468B3C); 
+    SetMemory(ptr + 64, 0x8B08C483); SetMemory(ptr + 68, 0x118B1059);
+    SetMemory(ptr + 72, 0x2914698B); SetMemory(ptr + 76, 0x105E8BD8); 
+    SetMemory(ptr + 80, 0x518BD001); SetMemory(ptr + 84, 0x704E8B04);
+    SetMemory(ptr + 88, 0x4489EA29); SetMemory(ptr + 92, 0xDA011024); 
+    SetMemory(ptr + 96, 0x14245489); SetMemory(ptr + 100, 0xA16C4E8B);
+    SetMemory(ptr + 104, 0x0069F224); SetMemory(ptr + 108, 0x8B88048B); 
+    SetMemory(ptr + 112, 0xD2850450); SetMemory(ptr + 116, 0x00BA0575);
+    SetMemory(ptr + 120, 0x8B0058D7); SetMemory(ptr + 124, 0x8B142444); 
+    SetMemory(ptr + 128, 0x5010244C); SetMemory(ptr + 132, 0x006A5251);
+    SetMemory(ptr + 136, 0xCEE58FE8); SetMemory(ptr + 140, 0x10C483FF); 
+    SetMemory(ptr + 144, 0x000001B8); SetMemory(ptr + 148, 0x5D5E5F00);
+    SetMemory(ptr + 152, 0x20C4835B); SetMemory(ptr + 156, 0x909090C3);
+    FixCallOpcode(ptr + 40, 0x434460);
+    FixCallOpcode(ptr + 52, 0x434390);
+    FixCallOpcode(ptr + 136, 0x43f6e0);
+}
+
+void ModifyThingClassDescription(int thingId, string desc, int textColor)
+{
+    int tPtr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
+    int dest = MemAlloc(48), prevPtr = GetMemory(tPtr + 4);
+    int src = GetMemory(0x97bb40 + (SToInt(desc) * 4));
+
+    NoxUtf8ToUnicode(src, dest);
+    if (textColor)
+        SetMemory(tPtr + 48, textColor);
+    SetMemory(tPtr + 4, dest);
+    if (prevPtr)
+        MemFree(prevPtr);
+}
+
+void ModifyThingClassDrawFunction(int thingId, int fPtr)
+{
+    int tPtr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
+
+    SetMemory(tPtr + 88, fPtr);
+}
+
+int BuildTextDrawFunction()
+{
+    int offset = 0x5cebdc;
+    
+    MappingTextDrawCode(offset);
+    return offset;
+}
+
+void ClientMain()
+{
+    int var0, table, stream;
+
+    if (!var0)
+    {
+        var0 = EnableMemoryReadWriteFunction(0);
+        SetMemory(0x69ba98, 0x43de10);
+        SetMemory(0x69b974, 0x64);
+        PlayerClassCommonWhenEntry();
+
+        var0 ++;
+    }
+}
+
+void WriteMusicStrings(int targetAddr)
+{
+    int arr[78], i;
+
+    arr[0] = 0x70616863; arr[1] = 0x61772E31; arr[2] = 0x68630076; arr[3] = 0x77327061; arr[4] = 0x772E7A69; arr[5] = 0x63007661; arr[6] = 0x32706168;
+    arr[7] = 0x2E6E6F63; arr[8] = 0x00766177; arr[9] = 0x70616863; arr[10] = 0x72617732; arr[11] = 0x7661772E; arr[12] = 0x61686300; arr[13] = 0x772E3370;
+    arr[14] = 0x63007661; arr[15] = 0x34706168; arr[16] = 0x7661772E; arr[17] = 0x61686300; arr[18] = 0x772E3570; arr[19] = 0x63007661; arr[20] = 0x36706168;
+    arr[21] = 0x7661772E; arr[22] = 0x61686300; arr[23] = 0x772E3770; arr[24] = 0x63007661; arr[25] = 0x38706168; arr[26] = 0x7661772E; arr[27] = 0x61686300;
+    arr[28] = 0x772E3970; arr[29] = 0x63007661; arr[30] = 0x61706168; arr[31] = 0x7661772E; arr[32] = 0x61686300; arr[33] = 0x772E6270; arr[34] = 0x74007661;
+    arr[35] = 0x656C7469; arr[36] = 0x7661772E; arr[37] = 0x776F7400; arr[38] = 0x772E316E; arr[39] = 0x74007661; arr[40] = 0x326E776F; arr[41] = 0x7661772E;
+    arr[42] = 0x776F7400; arr[43] = 0x772E336E; arr[44] = 0x73007661; arr[45] = 0x2E316275; arr[46] = 0x00766177; arr[47] = 0x32627573; arr[48] = 0x7661772E;
+    arr[49] = 0x62757300; arr[50] = 0x61772E33; arr[51] = 0x61770076; arr[52] = 0x7265646E; arr[53] = 0x61772E31; arr[54] = 0x61770076; arr[55] = 0x7265646E;
+    arr[56] = 0x61772E32; arr[57] = 0x61770076; arr[58] = 0x7265646E; arr[59] = 0x61772E33; arr[60] = 0x72632076; arr[61] = 0x74696465; arr[62] = 0x61772E73;
+    arr[63] = 0x68730076; arr[64] = 0x2E6C6C65; arr[65] = 0x00766177; arr[66] = 0x69746361; arr[67] = 0x2E316E6F; arr[68] = 0x00766177; arr[69] = 0x69746361;
+    arr[70] = 0x2E326E6F; arr[71] = 0x00766177; arr[72] = 0x69746361; arr[73] = 0x2E336E6F; arr[74] = 0x00766177; arr[75] = 0x646E6177; arr[76] = 0x2E347265;
+    arr[77] = 0x00766177;
+    for (i = 0 ; i < 78 ; i ++)
+        SetMemory(targetAddr + (i * 4), arr[i]);
+}
+
+void PreProcessPlayBgm(int targetAddr)
+{
+    int oldBase = 0x59da7c;
+
+    WriteMusicStrings(targetAddr);
+    SetMemory(oldBase + 0, targetAddr);
+    SetMemory(oldBase + 4, targetAddr + 0xa);
+    SetMemory(oldBase + 8, targetAddr + 0x17);
+    SetMemory(oldBase + 12, targetAddr + 0x24);
+    SetMemory(oldBase + 16, targetAddr + 0x31);
+    SetMemory(oldBase + 20, targetAddr + 0x3b);
+    SetMemory(oldBase + 24, targetAddr + 0x45);
+    SetMemory(oldBase + 28, targetAddr + 0x4f);
+    SetMemory(oldBase + 32, targetAddr + 0x59);
+    SetMemory(oldBase + 36, targetAddr + 0x63);
+    SetMemory(oldBase + 40, targetAddr + 0x6d);
+    SetMemory(oldBase + 44, targetAddr + 0x77);
+    SetMemory(oldBase + 48, targetAddr + 0x81);
+    SetMemory(oldBase + 52, targetAddr + 0x8b);
+    SetMemory(oldBase + 56, targetAddr + 0x95);
+    SetMemory(oldBase + 60, targetAddr + 0x9f);
+    SetMemory(oldBase + 64, targetAddr + 0xa9);
+    SetMemory(oldBase + 68, targetAddr + 0xb3);
+    SetMemory(oldBase + 72, targetAddr + 0xbc);
+    SetMemory(oldBase + 76, targetAddr + 0xc5);
+    SetMemory(oldBase + 80, targetAddr + 0xce);
+    SetMemory(oldBase + 84, targetAddr + 0xda);
+    SetMemory(oldBase + 88, targetAddr + 0xe6);
+    SetMemory(oldBase + 92, targetAddr + 0xf2);
+    SetMemory(oldBase + 96, targetAddr + 0xfe);
+    SetMemory(oldBase + 100, targetAddr + 0x108);
+    SetMemory(oldBase + 104, targetAddr + 0x114);
+    SetMemory(oldBase + 108, targetAddr + 0x120);
+    SetMemory(oldBase + 112, targetAddr + 0x12c);
+    SetMemory(0x59dbfc, 0);
+}
+
+void ExtractMapBgm(string fileName)
+{
+    int stream = GetMemory(GetMemory(0x75ae28) + ((0x30 * (GetMemory(0x75ae2c) - 1)) + 0x20));
+
+    SetMemory(0x59dc10, GetMemory(0x97bb40 + (SToInt(fileName) * 4)));
+    WriteBinaryFile("music\\" + fileName, stream);
+
+    PreProcessPlayBgm(0x5becc4);
+}
+
+void MakeMusicDirectory()
+{
+    int temp = GetMemory(0x5c33b8);
+    int code = 0x979740 + ((GetMemory(0x75ae40) - 2) * 4);
+
+    //6A 00 68 C8/ 17 58 00 FF
+    0xf468006a; 0xff0059db; 0x58116815; 0x9090C300;
+    SetMemory(0x5c33b8, code);
+    MusicPopEvent();
+    SetMemory(0x5c33b8, temp);
+}
+
+void PlayerClassCommonWhenEntry()
+{
+    SomeObjectChangeToInnerImage();
+}
+
+void SetupBottmText(int thingId, int ptr, int colorSet, string desc)
+{
+    ModifyThingClassDescription(thingId, desc, colorSet);
+    ModifyThingClassDrawFunction(thingId, ptr);
+    InnerImageZeroHeight(thingId);
+    RemoveSpriteFromThingId(thingId);
+}
+
+int TreasureImageTable()
+{
+    int imgCount = 8;
+    int arr[8], fNumb;
+
+    arr[0] = ImagePtrFromID(112596); arr[1] = ImagePtrFromID(112597); arr[2] = ImagePtrFromID(112598); arr[3] = ImagePtrFromID(112599);
+    arr[4] = ImagePtrFromID(112600); arr[5] = ImagePtrFromID(112601); arr[6] = ImagePtrFromID(112602); arr[7] = ImagePtrFromID(112603);
+    TreasureImageTable;
+    fNumb = GetMemory(0x979740 + ((GetMemory(0x75ae40) - 4) * 4));
+    return GetMemory(GetMemory(0x75ae28) + ((0x30 * fNumb) + 0x1c));
+}
+
+void CommonClassTextDrawSetting()
+{
+    int ptr = BuildTextDrawFunction();
+
+    SetupBottmText(2507, ptr, 0xefe0, "길드 박물관 스토리웨이");
+}
+
+void SomeObjectChangeToInnerImage()
+{
+    MakeAnimateImage(2558, TreasureImageTable());
+    InnerImageZeroHeight(2558);
+    RemoveSpriteFromThingId(2558);
+    InnerImageSwap(2516, 14486);
+    InnerImageZeroHeight(2516);
+    RemoveSpriteFromThingId(2516);
+    InnerImageSwap(2517, 14491);
+    InnerImageZeroHeight(2517);
+    RemoveSpriteFromThingId(2517);
+    InnerImageSwap(2518, 14298);
+    InnerImageZeroHeight(2518);
+    RemoveSpriteFromThingId(2518);
+    CommonClassTextDrawSetting();
+}
+
+int FixCallOpcode(int curAddr, int targetAddr)
+{
+    SetMemory(curAddr + 1, targetAddr - curAddr - 5);
+}
+
+int OpcodeGetTargetAddr(int curAddr)
+{
+    return GetMemory(curAddr + 1) + curAddr + 5;
+}
+
+void OpcodeLoadEffectiveAddr(int loadAddr, int codeAddr, int offset)
+{
+    int targetAddr = OpcodeGetTargetAddr(codeAddr + offset);
+
+    SetMemory(loadAddr + offset + 1, targetAddr - (loadAddr + offset) - 5);
+}
+
+void OpcodeCopies(int destPtr, int callNodePtr, int startAddr, int endAddr)
+{
+    int destBase = destPtr;
+    int curAddr = startAddr;
+
+    while (curAddr <= endAddr)
+    {
+        SetMemory(destPtr, GetMemory(curAddr));
+        if (GetMemory(callNodePtr))
+        {
+            if (GetMemory(callNodePtr) + 1 <= curAddr)
+            {
+                OpcodeLoadEffectiveAddr(destBase, startAddr, GetMemory(callNodePtr) - startAddr);
+                callNodePtr += 4;
+            }
+        }
+        curAddr += 4;
+        destPtr += 4;
+    }
+}
+
+int ImportNetSendClient()
+{
+    int arr[15], link, fNumb;
+
+    if (!link)
+    {
+        arr[0] = 0x40EBC068; arr[1] = 0x72506800; arr[2] = 0x83500050; arr[3] = 0x54FF10EC; arr[4] = 0x44891424;
+        arr[5] = 0x54FF0C24; arr[6] = 0x44891424; arr[7] = 0x54FF0824; arr[8] = 0x44891424; arr[9] = 0x54FF0424;
+        arr[10] = 0x04891424; arr[11] = 0x2454FF24; arr[12] = 0x10C48318; arr[13] = 0x08C48358; arr[14] = 0x909090C3;
+        ImportNetSendClient;
+        fNumb = GetMemory(0x979740 + ((GetMemory(0x75ae40) - 4) * 4));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * fNumb + 0x1c));
+    }
+    return link;
+}
+
+void NetClientSend(int plrUnit, int buffPtr, int buffSize)
+{
+    //netClientSend,0x0040EBC0
+    int plrPtr = UnitToPtr(plrUnit), plrIdx;
+    int temp = GetMemory(0x5c31ac);
+
+    if (plrPtr)
+    {
+        if (GetMemory(plrPtr + 0x08) & 0x04)
+        {
+            plrIdx = GetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0x810);
+            //5c31ac
+            SetMemory(0x5c31ac, ImportNetSendClient());
+            PushObject(plrIdx, ToFloat(1), ToFloat(buffPtr), ToFloat(buffSize));
+            SetMemory(0x5c31ac, temp);
+        }
+    }
+}
+
+int NetClientExec()
+{
+    int arr[2], link;
+
+    arr[0] = 0xdf;
+    CancelTimer(FrameTimerWithArg(10, NetClientExec, NetClientExec));
+    link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    return link;
+}
+
+void ClientSetMemory(int user, int targetAddr, int byte)
+{
+    int ptr = NetClientExec();
+
+    SetMemory(ptr + 1, targetAddr - 0x6d495c);
+    SetMemory(ptr + 5, byte);
+    NetClientSend(user, ptr, 6);
+}
+
+void DelayLink(int pUnit)
+{
+    ClientSetMemory(pUnit, 0x69ba98 + 0, 0);
+    ClientSetMemory(pUnit, 0x69ba98 + 1, 0x10);
+    ClientSetMemory(pUnit, 0x69ba98 + 2, 0x75);
+}
+
+void ClientEntry(int cliUnit)
+{
+    int scrNumber;
+
+    CancelTimer(FrameTimerWithArg(10, ClientMain, ClientMain));
+    scrNumber = GetMemory(GetMemory(0x83395c) + 8);
+    //6A 00 6A 00/ 68 7F 00 00/ 00 E8 02 63/ DB FF 83 C4/ 0C 68 B0 95/ 4B 00 C3 90: 24Byte
+    ClientSetMemory(cliUnit, 0x751000, 0x6a);
+    ClientSetMemory(cliUnit, 0x751001, 0x00);
+    ClientSetMemory(cliUnit, 0x751002, 0x6a);
+    ClientSetMemory(cliUnit, 0x751003, 0x00);
+    ClientSetMemory(cliUnit, 0x751004, 0x68);
+    ClientSetMemory(cliUnit, 0x751005, scrNumber & 0xff);
+    ClientSetMemory(cliUnit, 0x751006, (scrNumber >> 8) & 0xff);
+    ClientSetMemory(cliUnit, 0x751007, 0);
+    ClientSetMemory(cliUnit, 0x751008, 0);
+    ClientSetMemory(cliUnit, 0x751009, 0xe8);
+    ClientSetMemory(cliUnit, 0x75100a, 0x02);
+    ClientSetMemory(cliUnit, 0x75100b, 0x63);
+    ClientSetMemory(cliUnit, 0x75100c, 0xdb);
+    ClientSetMemory(cliUnit, 0x75100d, 0xff);
+    ClientSetMemory(cliUnit, 0x75100e, 0x83);
+    ClientSetMemory(cliUnit, 0x75100f, 0xc4);
+    ClientSetMemory(cliUnit, 0x751010, 0x0c);
+    ClientSetMemory(cliUnit, 0x751011, 0x68);
+    ClientSetMemory(cliUnit, 0x751012, 0x10);
+    ClientSetMemory(cliUnit, 0x751013, 0xde);
+    ClientSetMemory(cliUnit, 0x751014, 0x43);
+    ClientSetMemory(cliUnit, 0x751015, 0x00);
+    ClientSetMemory(cliUnit, 0x751016, 0xc3);
+    FrameTimerWithArg(1, cliUnit, DelayLink);
+}
+
+int ImportWriteBinaryFile()
+{
+    int arr[17], link, fNumb;
+
+    if (!link)
+    {
+        arr[0] = 0xDB624BE8; arr[1] = 0x246850FF; arr[2] = 0xFF005882; arr[3] = 0x485AE830; arr[4] = 0xC483FFE1;
+        arr[5] = 0x74C08508; arr[6] = 0x748B5624; arr[7] = 0x768B0424; arr[8] = 0x8D0E8B04; arr[9] = 0x50500476; arr[10] = 0x5651016A; arr[11] = 0xE149D1E8;
+        arr[12] = 0x10C483FF; arr[13] = 0xCB64FAE8; arr[14] = 0x04C483FF; arr[15] = 0x04C4835E; arr[16] = 0x909090C3;
+        ImportWriteBinaryFile;
+        fNumb = GetMemory(0x979740 + ((GetMemory(0x75ae40) - 4) * 4));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * fNumb + 0x1c));
+        FixCallOpcode(link + 0, 0x507250);
+        FixCallOpcode(link + 0xd, 0x56586c);
+        FixCallOpcode(link + 0x2c, 0x565a02);
+        FixCallOpcode(link + 0x34, 0x407533);
+    }
+    return link;
+}
+
+void WriteBinaryFile(string fileName, int stream)
+{
+    int temp = 0x5c310c, fNumb;
+
+    fileName = ToStr(GetMemory(0x97bb40 + (SToInt(fileName) * 4)));
+    SetMemory(0x5c310c, ImportWriteBinaryFile());
+    WriteBinaryFile;
+    fNumb = GetMemory(0x979740 + ((GetMemory(0x75ae40) - 4) * 4));
+    Unused20(GetMemory(GetMemory(0x75ae28) + (0x30 * fNumb + 0x1c)));
+    SetMemory(0x5c310c, temp);
+}

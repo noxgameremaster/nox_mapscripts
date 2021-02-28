@@ -1,0 +1,1874 @@
+//@ignore_object_type
+
+int gen_ptr;
+int marble_group[30];
+int marble_train[30];
+void MapInitialize()
+{
+    MusicEvent();
+    mathSine(-1, 0.0);
+    InitMarbleRows();
+    initCryptRows(-1);
+    LoopMovingNorthRots();
+    FrameTimer(2, DelayInit);
+    FrameTimerWithArg(30, 10, PutBluePotions);
+}
+
+void DelayInit()
+{
+    WallSkullTrap(-1);
+    NorthRots(-1);
+    RelayRot(-1);
+    GateGroups(-1);
+    WaterRows(-1);
+    Gate2Way(-1);
+    Gate21Way(-1);
+    FlameSoul(-1);
+    LibraryCase(-1);
+    PuzzleBlock(-1);
+    PattonRows(-1);
+    AnnexBlocks(-1);
+}
+
+void activateFrontBlocks()
+{
+    int arr[2];
+    arr[0] = Object("frontBlockGear1");
+    arr[1] = Object("frontBlockGear2");
+    ObjectOn(arr[0]);
+    ObjectOn(arr[1]);
+    Move(Object("frontBlock1"), 2);
+    Move(Object("frontBlock2"), 3);
+    AudioEvent("SpikeBlockMove", 2);
+    FrameTimerWithArg(100, arr[0], DelayDisObject);
+    FrameTimerWithArg(100, arr[1], DelayDisObject);
+    ObjectOff(self);
+}
+
+void DelayDisObject(int unit)
+{
+    ObjectOff(unit);
+}
+
+int initCryptRows(int num)
+{
+    int arr[15];
+    int i;
+
+    if (num < 0)
+    {
+        for (i = 0 ; i < 8 ; i ++)
+        {
+            arr[i] = Object("cryptRow" + IntToString(i + 1));
+            if (i < 7)
+                arr[i + 8] = Object("cryptGear" + IntToString(i + 1));
+        }
+        return 0;
+    }
+    return arr[num];
+}
+
+void toggleCryptRows()
+{
+    int i;
+    ObjectOff(initCryptRows(13));
+    ObjectOff(initCryptRows(14));
+    if (!GetDirection(initCryptRows(0)))
+    {
+        for (i = 7 ; i + 1 ; i --)
+        {
+            Move(initCryptRows(i), i + 4);
+        }
+        LookWithAngle(initCryptRows(0), 1);
+    }
+    else
+    {
+        for (i = 7 ; i + 1 ; i --)
+        {
+            Move(initCryptRows(i), i + 12);
+        }
+        LookWithAngle(initCryptRows(0), 0);
+    }
+    GearToggling(1);
+    FrameTimerWithArg(130, 0, GearToggling);
+    FrameTimer(180, returningCryptSwitchs);
+}
+
+void GearToggling(int mode)
+{
+    int k;
+    if (!mode)
+    {
+        for (k = 0 ; k < 5 ; k ++)
+            ObjectOff(initCryptRows(k + 8));
+    }
+    else
+    {
+        for (k = 0 ; k < 5 ; k ++)
+            ObjectOn(initCryptRows(k + 8));
+    }
+}
+
+void returningCryptSwitchs()
+{
+    ObjectOn(initCryptRows(13));
+    ObjectOn(initCryptRows(14));
+}
+
+void castSpellFromStatue()
+{
+    int st;
+    int mis;
+
+    if (!st) st = Object("castSpellStatue");
+    if (st)
+    {
+        MoveWaypoint(20, GetObjectX(st) - GetRatioXY(st, other, 0, 20.0), GetObjectY(st) - GetRatioXY(st, other, 1, 20.0));
+        mis = CreateObject("WeakFireball", 20);
+        CreateObject("SpiderSpit", 20);
+        PushObject(mis, 50.0, GetObjectX(st), GetObjectY(st));
+        PushObject(mis + 1, 50.0, GetObjectX(st), GetObjectY(st));
+    }
+}
+
+int WallSkullTrap(int num)
+{
+    int arr[4];
+
+    if (num < 0)
+    {
+        arr[0] = Object("SouthSkull1");
+        arr[1] = Object("SouthSkull2");
+        arr[2] = Object("eastSkull1");
+        arr[3] = Object("eastSkull2");
+        return 0;
+    }
+    return arr[num];
+}
+
+void activateSouthSkullTrp()
+{
+    ObjectOn(WallSkullTrap(0));
+    ObjectOn(WallSkullTrap(1));
+    FrameTimerWithArg(1, WallSkullTrap(0), DelayDisObject);
+    FrameTimerWithArg(1, WallSkullTrap(1), DelayDisObject);
+}
+
+void activateEastSkullTrp()
+{
+    ObjectOn(WallSkullTrap(2));
+    ObjectOn(WallSkullTrap(3));
+    FrameTimerWithArg(1, WallSkullTrap(2), DelayDisObject);
+    FrameTimerWithArg(1, WallSkullTrap(3), DelayDisObject);
+}
+
+void LoopMovingNorthRots()
+{
+    int i;
+
+    if (!GetDirection(NorthRots(0)))
+    {
+        for (i = 13 ; i + 1 ; i --)
+        {
+            Move(NorthRots(i), i + 23);
+        }
+        LookWithAngle(NorthRots(0), 1);
+    }
+    else
+    {
+        for (i = 13 ; i + 1 ; i --)
+        {
+            Move(NorthRots(i), i + 37);
+        }
+        LookWithAngle(NorthRots(0), 0);
+    }
+    FrameTimer(125, LoopMovingNorthRots);
+}
+
+int NorthRots(int num)
+{
+    int arr[14];
+    int i;
+    if (num < 0)
+    {
+        for (i = 13 ; i + 1 ; i --)
+        {
+            arr[i] = Object("NorthRot" + IntToString(i + 1));
+        }
+        return 0;
+    }
+    return arr[num];
+}
+
+int RelayRot(int num)
+{
+    int arr[11];
+
+    if (num < 0)
+    {
+        int i;
+
+        for (i = 10 ; i + 1 ; i --)
+        {
+            arr[i] = Object("RelayRotRow" + IntToString(i + 1));
+        }
+        return 0;
+    }
+    return arr[num];
+}
+
+void startRelayRot1()
+{
+    int i;
+    if (!GetDirection(RelayRot(0)))
+    {
+        for (i = 4 ; i + 1 ; i --)
+        {
+            Move(RelayRot(i), i + 51);
+        }
+        LookWithAngle(RelayRot(0), 1);
+    }
+}
+
+void resetRelayRot1()
+{
+    int i;
+    if (IsCaller(RelayRot(0)))
+    {
+        LookWithAngle(RelayRot(2), 1);
+        FrameTimer(45, resetRelayRot1);
+    }
+    else
+    {
+        for (i = 4 ; i + 1 ; i --)
+            Move(RelayRot(i), i + 56);
+    }
+}
+
+void completReset1()
+{
+    if (GetDirection(RelayRot(2)))
+    {
+        LookWithAngle(RelayRot(0), 0);
+        LookWithAngle(RelayRot(2), 0);
+    }
+}
+
+void startRelayRot2()
+{
+    int i;
+    if (!GetDirection(RelayRot(5)))
+    {
+        for (i = 5 ; i + 1 ; i --)
+            Move(RelayRot(i + 5), i + 61);
+        LookWithAngle(RelayRot(5), 1);
+    }
+}
+
+void resetRelayRot2()
+{
+    int i;
+    if (IsCaller(RelayRot(5)))
+    {
+        LookWithAngle(RelayRot(7), 1);
+        FrameTimer(45, resetRelayRot2);
+    }
+    else
+    {
+        for (i = 5 ; i + 1 ; i --)
+            Move(RelayRot(i + 5), i + 67);
+    }
+}
+
+void completReset2()
+{
+    if (GetDirection(RelayRot(7)))
+    {
+        LookWithAngle(RelayRot(5), 0);
+        LookWithAngle(RelayRot(7), 0);
+    }
+}
+
+void removeExitWalls()
+{
+    int k;
+    ObjectOff(self);
+    if (!k)
+        k = 1;
+    else
+    {
+        WallOpen(Wall(182, 42));
+        WallOpen(Wall(181, 43));
+        WallOpen(Wall(180, 44));
+        Move(Object("ExitBookcase1"), 125);
+        Move(Object("ExitBookcase2"), 126);
+        Move(Object("ExitBookcase3"), 127);
+    }
+}
+
+int GateGroups(int num)
+{
+    int arr[8];
+
+    if (num < 0)
+    {
+        arr[0] = Object("outdoorBookcase1");
+        arr[1] = Object("outdoorBookcase2");
+        arr[2] = Object("indoorBookcase1");
+        arr[3] = Object("indoorBookcase2");
+        arr[4] = Waypoint("outdoorHome1");
+        arr[5] = Waypoint("outdoorHome2");
+        arr[6] = Waypoint("indoorHome1");
+        arr[7] = Waypoint("indoorHome2");
+        return 0;
+    }
+    return arr[num];
+}
+
+void controlAutoGate1()
+{
+    int i;
+    if (!GetDirection(GateGroups(0)))
+    {
+        for (i = 3 ; i + 1 ; i --)
+            Move(GateGroups(i), i + 73);
+        LookWithAngle(GateGroups(0), 1);
+        WallOpen(Wall(192, 48));
+        WallOpen(Wall(193, 49));
+        FrameTimer(180, BackToThePrev1);
+    }
+}
+
+void BackToThePrev1()
+{
+    int i;
+    for (i = 3 ; i + 1 ; i --)
+        Move(GateGroups(i), GateGroups(i + 4));
+    WallClose(Wall(192, 48));
+    WallClose(Wall(193, 49));
+    LookWithAngle(GateGroups(0), 0);
+}
+
+int WaterRows(int num)
+{
+    int arr[4];
+
+    if (num < 0)
+    {
+        int k;
+        for (k = 3 ; k + 1 ; k --)
+            arr[k] = Object("waterBlock" + IntToString(k + 1));
+        return 0;
+    }
+    return arr[num];
+}
+
+void startWaterBlocks()
+{
+    int k;
+    if (!GetDirection(WaterRows(0)))
+    {
+        for (k = 3 ; k + 1 ; k --)
+            Move(WaterRows(k), k + 81);
+        LookWithAngle(WaterRows(0), 1);
+    }
+}
+
+void backWaterBlocks()
+{
+    if (IsCaller(WaterRows(2)))
+    {
+        LookWithAngle(WaterRows(2), 1);
+        FrameTimer(49, backWaterBlocks);
+    }
+    else
+    {
+        int k;
+        for (k = 3 ; k + 1 ; k --)
+            Move(WaterRows(k), k + 85);
+    }
+}
+
+void resetWaterRows()
+{
+    if (IsCaller(WaterRows(2)) && GetDirection(WaterRows(2)))
+    {
+        LookWithAngle(WaterRows(2), 0);
+        LookWithAngle(WaterRows(0), 0);
+    }
+}
+
+void startMovingSpinRots()
+{
+    int k;
+
+    ObjectOff(self);
+    FrameTimer(2, controlMovingFlames);
+    FrameTimer(30, controlMovingGen);
+    FrameTimer(31, controlSmokeTrp);
+    for (k = 8 ; k + 1 ; k --)
+    {
+        Move(Object("SpinRot" + IntToString(k + 1)), 89 + k);
+    }
+}
+
+void controlMovingGen()
+{
+    if (CurrentHealth(gen_ptr))
+    {
+        if (!GetDirection(gen_ptr))
+        {
+            if (GetObjectY(gen_ptr) < 863.0)
+                MoveObject(gen_ptr, GetObjectX(gen_ptr) - 3.0, GetObjectY(gen_ptr) + 3.0);
+            else
+                LookWithAngle(gen_ptr, 1);
+        }
+        else
+        {
+            if (GetObjectY(gen_ptr) > 425.0)
+                MoveObject(gen_ptr, GetObjectX(gen_ptr) + 3.0, GetObjectY(gen_ptr) - 3.0);
+            else
+                LookWithAngle(gen_ptr, 0);
+        }
+        FrameTimer(1, controlMovingGen);
+    }
+}
+
+void getGeneratorNumber()
+{
+    ObjectOff(self);
+    if (!gen_ptr)
+        gen_ptr = GetCaller();
+}
+
+void removeSecretAreaWalls()
+{
+    ObjectOff(self);
+    Print("GeneralPrint:MsgSeWallOpen");
+    WallOpen(Wall(81, 45));
+    WallOpen(Wall(82, 46));
+    WallOpen(Wall(81, 47));
+    WallOpen(Wall(80, 48));
+}
+
+void castFireShotStatue2()
+{
+    int st;
+    int mis;
+
+    if (!st) st = Object("castSpellStatue2");
+    if (st)
+    {
+        MoveWaypoint(143, GetObjectX(st) - GetRatioXY(st, other, 0, 20.0), GetObjectY(st) - GetRatioXY(st, other, 1, 20.0));
+        mis = CreateObject("WeakFireball", 143);
+        CreateObject("SpiderSpit", 143);
+        PushObject(mis, 50.0, GetObjectX(st), GetObjectY(st));
+        PushObject(mis + 1, 50.0, GetObjectX(st), GetObjectY(st));
+    }
+}
+
+void getGeneratorTwoGird()
+{
+    int ptr[2];
+    ObjectOff(self);
+    if (GetObjectX(self) < GetWaypointX(396))
+        ptr[0] = GetCaller();
+    else
+        ptr[1] = GetCaller();
+    if (ptr[0] && ptr[1])
+    {
+        MoveWaypoint(395, AnyIntToFloat(ptr[0]), AnyIntToFloat(ptr[1]));
+        GridGen(-1);
+    }
+}
+
+int GridGen(int num)
+{
+    int arr[6];
+    if (num < 0)
+    {
+        arr[0] = AnyFloatToInt(GetWaypointX(395));
+        arr[1] = AnyFloatToInt(GetWaypointY(395));
+        arr[2] = AnyFloatToInt(920.0);
+        arr[3] = AnyFloatToInt(690.0);
+        arr[4] = AnyFloatToInt(1035.0);
+        arr[5] = AnyFloatToInt(805.0);
+        return 0;
+    }
+    return arr[num];
+}
+
+void controlMovingGirdGens()
+{
+    int k;
+    for (k = 0 ; k < 2 ; k ++)
+    {
+        if (CurrentHealth(GridGen(k)))
+        {
+            if (!GetDirection(GridGen(k)))
+            {
+                if (GetObjectX(GridGen(k)) < AnyIntToFloat(GridGen((k * 2) + 2)))
+                    MoveObject(GridGen(k), GetObjectX(GridGen(k)) + 2.0, GetObjectY(GridGen(k)) - 2.0);
+                else
+                    LookWithAngle(GridGen(k), 1);
+            }
+            else
+            {
+                if (GetObjectX(GridGen(k)) > AnyIntToFloat(GridGen((k * 2) + 3)))
+                    MoveObject(GridGen(k), GetObjectX(GridGen(k)) - 2.0, GetObjectY(GridGen(k)) + 2.0);
+                else
+                    LookWithAngle(GridGen(k), 0);
+            }
+        }
+    }
+    if (!(CurrentHealth(GridGen(0)) + CurrentHealth(GridGen(1))))
+        return;
+    FrameTimer(1, controlMovingGirdGens);
+}
+
+void startMovingGirdGens()
+{
+    int check;
+    ObjectOff(self);
+
+    if (!check)
+    {
+        check = 1;
+        controlMovingGirdGens();
+    }
+}
+
+void PutBluePotions(int max)
+{
+    string name = "BluePotion";
+    int k;
+
+    CreateObject("InvisibleLightBlueHigh", 400);
+    CreateObject("InvisibleLightBlueHigh", 401);
+    for (k = 0 ; k < max ; k ++)
+    {
+        CreateObject(name, 397);
+        MoveWaypoint(397, GetWaypointX(397) + 20.0, GetWaypointY(397) + 20.0);
+    }
+}
+
+void controlSmokeTrp()
+{
+    int count;
+    int k;
+    string name = "FireGrateFlame";
+    int unit[12];
+    float gap;
+
+    if (count < 4)
+    {
+        MoveWaypoint(398, GetWaypointX(180) - gap, GetWaypointY(180) + gap);
+        MoveWaypoint(399, GetWaypointX(181) + gap, GetWaypointY(181) - gap);
+        AudioEvent("FireballCast", 398);
+        AudioEvent("FireballCast", 399);
+        for (k = 5 ; k + 1 ; k --)
+        {
+            unit[k * 2] = CreateObject(name, 398);
+            unit[(k * 2) + 1] = CreateObject(name, 399);
+            DeleteObjectTimer(unit[k * 2], 30);
+            DeleteObjectTimer(unit[(k * 2) + 1], 30);
+            MoveWaypoint(398, GetWaypointX(398) + 23.0, GetWaypointY(398) + 23.0);
+            MoveWaypoint(399, GetWaypointX(399) + 23.0, GetWaypointY(399) + 23.0);
+        }
+        gap += 23.0;
+        count ++;
+        FrameTimer(7, controlSmokeTrp);
+    }
+    else
+    {
+        gap = 0.0;
+        count = 0;
+        FrameTimer(52, controlSmokeTrp);
+    }
+}
+
+void openSecretBookcaseNorth()
+{
+    Move(Object("northSecretBookcase1"), 148);
+    Move(Object("northSecretBookcase2"), 160);
+    WallOpen(Wall(17, 107));
+    WallOpen(Wall(18, 106));
+    ObjectOff(self);
+}
+
+int Gate2Way(int num)
+{
+    int arr[24];
+
+    if (num < 0)
+    {
+        int k;
+        for (k = 7 ; k + 1 ; k --)
+        {
+            arr[k] = Object("caveRokey" + IntToString(k + 1));
+            arr[k + 8] = Waypoint("caveRotGo" + IntToString(k + 1));
+            arr[k + 16] = Waypoint("caveRotHome" + IntToString(k + 1));
+        }
+        return 0;
+    }
+    return arr[num];
+}
+
+int Gate21Way(int num)
+{
+    int arr[24];
+
+    if (num < 0)
+    {
+        int k;
+        for (k = 7 ; k + 1 ; k --)
+        {
+            arr[k] = Object("caveCaveFun" + IntToString(k + 1));
+            arr[k + 8] = Waypoint("goCaveCaveRot" + IntToString(k + 1));
+            arr[k + 16] = Waypoint("goCaveCaveRotHome" + IntToString(k + 1));
+        }
+        return 0;
+    }
+    return arr[num];
+}
+
+void controlAutoGate2()
+{
+    int k;
+    if (!GetDirection(Gate2Way(0)))
+    {
+        for (k = 7 ; k + 1 ; k --)
+            Move(Gate2Way(k), Gate2Way(k + 8));
+        WallOpen(Wall(19, 71));
+        WallOpen(Wall(20, 72));
+        WallOpen(Wall(21, 73));
+        WallOpen(Wall(22, 74));
+        LookWithAngle(Gate2Way(0), 1);
+        FrameTimer(180, CloseAutoGate2);
+    }
+}
+
+void CloseAutoGate2()
+{
+    int k;
+
+    for (k = 7 ; k + 1 ; k --)
+        Move(Gate2Way(k), Gate2Way(k + 16));
+    LookWithAngle(Gate2Way(0), 0);
+    WallClose(Wall(19, 71));
+    WallClose(Wall(20, 72));
+    WallClose(Wall(21, 73));
+    WallClose(Wall(22, 74));
+}
+
+void controlAutoGate21()
+{
+    int k;
+    if (!GetDirection(Gate21Way(0)))
+    {
+        for (k = 7 ; k + 1 ; k --)
+            Move(Gate21Way(k), Gate21Way(k + 8));
+        WallOpen(Wall(29, 81));
+        WallOpen(Wall(30, 82));
+        WallOpen(Wall(31, 83));
+        WallOpen(Wall(32, 84));
+        LookWithAngle(Gate21Way(0), 1);
+        FrameTimer(180, CloseAutoGate21);
+    }
+}
+
+void CloseAutoGate21()
+{
+    int k;
+    for (k = 7 ; k + 1 ; k --)
+        Move(Gate21Way(k), Gate21Way(k + 16));
+    LookWithAngle(Gate21Way(0), 0);
+    WallClose(Wall(29, 81));
+    WallClose(Wall(30, 82));
+    WallClose(Wall(31, 83));
+    WallClose(Wall(32, 84));
+}
+
+void shotMissileFromStatue()
+{
+    string name = "Troll";
+    int unit;
+    int st;
+    float pos_x;
+    float pos_y;
+
+    if (!st) st = Object("castSpellStatue3");
+    if (!HasEnchant(other, "ENCHANT_VILLAIN") && st)
+    {
+        Enchant(other, "ENCHANT_VILLAIN", 3.0);
+        pos_x = GetRatioXY(st, other, 0, 23.0);
+        pos_y = GetRatioXY(st, other, 1, 23.0);
+        MoveWaypoint(182, GetObjectX(st) - pos_x, GetObjectY(st) - pos_y);
+        unit = CreateObject("InvisibleLightBlueHigh", 182);
+        int k;
+        for (k = 1 ; k <= 14 ; k ++)
+        {
+            MoveWaypoint(182, GetWaypointX(182) - pos_x, GetWaypointY(182) - pos_y);
+            Effect("EXPLOSION", GetWaypointX(182), GetWaypointY(182), 0.0, 0.0);
+            Effect("JIGGLE", GetWaypointX(182), GetWaypointY(182), 0.0, 0.0);
+            CreateObject("Troll", 182);
+            Frozen(unit + k, 1);
+            SetCallback(unit + k, 9, FireTouched);
+            DeleteObjectTimer(unit + k, 1);
+        }
+        Delete(unit);
+    }
+}
+
+void FireTouched()
+{
+    if (!HasEnchant(other, "ENCHANT_BURNING") && CurrentHealth(other))
+    {
+        Enchant(other, "ENCHANT_BURNING", 1.0);
+        Damage(other, self, 75, 1);
+    }
+}
+
+int FlameSoul(int num)
+{
+    int arr[20];
+
+    if (num < 0)
+    {
+        int k;
+        for (k = 3 ; k + 1 ; k --)
+        {
+            arr[k] = Object("movingBlue" + IntToString(k + 1));
+            arr[k + 4] = Object("FlameMoveForce" + IntToString(k + 1));
+            arr[k + 8] = Object("movingRed" + IntToString(k + 1));
+            arr[k + 12] = Object("FlameMoveForce2" + IntToString(k + 1));
+        }
+        arr[16] = Waypoint("goRedFlame1");
+        arr[17] = Waypoint("goRedFlame4");
+        arr[18] = Waypoint("goRedFlame3");
+        arr[19] = Waypoint("goRedFlame2");
+        FrameTimer(10, initFlameMoving);
+        return 0;
+    }
+    return arr[num];
+}
+
+void initFlameMoving()
+{
+    Move(FlameSoul(0), 130);
+    Move(FlameSoul(1), 131);
+    Move(FlameSoul(2), 132);
+    Move(FlameSoul(3), 133);
+}
+
+void controlMovingFlames()
+{
+    int k;
+    if (GetDirection(FlameSoul(0)))
+    {
+        if (!GetDirection(FlameSoul(1)))
+        {
+            for (k = 3; k >= 0 ; k --)
+            {
+                MoveObject(FlameSoul(k + 8), GetWaypointX(k + 138), GetWaypointY(k + 138));
+                Move(FlameSoul(k + 8), FlameSoul(k + 16));
+                ObjectOff(FlameSoul(k + 4));
+                MoveObject(FlameSoul(k), GetWaypointX(142), GetWaypointY(142));
+            }
+            LookWithAngle(FlameSoul(1), 1);
+        }
+        LookWithAngle(FlameSoul(0), GetDirection(FlameSoul(0)) - 1);
+    }
+    else if (!GetDirection(FlameSoul(0)))
+    {
+        if (GetDirection(FlameSoul(1)))
+        {
+            for (k = 3; k >= 0 ; k --)
+            {
+                MoveObject(FlameSoul(k), GetWaypointX(k + 138), GetWaypointY(k + 138));
+                Move(FlameSoul(k), k + 130);
+                ObjectOff(FlameSoul(k + 12));
+                MoveObject(FlameSoul(k + 8), GetWaypointX(142), GetWaypointY(142));
+            }
+            LookWithAngle(FlameSoul(1), 0);
+        }
+    }
+    FrameTimer(1, controlMovingFlames);
+}
+
+void enterOnPlace()
+{
+    LookWithAngle(FlameSoul(0), 10);
+}
+
+void turnOnArrows1()
+{
+    int k;
+    int ptr;
+
+    for (k = 4 ; k + 1 ; k --)
+    {
+        ptr = Object("DeathArrow10" + IntToString(k + 1));
+        ObjectOn(ptr);
+        FrameTimerWithArg(1, ptr, DelayDisObject);
+    }
+}
+
+void turnOnArrows2()
+{
+    int k;
+    int ptr;
+
+    for (k = 4 ; k + 1 ; k --)
+    {
+        ptr = Object("DeathArrow20" + IntToString(k + 1));
+        ObjectOn(ptr);
+        FrameTimerWithArg(1, ptr, DelayDisObject);
+    }
+}
+
+void turnOnArrows3()
+{
+    int k;
+    int ptr;
+
+    for (k = 4 ; k >= 0 ; k --)
+    {
+        ptr = Object("DeathArrow30" + IntToString(k + 1));
+        ObjectOn(ptr);
+        FrameTimerWithArg(1, ptr, DelayDisObject);
+    }
+}
+
+void turnOnArrows4()
+{
+    int k;
+    int ptr;
+
+    for (k = 4 ; k >= 0 ; k --)
+    {
+        ptr = Object("DeathArrow40" + IntToString(k + 1));
+        ObjectOn(ptr);
+        FrameTimerWithArg(1, ptr, DelayDisObject);
+    }
+}
+
+void turnOnArrowTrp5()
+{
+    int k;
+    int ptr;
+
+    for (k = 4 ; k >= 0 ; k --)
+    {
+        ptr = Object("DeathArrow50" + IntToString(k + 1));
+        ObjectOn(ptr);
+        FrameTimerWithArg(1, ptr, DelayDisObject);
+    }
+}
+
+void turnOnArrowTrp6()
+{
+    int k;
+    int ptr;
+
+    for (k = 4 ; k >= 0 ; k --)
+    {
+        ptr = Object("DeathArrow60" + IntToString(k + 1));
+        ObjectOn(ptr);
+        FrameTimerWithArg(1, ptr, DelayDisObject);
+    }
+}
+
+void turnOnArrowTrp7()
+{
+    int k;
+    int ptr;
+
+    for (k = 4 ; k >= 0 ; k --)
+    {
+        ptr = Object("DeathArrow70" + IntToString(k + 1));
+        ObjectOn(ptr);
+        FrameTimerWithArg(1, ptr, DelayDisObject);
+    }
+}
+
+void turnOnArrowTrp8()
+{
+    int k;
+    int ptr;
+
+    for (k = 4 ; k >= 0 ; k --)
+    {
+        ptr = Object("DeathArrow80" + IntToString(k + 1));
+        ObjectOn(ptr);
+        FrameTimerWithArg(1, ptr, DelayDisObject);
+    }
+}
+
+void turnOnArrowTrp9()
+{
+    int k;
+
+    for (k = 5 ; k >= 0 ; k --)
+        ObjectOn(Object("DeathArrow90" + IntToString(k + 1)));
+}
+
+void turnOffArrowTrp9()
+{
+    int k;
+    for (k = 5 ; k >= 0 ; k --)
+        ObjectOff(Object("DeathArrow90" + IntToString(k + 1)));
+}
+
+void turnOnArrowTrp10()
+{
+    int k;
+    for (k = 5 ; k >= 0 ; k --)
+        ObjectOn(Object("DeathArrowA0" + IntToString(k + 1)));
+}
+
+void turnOffArrowTrp10()
+{
+    int k;
+    for (k = 5 ; k >= 0 ; k --)
+        ObjectOff(Object("DeathArrowA0" + IntToString(k + 1)));
+}
+
+void turnOnArrowTrp11()
+{
+    int k;
+    for (k = 4 ; k >= 0 ; k --)
+        ObjectOn(Object("DeathArrowB0" + IntToString(k + 1)));
+}
+
+void turnOffArrowTrp11()
+{
+    int k;
+    for (k = 4 ; k >= 0 ; k --)
+        ObjectOff(Object("DeathArrowB0" + IntToString(k + 1)));
+}
+
+void turnOnArrowTrp12()
+{
+    int k;
+    for (k = 4 ; k >= 0 ; k --)
+        ObjectOn(Object("DeathArrowC0" + IntToString(k + 1)));
+}
+
+void turnOffArrowTrp12()
+{
+    int k;
+    for (k = 4 ; k >= 0 ; k --)
+        ObjectOff(Object("DeathArrowC0" + IntToString(k + 1)));
+}
+
+void turnOnArrowTrp13()
+{
+    int k;
+    for (k = 4 ; k >= 0 ; k --)
+        ObjectOn(Object("DeathArrowD0" + IntToString(k + 1)));
+}
+
+void turnOffArrowTrp13()
+{
+    int k;
+    for (k = 4 ; k >= 0 ; k --)
+        ObjectOff(Object("DeathArrowD0" + IntToString(k + 1)));
+}
+
+void turnOnArrowTrp14()
+{
+    int k;
+    for (k = 4 ; k >= 0 ; k --)
+        ObjectOn(Object("DeathArrowE0" + IntToString(k + 1)));
+}
+
+void turnOffArrowTrp14()
+{
+    int k;
+    for (k = 4 ; k >= 0 ; k --)
+        ObjectOff(Object("DeathArrowE0" + IntToString(k + 1)));
+}
+
+void toggleWoodPartWallsArray()
+{
+    int k;
+    for (k = 0 ; k < 15 ; k ++)
+        WallToggle(Wall(k + 176, k + 52));
+}
+
+void turnOnFireRingTrp()
+{
+    int st;
+    int ptr;
+    int k;
+    string name = "Flame";
+
+    if (!st)
+    {
+        st = Object("castSpellStatue4");
+        MoveWaypoint(394, GetObjectX(st), GetObjectY(st));
+    }
+    if (!GetDirection(st) && st)
+    {
+        LookWithAngle(st, 1);
+        ptr = CreateObject("InvisibleLightBlueHigh", 276);
+        for (k = 0 ; k <= 90 ; k ++)
+        {
+            MoveWaypoint(276, GetObjectX(st) + mathSine(k * 4, 20.0), GetObjectY(st) + mathSine((k * 4) + 90, 20.0));
+            CreateObject(name, 276);
+            DeleteObjectTimer(ptr + k + 1, 70);
+            FrameTimerWithArg(1, ptr + k + 1, FlameMoving);
+        }
+        Delete(ptr);
+        FrameTimerWithArg(160, st, JiggleBlockReset);
+    }
+}
+
+int LibraryCase(int num)
+{
+    int arr[4];
+
+    if (num < 0)
+    {
+        int k;
+        for (k = 3 ; k >= 0 ; k --)
+            arr[k] = Object("LibraryBookcase" + IntToString(k + 1));
+        return 0;
+    }
+    return arr[num];
+}
+
+void controlLibraryBookcase()
+{
+    int k;
+    if (!GetDirection(LibraryCase(0)))
+    {
+        for (k = 3 ; k >= 0 ; k --)
+            Move(LibraryCase(k), k + 183);
+        WallOpen(Wall(66, 106));
+        WallOpen(Wall(65, 107));
+        LookWithAngle(LibraryCase(0), 1);
+        FrameTimer(180, CloseLibraryCase);
+    }
+}
+
+void CloseLibraryCase()
+{
+    int k;
+    LookWithAngle(LibraryCase(0), 0);
+    for (k = 3 ; k >= 0 ; k --)
+        Move(LibraryCase(k), k + 187);
+    WallClose(Wall(66, 106));
+    WallClose(Wall(65, 107));
+}
+
+int PuzzleBlock(int num)
+{
+    int arr[24];
+
+    if (num < 0)
+    {
+        int k;
+        for (k = 7 ; k >= 0 ; k --)
+        {
+            arr[k] = Object("PuzzleBlock" + IntToString(k + 1));
+            arr[k + 8] = Waypoint("puzzleGo" + IntToString(k + 1));
+            arr[k + 16] = Waypoint("puzzleHome" + IntToString(k + 1));
+        }
+        return 0;
+    }
+    return arr[num];
+}
+
+void togglePuzzleBlocks()
+{
+    int way = 8;
+    int k;
+    if (!GetDirection(PuzzleBlock(0)))
+    {
+        if (GetDirection(PuzzleBlock(1)))
+            way += 8;
+        for (k = 7 ; k >= 0 ; k --)
+            Move(PuzzleBlock(k), PuzzleBlock(k + way));
+        AudioEvent("SpikeBlockMove", 197);
+        LookWithAngle(PuzzleBlock(1), (GetDirection(PuzzleBlock(1)) + 1) % 2);
+        LookWithAngle(PuzzleBlock(0), 1);
+        FrameTimer(140, ResetToggleSwitch);
+    }
+}
+
+void ResetToggleSwitch()
+{
+    LookWithAngle(PuzzleBlock(0), 0);
+}
+
+void startWestSignal()
+{
+    int on;
+
+    ObjectOff(self);
+    if (!on)
+    {
+        Print("GeneralPrint:MsgTrapOn");
+        on = 1;
+        FlameTail(-1);
+        FrameTimer(10, LoopSentrySignal);
+    }
+}
+
+void LoopSentrySignal()
+{
+    int arr[5];
+    int k;
+    int pic[2];
+
+    if (!arr[0])
+    {
+        for (k = 4 ; k >= 0 ; k --)
+            arr[k] = Object("WestSentry" + IntToString(k + 1));
+        pic[0] = 0;
+        pic[1] = 2;
+    }
+    for (k = 4 ; k >= 0 ; k --)
+    {
+        if (k == pic[0])
+        {
+            ObjectOn(arr[k]);
+            pic[0] = (pic[0] + 1) % 5;
+        }
+        else if (k == pic[1])
+        {
+            ObjectOn(arr[k]);
+            pic[1] = (pic[1] + 1) % 5;
+        }
+        else
+            ObjectOff(arr[k]);
+    }
+    FrameTimer(120, LoopSentrySignal);
+}
+
+float AnyIntToFloat(int num)
+{
+    StopScript(num);
+}
+
+int AnyFloatToInt(float num)
+{
+    StopScript(num);
+}
+
+void FlameMoving(int flame)
+{
+    if (IsObjectOn(flame))
+    {
+        Effect("DAMAGE_POOF", GetObjectX(flame), GetObjectY(flame), 0.0, 0.0);
+        PushObject(flame, 2.0, GetWaypointX(394), GetWaypointY(394));
+        FrameTimerWithArg(1, flame, FlameMoving);
+    }
+}
+
+int PattonRows(int num)
+{
+    int arr[30];
+
+    if (num < 0)
+    {
+        int k;
+        for (k = 9 ; k >= 0 ; k --)
+        {
+            arr[k] = Object("pattonBlock" + IntToString(k + 1));
+            arr[k + 10] = Waypoint("pattonGo" + IntToString(k + 1));
+            arr[k + 20] = Waypoint("pattonHome" + IntToString(k + 1));
+        }
+        return 0;
+    }
+    return arr[num];
+}
+
+void startPattonBlocks()
+{
+    if (!GetDirection(PattonRows(0)))
+    {
+        //6789, 2345, 01
+        MovingPatton(16);
+        MovingPatton(17);
+        MovingPatton(18);
+        MovingPatton(19);
+        FrameTimerWithArg(20, 12, MovingPatton);
+        FrameTimerWithArg(20, 13, MovingPatton);
+        FrameTimerWithArg(20, 14, MovingPatton);
+        FrameTimerWithArg(20, 15, MovingPatton);
+        FrameTimerWithArg(40, 10, MovingPatton);
+        FrameTimerWithArg(40, 11, MovingPatton);
+        LookWithAngle(PattonRows(0), 1);
+        FrameTimer(120, ResetPattonRows);
+    }
+}
+
+void ResetPattonRows()
+{
+    if (GetDirection(PattonRows(0)) == 1)
+    {
+        MovingPatton(20);
+        MovingPatton(21);
+        FrameTimerWithArg(20, 22, MovingPatton);
+        FrameTimerWithArg(20, 23, MovingPatton);
+        FrameTimerWithArg(20, 24, MovingPatton);
+        FrameTimerWithArg(20, 25, MovingPatton);
+        FrameTimerWithArg(40, 26, MovingPatton);
+        FrameTimerWithArg(40, 27, MovingPatton);
+        FrameTimerWithArg(40, 28, MovingPatton);
+        FrameTimerWithArg(40, 29, MovingPatton);
+        LookWithAngle(PattonRows(0), 2);
+        FrameTimer(100, ResetPattonRows);
+    }
+    else
+    {
+        LookWithAngle(PattonRows(0), 0);
+    }
+}
+
+void MovingPatton(int arg_0)
+{
+    Move(PattonRows(arg_0 % 10), PattonRows(arg_0));
+}
+
+void InitMarbleRows()
+{
+    int k;
+
+    for (k = 9 ; k >= 0 ; k --)
+    {
+        marble_group[k] = Object("MarbleBookcase" + IntToString(k + 1));
+        marble_group[k + 10] = Waypoint("goMarbleRow" + IntToString(k + 1));
+        marble_group[k + 20] = Waypoint("homeMarbleRow" + IntToString(k + 1));
+        marble_train[k] = Object("MarbleTrp" + IntToString(k + 1));
+        marble_train[k + 10] = Waypoint("goMarbleWP" + IntToString(k + 1));
+        marble_train[k + 20] = Waypoint("homeMarbleWP" + IntToString(k + 1));
+    }
+}
+
+void controlMarbleBlocks()
+{
+    int k;
+    if (!GetDirection(marble_group[0]))
+    {
+        for (k = 9 ; k >= 0 ; k --)
+            Move(marble_group[k], marble_group[k + 10]);
+        FrameTimerWithArg(60, 1, MarbleGateToggle);
+        LookWithAngle(marble_group[0], 1);
+        FrameTimer(240, BackMarbleGate);
+    }
+}
+
+void BackMarbleGate()
+{
+    int k;
+    FrameTimerWithArg(1, 0, MarbleGateToggle);
+    for (k = 9 ; k >= 0 ; k --)
+        Move(marble_group[k], marble_group[k + 20]);
+    FrameTimer(120, MarbleResetAll);
+}
+
+void MarbleResetAll()
+{
+    LookWithAngle(marble_group[0], 0);
+}
+
+void MarbleGateToggle(int mode)
+{
+    //145, 53; 150, 58
+    int k;
+    int train_on;
+    if (!mode)
+    {
+        for (k = 0 ; k < 6 ; k ++)
+            WallClose(Wall(k + 145, k + 53));
+    }
+    else
+    {
+        for (k = 0 ; k < 6 ; k ++)
+            WallOpen(Wall(k + 145, k + 53));
+    }
+    if (!train_on)
+    {
+        patrolMarbleTraps();
+        train_on = 1;
+    }
+}
+
+void patrolMarbleTraps()
+{
+    int k;
+    if (!GetDirection(marble_train[0]))
+    {
+        for (k = 9 ; k >= 0 ; k --)
+            Move(marble_train[k], marble_train[k + 10]);
+        LookWithAngle(marble_train[0], 1);
+    }
+    else
+    {
+        for (k = 9 ; k >= 0 ; k --)
+            Move(marble_train[k], marble_train[k + 20]);
+        LookWithAngle(marble_train[0], 0);
+    }
+    FrameTimer(180, patrolMarbleTraps);
+}
+
+void getRandomPostionGen1()
+{
+    ObjectOff(self);
+    if (Random(0, 1))
+        MoveObject(other, GetWaypointX(383), GetWaypointY(383));
+}
+
+void getRandomPostionGen2()
+{
+    ObjectOff(self);
+    if (Random(0, 1))
+        MoveObject(other, GetWaypointX(384), GetWaypointY(384));
+}
+
+void ActiveJiggleBlocks()
+{
+    int arr[2];
+
+    if (!arr[0])
+    {
+        arr[0] = Object("jiggleBlock1");
+        arr[1] = Object("jiggleBlock2");
+    }
+    if (!GetDirection(arr[0]))
+    {
+        Move(arr[0], 272);
+        Move(arr[1], 273);
+        LookWithAngle(arr[0], 1);
+        FrameTimerWithArg(55, arr[0], JiggleBlockReset);
+    }
+}
+
+void JiggleEffect()
+{
+    if (GetDirection(other))
+    {
+        Effect("JIGGLE", GetObjectX(self), GetObjectY(self), 60.0, 0.0);
+        AudioEvent("HammerMissing", 272);
+    }
+}
+
+void JiggleBlockReset(int unit)
+{
+    LookWithAngle(unit, 0);
+}
+
+int FlameTail(int num)
+{
+    int arr[14];
+
+    if (num < 0)
+    {
+        int k;
+        for (k = 13 ; k >= 0 ; k --)
+        {
+            arr[k] = Object("TrainFlame" + IntToString(k + 1));
+            Move(arr[k], 386);
+        }
+        FrameTimer(1, LoopFlameTail);
+        return 0;
+    }
+    return arr[num];
+}
+
+void LoopFlameTail()
+{
+    int k;
+
+    for (k = 13 ; k >= 0 ; k --)
+    {
+        if (Distance(GetObjectX(FlameTail(k)), GetObjectY(FlameTail(k)), GetWaypointX(391), GetWaypointY(391)) < 2.0)
+        {
+            MoveObject(FlameTail(k), GetWaypointX(385), GetWaypointY(385));
+            Move(FlameTail(k), 386);
+        }
+    }
+    FrameTimer(1, LoopFlameTail);
+}
+
+void dropMiniCrackers()
+{
+    int unit;
+    int k;
+    ObjectOff(self);
+    MoveWaypoint(297, GetObjectX(self) + RandomFloat(-30.0, 30.0), GetObjectY(self) + RandomFloat(-30.0, 30.0));
+    unit = CreateObject("CaveRocksMedium", 297);
+    Raise(unit, 250.0);
+    for (k = 1 ; k <= 3 ; k ++)
+    {
+        MoveWaypoint(297, GetObjectX(self) + RandomFloat(-30.0, 30.0), GetObjectY(self) + RandomFloat(-30.0, 30.0));
+        CreateObject("CaveRocksPebbles", 297);
+        Raise(unit + k, 250.0);
+    }
+    AudioEvent("EarthRumbleMinor", 297);
+    Effect("JIGGLE", GetObjectX(self), GetObjectY(self), 45.0, 0.0);
+}
+
+void startCollapseBottom()
+{
+    int check;
+
+    ObjectOff(self);
+    if (!check)
+    {
+        CollapseEvent();
+        check = 1;
+    }
+}
+
+void CollapseEvent()
+{
+    int count;
+    int k;
+    if (count < 20)
+    {
+        for (k = 0 ; k < 8 ; k ++)
+        {
+            Effect("JIGGLE", GetWaypointX(283 + k), GetWaypointY(283 + k), 60.0, 0.0);
+            AudioEvent("BoulderMove", 283 + k);
+            AudioEvent("EarthRumbleMinor", 283 + k);
+        }
+        if (count == 15 || count == 17)
+        {
+            for (k = 0 ; k < 8 ; k ++)
+            {
+                if (k < 6)
+                    CreateObject("CaveBoulders", 277 + k);
+                AudioEvent("FistHit", k + 283);
+            }
+        }
+        else if (count == 18)
+        {
+            for (k = 0 ; k < 8 ; k ++)
+            {
+                if (k < 6)
+                    CreateObject("BoulderCave", k + 291);
+                AudioEvent("FistHit", k + 283);
+                AudioEvent("EarthquakeCast", k + 283);
+            }
+        }
+        count ++;
+        FrameTimer(4, CollapseEvent);
+    }
+    else
+    {
+        WallClose(Wall(120, 142));
+        WallClose(Wall(119, 143));
+        WallClose(Wall(118, 144));
+        WallClose(Wall(117, 143));
+        WallClose(Wall(116, 144));
+        for (k = 0 ; k < 4 ; k ++)
+            WallOpen(Wall(121 - k, 143 + k));
+    }
+}
+
+void earthQuakeEventTrg()
+{
+    int unit[5];
+    int k;
+    ObjectOff(self);
+    Effect("JIGGLE", GetObjectX(other), GetObjectY(other), 65.0, 0.0);
+    MoveWaypoint(302, GetObjectX(other) + RandomFloat(-64.0, 64.0), GetObjectY(other) + RandomFloat(-64.0, 64.0));
+    for (k = 0 ; k < 5 ; k ++)
+    {
+        unit[k] = CreateObject("CaveRocksMedium", 302);
+        Raise(unit[k], 200.0);
+    }
+    AudioEvent("BoulderMove", 302);
+    AudioEvent("EarthRumbleMinor", 302);
+}
+
+void removeMazeWalls()
+{
+    MoveWaypoint(302, GetObjectX(other), GetObjectY(other));
+    WallOpen(Wall(70, 132));
+    WallOpen(Wall(69, 133));
+    WallOpen(Wall(68, 134));
+    WallOpen(Wall(67, 135));
+    AudioEvent("CreatureCageAppears", 302);
+    AudioEvent("ChainPull", 302);
+    Print("GeneralPrint:MsgWallLowered");
+    Move(Object("mazeBlock1"), 306);
+    Move(Object("mazeBlock2"), 307);
+    ObjectOff(self);
+}
+
+void startShakeToFirePart()
+{
+    int check;
+    ObjectOff(self);
+    if (!check)
+    {
+        check = 1;
+        Fragments(-1);
+        FrameTimer(1, controlGasContainerTraps);
+    }
+}
+
+void controlGasContainerTraps()
+{
+    int count;
+    int k;
+
+    if (count < 20)
+    {
+        for (k = 0 ; k < 5 ; k ++)
+        {
+            Effect("JIGGLE", GetWaypointX(k + 318), GetWaypointY(k + 318), 65.0, 0.0);
+            AudioEvent("BoulderMove", k + 318);
+            AudioEvent("EarthRumbleMinor", k + 318);
+        }
+        if (k % 5 == 4)
+        {
+            for (k = 0 ; k < 6 ; k ++)
+            {
+                if (k < 5)
+                    AudioEvent("FistHit", k + 318);
+                CreateObject(Fragments(Random(0, 4)), k + 311);
+            }
+        }
+        if (count == 16)
+            CreateObject("SmallFlame", 317);
+        count ++;
+        FrameTimer(5, controlGasContainerTraps);
+    }
+}
+
+string Fragments(int num)
+{
+    string arr[5];
+
+    if (num < 0)
+    {
+        arr[0] = "DunMirBrick";
+        arr[1] = "CaveRocksMedium";
+        arr[2] = "CaveRocksSmall";
+        arr[3] = "Brick1";
+        arr[4] = "CaveRocksLarge";
+        return "NULL";
+    }
+    return arr[num];
+}
+
+void startShakeEvent2()
+{
+    int check;
+    ObjectOff(self);
+    if (!check)
+    {
+        check = 1;
+        FrameTimer(3, controlCollapseEvent2);
+    }
+}
+
+void controlCollapseEvent2()
+{
+    int count;
+    int k;
+
+    if (count < 6)
+    {
+        for (k = 0 ; k < 3 ; k ++)
+        {
+            Effect("JIGGLE", GetWaypointX(k + 329), GetWaypointY(k + 329), 65.0, 0.0);
+            AudioEvent("BoulderMove", k + 329);
+            AudioEvent("EarthRumbleMinor", k + 329);
+        }
+        if (count == 3 || count == 4)
+        {
+            for (k = 5 ; k >= 0 ; k --)
+                CreateObject("CaveBoulders", k + 323);
+        }
+        else if (count == 5)
+        {
+            for (k = 5 ; k >= 0 ; k --)
+                CreateObject("BoulderCave", k + 332);
+        }
+        count ++;
+        FrameTimer(3, controlCollapseEvent2);
+    }
+    else
+    {
+        WallClose(Wall(23,163));
+        WallClose(Wall(24,164));
+        WallClose(Wall(23,165));
+        WallClose(Wall(24,166));
+        WallClose(Wall(25,167));
+        WallClose(Wall(24,168));
+        WallClose(Wall(23,169));
+        WallClose(Wall(22,170));
+        WallClose(Wall(23,171));
+    }
+}
+
+void startExplosionEvent()
+{
+    int check;
+    ObjectOff(self);
+    if (!check)
+    {
+        check = 1;
+        Effect("JIGGLE", GetObjectX(other), GetObjectY(other), 120.0, 0.0);
+        StrightExplosionPlace();
+    }
+}
+
+void StrightExplosionPlace()
+{
+    if (GetWaypointY(392) < 5067.0)
+    {
+        CreateObject("LargeFlame", 392);
+        CreateObject("BlackPowderBarrel2", 392);
+        Effect("JIGGLE", GetWaypointX(392), GetWaypointY(392), 75.0, 0.0);
+        MoveWaypoint(392, GetWaypointX(392), GetWaypointY(392) + 23.0);
+        FrameTimer(2, StrightExplosionPlace);
+    }
+}
+
+void removeSewerPassageBlocks()
+{
+    WallOpen(Wall(44, 194));
+    WallOpen(Wall(43, 195));
+    WallOpen(Wall(42, 196));
+    ObjectOff(self);
+}
+
+void ActivateDungeonRots()
+{
+    DungeonRot(-1);
+    FrameTimer(45, patrolDungeonRows);
+    ObjectOff(self);
+}
+
+int DungeonRot(int num)
+{
+    int arr[32];
+
+    if (num < 0)
+    {
+        int k;
+        for (k = 15 ; k >= 0 ; k --)
+        {
+            arr[k] = Object("DungeonRot" + IntToString(k + 1));
+            arr[k + 16] = Waypoint("goDungeon" + IntToString(k + 1));
+        }
+        return 0;
+    }
+    return arr[num];
+}
+
+void patrolDungeonRows()
+{
+    int k;
+
+    for (k = 15 ; k >= 0 ; k --)
+        Move(DungeonRot(k), DungeonRot(k + 16));
+    FrameTimer(135, patrolDungeonRows);
+}
+
+void castStraightFireLine()
+{
+    int st;
+    int k;
+    int ptr;
+    float pos_x;
+    float pos_y;
+
+    if (!HasEnchant(other, "ENCHANT_BURNING"))
+    {
+        Enchant(other, "ENCHANT_BURNING", 3.0);
+        st = Object("StraightFire" + IntToString(Random(1, 4)));
+        pos_x = GetRatioXY(st, other, 0, 23.0);
+        pos_y = GetRatioXY(st, other, 1, 23.0);
+        MoveWaypoint(382, GetObjectX(st) - pos_x, GetObjectY(st) - pos_y);
+        ptr = CreateObject("InvisibleLightBlueHigh", 382);
+        for (k = 1 ; k <= 20 ; k ++)
+        {
+            MoveWaypoint(382, GetWaypointX(382) - pos_x, GetWaypointY(382) - pos_y);
+            CreateObject("LargeFlame", 382);
+        }
+        FrameTimerWithArg(60, ptr, RemoveFlame);
+    }
+}
+
+void RemoveFlame(int ptr)
+{
+    int k;
+    for (k = 0 ; k <= 20 ; k ++)
+        Delete(ptr + k);
+}
+
+int AnnexBlocks(int num)
+{
+    int arr[18];
+
+    if (num < 0)
+    {
+        int k;
+        for (k = 2 ; k >= 0 ; k --)
+        {
+            arr[k] = Object("AnexeLeftRow" + IntToString(k + 1));
+            arr[k + 3] = Waypoint("AnexeLeftGo" + IntToString(k + 1));
+            arr[k + 6] = Waypoint("AnexeLeftHome" + IntToString(k + 1));
+            arr[k + 9] = Object("AnexeRightRow" + IntToString(k + 1));
+            arr[k + 12] = Waypoint("AnexeRightGo" + IntToString(k + 1));
+            arr[k + 15] = Waypoint("AnexeRightHome" + IntToString(k + 1));
+        }
+        return 0;
+    }
+    return arr[num];
+}
+
+void ActivateAnexePartRow1()
+{
+    if (!GetDirection(AnnexBlocks(0)))
+    {
+        LookWithAngle(AnnexBlocks(0), 1);
+        Move(AnnexBlocks(0), AnnexBlocks(3));
+        Move(AnnexBlocks(1), AnnexBlocks(4));
+        Move(AnnexBlocks(2), AnnexBlocks(5));
+    }
+}
+
+void backAnexeBlock1()
+{
+    if (IsCaller(AnnexBlocks(0)))
+    {
+        Move(AnnexBlocks(0), AnnexBlocks(6));
+        Move(AnnexBlocks(1), AnnexBlocks(7));
+        Move(AnnexBlocks(2), AnnexBlocks(8));
+    }
+}
+
+void resetAnexeTrp1()
+{
+    if (GetDirection(AnnexBlocks(0)) && IsCaller(AnnexBlocks(0)))
+    {
+        LookWithAngle(AnnexBlocks(0), 0);
+    }
+}
+
+void ActivateAnexePartRow2()
+{
+    if (!GetDirection(AnnexBlocks(9)))
+    {
+        LookWithAngle(AnnexBlocks(9), 1);
+        Move(AnnexBlocks(9), AnnexBlocks(12));
+        Move(AnnexBlocks(10), AnnexBlocks(13));
+        Move(AnnexBlocks(11), AnnexBlocks(14));
+    }
+}
+
+void backAnexeBlock2()
+{
+    if (IsCaller(AnnexBlocks(9)))
+    {
+        Move(AnnexBlocks(9), AnnexBlocks(15));
+        Move(AnnexBlocks(10), AnnexBlocks(16));
+        Move(AnnexBlocks(11), AnnexBlocks(17));
+    }
+}
+
+void resetAnexeTrp2()
+{
+    if (GetDirection(AnnexBlocks(9)) && IsCaller(AnnexBlocks(9)))
+    {
+        LookWithAngle(AnnexBlocks(9), 0);
+    }
+}
+
+void OpenSecretWalls()
+{
+    int k;
+    Print("GeneralPrint:MsgFarWallOpen");
+    for (k = 0 ; k < 4 ; k ++)
+        WallOpen(Wall(k + 156, k + 220));
+    ObjectOff(self);
+}
+
+float GetRatioXY(int unit, int target, int mode, float size)
+{
+    if (!mode)
+        return (GetObjectX(unit) - GetObjectX(target)) * size / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target));
+    else
+        return (GetObjectY(unit) - GetObjectY(target)) * size / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target));
+}
+
+float mathSine(int angle, float size)
+{
+    float var_0[91];
+    int i;
+    int k;
+ 
+    if (var_0[90] == 0.0)
+    {
+        k = MathRingCore(125);
+        Delete(k);
+        for (i = 0 ; i <= 90 ; i ++)
+        {
+            var_0[i] = GetObjectZ(k + i + 1);
+            Delete(k + i + 1);
+        }
+        return var_0[0];
+    }
+
+    k = angle / 90;
+    i = angle - (k * 90);
+ 
+    k %= 2;
+    if (k == 1)
+        i = 90 - i;
+    if ((angle / 180) % 2 == 1)
+        return -var_0[i] * size;
+	else
+		return var_0[i] * size;
+}
+
+int MathRingCore(int wp)
+{
+    float x_ratio;
+    float y_ratio;
+    string name = "InvisibleLightBlueLow";
+    int unit = CreateObject(name, wp);
+    int i;
+
+    MoveWaypoint(wp + 1, GetWaypointX(wp), GetWaypointY(wp) - 1.0);
+    for (i = 0 ; i <= 90 ; i ++)
+    {
+        x_ratio = WayRatioXY(wp, wp + 1, 0);
+        y_ratio = WayRatioXY(wp, wp + 1, 1);
+        MoveWaypoint(wp + 1, GetWaypointX(wp) - x_ratio, GetWaypointY(wp) - y_ratio);
+        CreateObject(name, wp + 1);
+        Raise(unit + i + 1, GetWaypointX(wp) - GetWaypointX(wp + 1));
+        MoveWaypoint(wp + 1, GetWaypointX(wp) - (1.0 / 57.3 * y_ratio) - x_ratio, GetWaypointY(wp) + (1.0 / 57.3 * x_ratio) - y_ratio);
+    }
+    return unit;
+}
+
+float WayRatioXY(int wp1, int wp2, int mode)
+{
+    if (!mode)
+        return (GetWaypointX(wp1) - GetWaypointX(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
+    else
+        return (GetWaypointY(wp1) - GetWaypointY(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
+}
+
+void MovingSecretBookcase()
+{
+    ObjectOff(self);
+    Move(Object("secretBookcase1"), 21);
+    Move(Object("secretBookcase2"), 22);
+    WallOpen(Wall(189, 149));
+    WallOpen(Wall(190, 150));
+}
+
+
