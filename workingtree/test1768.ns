@@ -1,4 +1,3 @@
-//@ignore_object_type
 
 int player[10];
 int ArrTrp1, LastUnit, ArrTrp2, ArrTrp3, ArrTrp4, ArrTrp5, ArrTrp6;
@@ -7,6 +6,146 @@ float FGap[2];
 
 
 int EnableMemoryReadWriteFunction(int t) {}
+
+int GetScrDataField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x1c));
+}
+
+int GetScrCodeField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x20));
+}
+
+int ImportUniChatCore()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0xC0685657; arr[1] = 0x6800528A; arr[2] = 0x00507250; arr[3] = 0x8B2414FF; arr[4] = 0x2414FFF8;
+        arr[5] = 0x14FFF08B; arr[6] = 0x56505724; arr[7] = 0x102454FF; arr[8] = 0x5E14C483; arr[9] = 0x9090C35F;
+        link = GetScrDataField(ImportUniChatCore);
+    }
+    return link;
+}
+
+void UniChatCore(int plrPtr, int sPtr, int sTime)
+{
+    int temp = GetMemory(0x5c3320);
+
+    SetMemory(0x5c3320, ImportUniChatCore());
+    GroupRunAway(sPtr, plrPtr, sTime);
+    SetMemory(0x5c3320, temp);
+}
+
+int ImportUniPrintCore()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x9EB06856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xF08B2414; arr[4] = 0x502414FF;
+        arr[5] = 0x2454FF56; arr[6] = 0x10C4830C; arr[7] = 0x9090C35E;
+        link = GetScrDataField(ImportUniPrintCore);
+    }
+    return link;
+}
+
+void UniPrintCore(int plrPtr, int sPtr)
+{
+    int temp = GetMemory(0x5c31f4);
+
+    SetMemory(0x5c31f4, ImportUniPrintCore());
+    Unused5a(sPtr, plrPtr);
+    SetMemory(0x5c31f4, temp);
+}
+
+int GetByteValue(int ptr)
+{
+    return GetMemory(ptr) & 0xff;
+}
+
+void WriteAddressWordValue(int addr, int word)
+{
+    int temp = GetMemory(addr) & 0xffff0000;
+    SetMemory(addr, temp | word);
+}
+
+void NoxUtf8ToUnicode(int src, int dest)
+{
+    int i = 0, byt;
+
+    while (1)
+    {
+        byt = GetByteValue(src + i);
+        if (!byt) break;
+        if (!(byt & 0x80))
+        {
+            WriteAddressWordValue(dest, byt);
+            i ++;
+        }
+        else if ((byt & 0xe0) == 0xc0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0x1f) <<6) | (GetByteValue(src + i + 1) & 0x3f));
+            i += 2;
+        }
+        else if ((byt & 0xf0) == 0xe0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0xf) << 12) | ((GetByteValue(src + i + 1) & 0x3f) << 6) | (GetByteValue(src + i + 2) & 0x3f));
+            i += 3;
+        }
+        dest += 2;
+    }
+    WriteAddressWordValue(dest, 0);
+}
+
+void UniPrint(int sUnit, string sMsg)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link)
+            link = GetScrDataField(UniPrint);
+        NoxUtf8ToUnicode(str, link + 8);
+        UniPrintCore(ptr, link + 8);
+    }
+}
+
+void UniChatMessage(int sUnit, string sMsg, int duration)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link)
+            link = GetScrDataField(UniChatMessage);
+        NoxUtf8ToUnicode(str, link + 12);
+        UniChatCore(ptr, link + 12, duration);
+    }
+}
+
+void UniPrintToAll(string sMsg)
+{
+    int wDest[200];
+    int plrPtr = 0x62f9e0, link, str = SToInt(sMsg), i;
+
+    if (!link)
+        link = GetScrDataField(UniPrint) + 4;
+    str = GetMemory(0x97bb40 + (str * 4));
+    NoxUtf8ToUnicode(str, link);
+    for (i = 0 ; i < 32 ; i ++)
+    {
+        if (GetMemory(plrPtr))
+            UniPrintCore(GetMemory(plrPtr), link);
+        plrPtr += 0x12dc;
+    }
+}
 
 int VoiceList(int num)
 {
@@ -79,9 +218,8 @@ int GreenFrogBinTable()
 	if (!link)
 	{
 		arr[0] = 1701147207; arr[1] = 1869760110; arr[2] = 103; arr[24] = 1065353216; arr[28] = 1101004800; 
-		arr[29] = 12; arr[31] = 10; arr[32] = 14; arr[33] = 24; arr[59] = 5544320; 
-		CancelTimer(FrameTimerWithArg(10, GreenFrogBinTable, GreenFrogBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		arr[29] = 12; arr[31] = 10; arr[32] = 14; arr[33] = 24; arr[59] = 5544320;
+		link = GetScrDataField(GreenFrogBinTable);
 	}
 	return link;
 }
@@ -187,7 +325,7 @@ void LowerRightWalls()
     {
         for (i = 0 ; i < 4 ; i ++)
             WallOpen(Wall(67 - i, 221 + i));
-        Print("벽이 낮아졌습니다");
+        UniPrint(other, "벽이 낮아졌습니다");
     }
 }
 
@@ -206,7 +344,7 @@ void BossRoomKeyWallsOpen()
 void LowerKeyElevator()
 {
     ObjectOff(self);
-    MoveWaypoint(1, GetObjectX(self), GetObjectY(self));
+    TeleportLocation(1, GetObjectX(self), GetObjectY(self));
     BossRoomCardKey();
     ObjectOn(Object("CardKeyElev"));
     FrameTimerWithArg(22, Object("CardKeyElev"), DelayDisableUnit);
@@ -269,12 +407,12 @@ void PlaceRayBeacons()
 
     for (i = 0 ; i < 5 ; i ++)
     {
-        MoveWaypoint(113, GetWaypointX(113) - 23.0, GetWaypointY(113) + 23.0);
-        MoveWaypoint(114, GetWaypointX(114) - 23.0, GetWaypointY(114) + 23.0);
-        MoveWaypoint(115, GetWaypointX(115) - 23.0, GetWaypointY(115) + 23.0);
-        PlaceUnderfootRayTrapBeacon(GetWaypointX(113), GetWaypointY(113), 0);
-        PlaceUnderfootRayTrapBeacon(GetWaypointX(114), GetWaypointY(114), 1);
-        PlaceUnderfootRayTrapBeacon(GetWaypointX(115), GetWaypointY(115), 2);
+        TeleportLocationVector(113, -23.0, 23.0);
+        TeleportLocationVector(114, -23.0, 23.0);
+        TeleportLocationVector(115, -23.0, 23.0);
+        PlaceUnderfootRayTrapBeacon(LocationX(113), LocationY(113), 0);
+        PlaceUnderfootRayTrapBeacon(LocationX(114), LocationY(114), 1);
+        PlaceUnderfootRayTrapBeacon(LocationX(115), LocationY(115), 2);
     }
 }
 
@@ -363,7 +501,7 @@ int MasterUnit()
         Frozen(unit, 1);
         MoveObject(unit, 5500.0, 100.0);
         LookWithAngle(unit, 0);
-        MoveWaypoint(1, GetObjectX(unit), GetObjectY(unit));
+        TeleportLocation(1, GetObjectX(unit), GetObjectY(unit));
         CreateObject("BlackPowder", 1);
         SetCallback(unit, 9, DisplayLadderBoard);
     }
@@ -406,7 +544,7 @@ void LadderBoardText(int unit)
         }
     }
     txt += ("플레이 타임:\n" + IntToString(hor) + "시간 " + IntToString(min) + "분 " + IntToString(scd) + "초");
-    Chat(unit, txt);
+    UniChatMessage(unit, txt, 120);
 }
 
 int PlayerExperienceTable(int lv)
@@ -437,7 +575,7 @@ void OpenPassageWalls()
     Raise(key, 200.0);
     Enchant(key, "ENCHANT_FREEZE", 0.0);
     StartSummonFrog(109, 10);
-    Print("비밀의 벽이 열립니다");
+    UniPrint(other, "비밀의 벽이 열립니다");
 }
 
 void InitUnderground()
@@ -455,10 +593,10 @@ void InitUnderground()
 
 void PutUnderfootMovingWalk()
 {
-    PutMovingWalkToSouth(GetWaypointX(105), GetWaypointY(105), 26);
-    PutMovingWalkToSouth(GetWaypointX(106), GetWaypointY(106), 26);
-    PutMovingWalkToWest(GetWaypointX(107), GetWaypointY(107), 22);
-    PutMovingWalkToWest(GetWaypointX(108), GetWaypointY(108), 22);
+    PutMovingWalkToSouth(LocationX(105), LocationY(105), 26);
+    PutMovingWalkToSouth(LocationX(106), LocationY(106), 26);
+    PutMovingWalkToWest(LocationX(107), LocationY(107), 22);
+    PutMovingWalkToWest(LocationX(108), LocationY(108), 22);
 }
 
 void RemoveWideRoomWalls(int arg)
@@ -652,11 +790,11 @@ void BasecampInit()
     MagicalItem();
     SpawnNest(2151.0, 2935.0, ToInt(GetObjectZ(ptr)));
     Raise(ptr, PotionNestDestroy);
-    SpawnNest(GetWaypointX(119), GetWaypointY(119), ToInt(GetObjectZ(ptr)));
-    SpawnNest(GetWaypointX(120), GetWaypointY(120), ToInt(GetObjectZ(ptr)));
-    SpawnNest(GetWaypointX(121), GetWaypointY(121), ToInt(GetObjectZ(ptr)));
-    SpawnNest(GetWaypointX(122), GetWaypointY(122), ToInt(GetObjectZ(ptr)));
-    SpawnNest(GetWaypointX(123), GetWaypointY(123), ToInt(GetObjectZ(ptr)));
+    SpawnNest(LocationX(119), LocationY(119), ToInt(GetObjectZ(ptr)));
+    SpawnNest(LocationX(120), LocationY(120), ToInt(GetObjectZ(ptr)));
+    SpawnNest(LocationX(121), LocationY(121), ToInt(GetObjectZ(ptr)));
+    SpawnNest(LocationX(122), LocationY(122), ToInt(GetObjectZ(ptr)));
+    SpawnNest(LocationX(123), LocationY(123), ToInt(GetObjectZ(ptr)));
     Raise(ptr, DefaultNestDestroy);
     SpawnNest(3687.0, 2812.0, ToInt(GetObjectZ(ptr)));
     SpawnNest(3417.0, 3724.0, ToInt(GetObjectZ(ptr)));
@@ -678,15 +816,15 @@ void NestDestroyFx(int hive)
 
 void PotionNestDestroy()
 {
-    MoveWaypoint(1, GetObjectX(self), GetObjectY(self));
+    TeleportLocation(1, GetObjectX(self), GetObjectY(self));
     NestDestroyFx(self);
     Delete(self);
     DeleteObjectTimer(CreateObject("GreenSmoke", 1), 9);
     if (Random(0, 1))
     {
-        CreateYellowPotion(125, GetWaypointX(1), GetWaypointY(1));
-        CreateYellowPotion(125, GetWaypointX(1), GetWaypointY(1));
-        CreateYellowPotion(125, GetWaypointX(1), GetWaypointY(1));
+        CreateYellowPotion(125, LocationX(1), LocationY(1));
+        CreateYellowPotion(125, LocationX(1), LocationY(1));
+        CreateYellowPotion(125, LocationX(1), LocationY(1));
     }
     else
     {
@@ -699,21 +837,21 @@ void PotionNestDestroy()
 
 void DefaultNestDestroy()
 {
-    MoveWaypoint(1, GetObjectX(self), GetObjectY(self));
+    TeleportLocation(1, GetObjectX(self), GetObjectY(self));
     NestDestroyFx(self);
     Delete(self);
     DeleteObjectTimer(CreateObject("GreenSmoke", 1), 9);
-    FieldRewardPic(CreateObjectAt("InvisibleLightBlueHigh", GetWaypointX(1), GetWaypointY(1)));
+    FieldRewardPic(CreateObjectAt("InvisibleLightBlueHigh", LocationX(1), LocationY(1)));
     AudioEvent("TrollFlatus", 1);
 }
 
 void MyNestDestroy()
 {
-    MoveWaypoint(1, GetObjectX(self), GetObjectY(self));
+    TeleportLocation(1, GetObjectX(self), GetObjectY(self));
     NestDestroyFx(self);
     Delete(self);
     DeleteObjectTimer(CreateObject("GreenSmoke", 1), 9);
-    MoveObject(MagicalItem(), GetWaypointX(1), GetWaypointY(1));
+    MoveObject(MagicalItem(), LocationX(1), LocationY(1));
     AudioEvent("KeyDrop", 1);
 }
 
@@ -740,12 +878,6 @@ int MagicalItem()
     return unit;
 }
 
-void ShowPepeFace()
-{
-    MoveWaypoint(1, 1876.0, 2759.0);
-    StrPepeCharacter();
-}
-
 void FirstGateDisableLock()
 {
     if (HasItem(other, MagicalItem()))
@@ -754,14 +886,14 @@ void FirstGateDisableLock()
         UnlockDoor(Object("FstGate1"));
         UnlockDoor(Object("FstGate10"));
 
-        Print("게이트의 잠금이 해제되었습니다, 이 보안카드는 더 이상 필요하지 않으므로 제거됩니다");
+        UniPrint(other, "게이트의 잠금이 해제되었습니다, 이 보안카드는 더 이상 필요하지 않으므로 제거됩니다");
         Delete(MagicalItem());
         SpawnTeleportMark(1598.0, 2748.0, 1654.0, 2696.0);
         SpawnTeleportMark(1644.0, 2794.0, 1696.0, 2746.0);
         FrameTimer(30, ChatMessageLoop);
     }
     else
-        Print("이 스위치를 조작하려면 보안카드가 필요합니다");
+        UniPrint(other, "이 스위치를 조작하려면 보안카드가 필요합니다");
 }
 
 void DestinationBeaconSpawn(float x, float y)
@@ -782,10 +914,10 @@ void DestinationEntry()
         if (!check)
         {
             check = 1;
-            Print("미션완료!! 최종 목적지 도착!! -_-+ ㅊㅋㅊㅋ");
-            Print("사실 아직 미완성이지만 어쨌거나 다 깬거임!! ㅠㅠ");
+            UniPrint(other, "미션완료!! 최종 목적지 도착!! -_-+ ㅊㅋㅊㅋ");
+            UniPrint(other, "사실 아직 미완성이지만 어쨌거나 다 깬거임!! ㅠㅠ");
             Effect("WHITE_FLASH", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
-            MoveWaypoint(1, GetWaypointX(85), GetWaypointY(85));
+            TeleportLocation(1, LocationX(85), LocationY(85));
             AudioEvent("JournalEntryAdd", 1);
             AudioEvent("AmuletDrop", 1);
             StrNotComplete();
@@ -811,7 +943,7 @@ void UnderPartLeftWallsBreak()
         WallOpen(Wall(84 + i, 160 + i));
     NoWallSound(0);
     DestroyWallFx(1941.0, 3691.0, 23.0, 23.0, 5, 9);
-    MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+    TeleportLocation(1, GetObjectX(other), GetObjectY(other));
     AudioEvent("WallDestroyed", 1);
     AudioEvent("GolemHitting", 1);
     Effect("JIGGLE", GetObjectX(other), GetObjectY(other), 21.0, 0.0);
@@ -827,7 +959,7 @@ void UnderPartRightWallsBreak()
         WallOpen(Wall(81 + i, 153 + i));
     NoWallSound(0);
     DestroyWallFx(1874.0, 3529.0, 23.0, 23.0, 6, 9);
-    MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+    TeleportLocation(1, GetObjectX(other), GetObjectY(other));
     AudioEvent("WallDestroyed", 1);
     AudioEvent("GolemHitting", 1);
     Effect("JIGGLE", GetObjectX(other), GetObjectY(other), 21.0, 0.0);
@@ -866,7 +998,7 @@ void StartRotPusher()
     {
         LookWithAngle(ptr + 1, 1);
         FrameTimerWithArg(3, ptr, PusherToEast);
-        Print("함정카드 발동!");
+        UniPrint(other, "함정카드 발동!");
     }
     FrameTimerWithArg(60, GetTrigger(), DelayEnableUnit);
 }
@@ -999,7 +1131,7 @@ void StartOgreElevator()
 
     if (!IsObjectOn(unit))
     {
-        MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+        TeleportLocation(1, GetObjectX(other), GetObjectY(other));
         AudioEvent("Gear3", 1);
         ObjectOn(unit);
         FrameTimerWithArg(24, unit, DelayDisableUnit);
@@ -1009,7 +1141,7 @@ void StartOgreElevator()
 void StartOgrePart()
 {
     ObjectOff(self);
-    MoveWaypoint(9, 2954.0, 2519.0);
+    TeleportLocation(9, 2954.0, 2519.0);
     SummonFrogAmount(63, 4);
     SummonFrogAmount(64, 4);
     UnlockDoor(Object("OgreLocked1"));
@@ -1059,7 +1191,7 @@ void StartBridgeBlock()
 
     if (!GetDirection(ptr))
     {
-        MoveWaypoint(1, GetObjectX(self), GetObjectY(self));
+        TeleportLocation(1, GetObjectX(self), GetObjectY(self));
         AudioEvent("SpikeBlockMove", 1);
         LookWithAngle(ptr, 94);
         LookWithAngle(ptr + 1, GetDirection(ptr + 1) ^ 1);
@@ -1094,12 +1226,12 @@ int SwampRow()
 void StartSwampRow()
 {
     ObjectOff(self);
-    MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+    TeleportLocation(1, GetObjectX(other), GetObjectY(other));
     AudioEvent("CreatureCageAppears", 1);
     AudioEvent("SpikeBlockMove", 57);
     AudioEvent("SpikeBlockMove", 58);
     FrameTimerWithArg(9, SwampRow(), SwampBlockMoveToEast);
-    Print("주변 어딘가에서 동력장치가 움직이기 시작했습니다...");
+    UniPrint(other, "주변 어딘가에서 동력장치가 움직이기 시작했습니다...");
 }
 
 void SwampBlockMoveToEast(int ptr)
@@ -1112,7 +1244,7 @@ void SwampBlockMoveToEast(int ptr)
     }
     else
     {
-        MoveWaypoint(1, GetObjectX(ptr), GetObjectY(ptr));
+        TeleportLocation(1, GetObjectX(ptr), GetObjectY(ptr));
         AudioEvent("SpikeBlockMove", 1);
         FrameTimerWithArg(6, ptr, SwampBlockMoveToSouth);
     }
@@ -1231,7 +1363,7 @@ void EntryPart1LastRoom()
     if (!unit)
     {
         unit = StartSummonFrog(55, 50);
-        Chat(unit, "개구리 언버로우 중...");
+        UniChatMessage(unit, "개구리 언버로우 중...", 150);
     }
     ObjectOff(self);
 }
@@ -1251,7 +1383,7 @@ void SummonFrogAtFrames(int ptr)
     int count = GetDirection(ptr);
     if (count && IsObjectOn(ptr))
     {
-        MoveWaypoint(1, GetObjectX(ptr), GetObjectY(ptr));
+        TeleportLocation(1, GetObjectX(ptr), GetObjectY(ptr));
         SummonFrog(1);
         Effect("SMOKE_BLAST", GetObjectX(ptr), GetObjectY(ptr), 0.0, 0.0);
         LookWithAngle(ptr, count - 1);
@@ -1274,11 +1406,11 @@ void NeedSecurityKeyForOpen()
 
             SummonFrogAmount(53, 10);
             for (i = 0 ; i < 7 ; i ++) WallOpen(Wall(96 + i, 30 - i));
-            Print("비밀벽이 열립니다");
+            UniPrint(other, "비밀벽이 열립니다");
         }
         else
         {
-            Print("이 스위치를 조작하기 위해서는 보안카드가 필요하다");
+            UniPrint(other, "이 스위치를 조작하기 위해서는 보안카드가 필요하다");
         }
     }
 }
@@ -1296,7 +1428,7 @@ void EastSecretWallOpen()
     int k;
     ObjectOff(self);
     for (k = 0 ; k < 4 ; k ++) WallOpen(Wall(116 + k, 22 + k));
-    Print("비밀벽이 열렸습니다");
+    UniPrint(other, "비밀벽이 열렸습니다");
 }
 
 void InitBurningRoom()
@@ -1407,7 +1539,7 @@ void StartFirewalkTrap()
 
     if (!IsObjectOn(unit))
     {
-        MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+        TeleportLocation(1, GetObjectX(other), GetObjectY(other));
         unit = CreateObject("InvisibleLightBlueHigh", 1);
         CreateObject("InvisibleLightBlueLow", 37);
         CreateObject("InvisibleLightBlueLow", 38);
@@ -1570,7 +1702,7 @@ void DisableWizWorkRoomGoldRoomLock()
     UnlockDoor(Object("WizWorkRoomGate2"));
     SummonFrogAmount(30, 12);
     SummonFrogAmount(32, 5);
-    Print("맞은편 방 문의 잠금이 해제되었습니다");
+    UniPrint(other, "맞은편 방 문의 잠금이 해제되었습니다");
 }
 
 void KeyFirstGoldGate()
@@ -1614,10 +1746,10 @@ int FirstSilverKey()
 
 void FirstSilverKeyPickEvent()
 {
-    MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+    TeleportLocation(1, GetObjectX(other), GetObjectY(other));
     AudioEvent("JournalEntryAdd", 1);
     SummonFrogAmount(23, 8);
-    Print("실버열쇠를 얻었돠.. . ㅇㅅㅇ");
+    UniPrint(other, "실버열쇠를 얻었돠.. . ㅇㅅㅇ");
 }
 
 void SurpriseRespectFrogs()
@@ -1667,7 +1799,7 @@ int SummonFrogAmount(int wp, int amount)
 
     for (i = 0 ; i < amount ; i ++)
         SummonFrog(wp);
-    Effect("SMOKE_BLAST", GetWaypointX(wp), GetWaypointY(wp), 0.0, 0.0);
+    Effect("SMOKE_BLAST", LocationX(wp), LocationY(wp), 0.0, 0.0);
     AudioEvent("PoisonTrapTriggered", wp);
     return unit;
 }
@@ -1725,7 +1857,7 @@ void FrogHearEnemy()
 {
     if (IsVisibleTo(self, other) || IsVisibleTo(other, self))
     {
-        Chat(self, "개굴~");
+        UniChatMessage(self, "개굴~", 150);
         if (CurrentHealth(other))
             LookAtObject(self, other);
     }
@@ -1775,14 +1907,14 @@ void PlayerLevelUp(int plr)
     SetPlayerLevel(plr, GetPlayerLevel(plr) + 1);
     if (GetPlayerHealRate(plr) > 10)
         SetPlayerHealRate(plr, GetPlayerHealRate(plr) - 1);
-    MoveWaypoint(1, GetObjectX(player[plr]), GetObjectY(player[plr]));
+    TeleportLocation(1, GetObjectX(player[plr]), GetObjectY(player[plr]));
     AudioEvent("LevelUp", 1);
-    DisplayLevelUpText(GetWaypointX(1) - 30.0, GetWaypointY(1) - 10.0);
+    DisplayLevelUpText(LocationX(1) - 30.0, LocationY(1) - 10.0);
     DeleteObjectTimer(CreateObjectAt("LevelUp", GetObjectX(player[plr]), GetObjectY(player[plr])), 30);
     Effect("WHITE_FLASH", GetObjectX(player[plr]), GetObjectY(player[plr]), 0.0, 0.0);
     RestoreHealth(player[plr], MaxHealth(player[plr]));
-    PrintToPlayer(player[plr], "___LEVEL UP_!! 레밸 업! 레밸" + IntToString(GetPlayerLevel(plr)) + " 이 되셨습니다___");
-    PrintToAll(PlayerName(player[plr]) + " 님께서 레밸 " + IntToString(GetPlayerLevel(plr)) + " 에 달성하셨습니다, 금화 100이 지급되었습니다");
+    UniPrint(player[plr], "___LEVEL UP_!! 레밸 업! 레밸" + IntToString(GetPlayerLevel(plr)) + " 이 되셨습니다___");
+    UniPrintToAll(PlayerName(player[plr]) + " 님께서 레밸 " + IntToString(GetPlayerLevel(plr)) + " 에 달성하셨습니다, 금화 100이 지급되었습니다");
     ChangeGold(player[plr], 100);
 }
 
@@ -1888,7 +2020,7 @@ void FrogForceStrike(int ptr)
                 else
                     MoveObject(owner, GetObjectX(target) - UnitRatioX(owner, target, 2.0), GetObjectY(target) - UnitRatioY(owner, target, 2.0));
                 Delete(unit);
-                MoveWaypoint(1, GetObjectX(owner), GetObjectY(owner));
+                TeleportLocation(1, GetObjectX(owner), GetObjectY(owner));
                 DeleteObjectTimer(CreateObject("MagicEnergy", 1), 9);
                 Damage(target, owner, 11, -1);
                 AudioEvent("PushCast", 1);
@@ -1915,7 +2047,7 @@ void PowerFrogForceStrike(int ptr)
                 else
                     MoveObject(owner, GetObjectX(target) - UnitRatioX(owner, target, 2.0), GetObjectY(target) - UnitRatioY(owner, target, 2.0));
                 Delete(unit);
-                MoveWaypoint(1, GetObjectX(owner), GetObjectY(owner));
+                TeleportLocation(1, GetObjectX(owner), GetObjectY(owner));
                 DeleteObjectTimer(CreateObject("MagicEnergy", 1), 9);
                 Damage(target, owner, 18, -1);
                 AudioEvent("PushCast", 1);
@@ -1939,13 +2071,63 @@ void OpenFirstWalls()
             LookAtObject(SummonFrog(13), other);
         }
     }
-    MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+    TeleportLocation(1, GetObjectX(other), GetObjectY(other));
     StartItemRing("RedPotion", 15, 12);
     StartItemRing("RedPotion", 80, 12);
     StartItemRing("RedPotion", 30, 12);
     AudioEvent("Gear3", 1);
     ObjectOff(self);
-    Print("벽이 열렸습니다...");
+    UniPrint(other, "벽이 열렸습니다...");
+}
+
+int MapWaypointTable(int idx)
+{
+    int table[600];
+
+    return table[idx - 1];
+}
+
+float LocationX(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 8));
+}
+
+float LocationY(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 12));
+}
+
+void TeleportLocation(int location, float xProfile, float yProfile)
+{
+    int wTable = MapWaypointTable(location);
+
+    SetMemory(wTable + 8, ToInt(xProfile));
+    SetMemory(wTable + 12, ToInt(yProfile));
+}
+
+void TeleportLocationVector(int location, float xVect, float yVect)
+{
+    int wTable = MapWaypointTable(location);
+
+    SetMemory(wTable + 8, ToInt(ToFloat(GetMemory(wTable + 8)) + xVect));
+    SetMemory(wTable + 12, ToInt(ToFloat(GetMemory(wTable + 12)) + yVect));
+}
+
+void MapWaypointFill(int wAddr, int tPtr)
+{
+    int num;
+
+    if (wAddr)
+    {
+        num = GetMemory(wAddr);
+        SetMemory(tPtr + (num * 4), wAddr);
+        MapWaypointFill(GetMemory(wAddr + 484), tPtr);
+    }
+}
+
+void MapWaypointInit()
+{
+    MapWaypointFill(GetMemory(0x83c7fc), GetScrDataField(MapWaypointTable));
 }
 
 void MapInitialize()
@@ -1964,9 +2146,14 @@ void MapInitialize()
     ImportGreenLightningFunc();
     ImportUseItemFunc();
     ImportUnitDieFunc();
+    ImportStreamCopy();
+    ImportNetSendClient();
+    MapWaypointInit();
     FrameTimer(1, DelayInitRun);
     FrameTimerWithArg(22, Object("OgreElevatorUp"), DelayDisableUnit);
     FrameTimerWithArg(22, Object("CardKeyElev"), DelayDisableUnit);
+    FrameTimer(3, LoopRun);
+    FrameTimer(2, SetGameTypeCoopMode);
 }
 
 void DelayInitRun()
@@ -1978,7 +2165,6 @@ void DelayInitRun()
     PlayerExperienceTable(5);
     FieldReward(0);
     GetOwner(PlrStruct(0));
-    FrameTimer(3, ShowPepeFace);
     FrameTimerWithArg(1, Object("FstUnitPtr"), StartInitSearch);
     FrameTimer(1, InitMapArrowTraps);
     FrameTimer(1, InitBurningRoom);
@@ -1995,20 +2181,14 @@ void WaitForLoading()
 
 int ImportCreateAtFunc()
 {
-    int arr[20], ptr, link;
-    if (!ptr)
+    int arr[20], link;
+    if (!link)
     {
         arr[0] = 0xAA506856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xFF502414; arr[4] = 0x50042454;
         arr[5] = 0x082454FF; arr[6] = 0x4085048B; arr[7] = 0x680097BB; arr[8] = 0x004E3810; arr[9] = 0x2454FF50;
         arr[10] = 0x08C48304; arr[11] = 0xF685F08B; arr[12] = 0x006A0A74; arr[13] = 0x2454FF56; arr[14] = 0x08C48314;
         arr[15] = 0x50723068; arr[16] = 0x54FF5600; arr[17] = 0xC4830424; arr[18] = 0x5EC03118; arr[19] = 0x909090C3; 
-        if (GetMemory(0x83c7fc))
-        {
-            ptr = CreateObject("AmbBeachBirds", GetMemory(GetMemory(0x83c7fc)));
-            Raise(ptr, ImportCreateAtFunc);
-            link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x1c));
-            Delete(ptr);
-        }
+        link = GetScrDataField(ImportCreateAtFunc);
     }
     return link;
 }
@@ -2088,15 +2268,12 @@ string ToStr(int x)
 
 int ImportUnitToPtrFunc()
 {
-    int arr[10], ptr, link;
-    if (!arr[0])
+    int arr[10], link;
+    if (!link)
     {
         arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
         arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3; 
-        ptr = CreateObject("AmbBeachBirds", 1);
-        Raise(ptr, ImportUnitToPtrFunc);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x1c));
-        Delete(ptr);
+        link = GetScrDataField(ImportUnitToPtrFunc);
     }
     return link;
 }
@@ -2167,6 +2344,7 @@ void MapExit()
     MusicEvent();
     ResetHostileCritter();
     FixPlayerDialogBug();
+    RemoveCoopTeamMode();
 }
 
 void FixPlayerDialogBug()
@@ -2223,8 +2401,8 @@ void PlayerJoin(int plr)
     Enchant(player[plr], "ENCHANT_ANTI_MAGIC", 0.0);
     EmptyInventory(player[plr]);
     SetOwner(player[plr], ReventBerserker(plr));
-    MoveObject(player[plr], GetWaypointX(9), GetWaypointY(9));
-    Effect("SMOKE_BLAST", GetWaypointX(9), GetWaypointY(9), 0.0, 0.0);
+    MoveObject(player[plr], LocationX(9), LocationY(9));
+    Effect("SMOKE_BLAST", LocationX(9), LocationY(9), 0.0, 0.0);
     DeleteObjectTimer(CreateObjectAt("BlueRain", GetObjectX(player[plr]), GetObjectY(player[plr])), 30);
     AudioEvent("BlindOff", 9);
     PrintToAll(PlayerName(player[plr]) + " 님께서 입장하셨습니다");
@@ -2236,8 +2414,8 @@ void CantJoinThisMap()
     Enchant(other, "ENCHANT_BLINDED", 0.0);
     Enchant(other, "ENCHANT_ANTI_MAGIC", 0.0);
     Enchant(other, "ENCHANT_ANCHORED", 0.0);
-    MoveObject(other, GetWaypointX(10), GetWaypointY(10));
-    Print("맵 입장실패");
+    MoveObject(other, LocationX(10), LocationY(10));
+    UniPrint(other, "맵 입장실패");
 }
 
 void PreservePlayersHandler()
@@ -2309,7 +2487,7 @@ void PutGasTrap(int unit)
     int trp = CreateObjectAt("PoisonGasTrap", GetObjectX(unit), GetObjectY(unit));
 
     SetOwner(unit, trp);
-    PrintToPlayer(unit, "독가스 함정을 설치했습니다");
+    UniPrint(unit, "독가스 함정을 설치했습니다");
 }
 
 void PlayerJumpEvent(int plr)
@@ -2750,7 +2928,7 @@ void RifleTouch()
 
     if (CurrentHealth(other) && CurrentHealth(owner) && IsAttackedBy(other, owner))
     {
-        MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+        TeleportLocation(1, GetObjectX(other), GetObjectY(other));
         AudioEvent("SentryRayHit", 1);
         Effect("VIOLET_SPARKS", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
         Damage(other, owner, 65, 14);
@@ -2882,15 +3060,15 @@ void FinishLoadTheMap(int arg)
     SecondTimer(1, StartBgmLoop);
     GetOwner(MasterUnit());
     InitiMapTrader();
-    CampArea = CreateObjectAt("InvisibleLightBlueHigh", GetWaypointX(14), GetWaypointY(14));
+    CampArea = CreateObjectAt("InvisibleLightBlueHigh", LocationX(14), LocationY(14));
     StartItemRing("RedPotion", 53, 16);
     BossRoomEntranceWall(0);
-    PrintToAll("맵 로딩이 완료되었습니다, 게임을 시작합니다");
+    UniPrintToAll("맵 로딩이 완료되었습니다, 게임을 시작합니다");
 }
 
 void FrogSpawn(int cur)
 {
-    MoveWaypoint(1, GetObjectX(cur), GetObjectY(cur));
+    TeleportLocation(1, GetObjectX(cur), GetObjectY(cur));
     SummonFrog(1);
     Delete(cur);
 }
@@ -2966,18 +3144,6 @@ int CheckPlayerIndex(int unit)
     return -1;
 }
 
-void PrintToPlayer(int unit, string text)
-{
-    int ptr = UnitToPtr(unit), temp = GetMemory(0x979720);
-
-    if (ptr)
-    {
-        SetMemory(0x979720, ptr);
-        Print(text);
-        SetMemory(0x979720, temp);
-    }
-}
-
 int CheckPlayerInput(int plr_unit)
 {
     int ptr = UnitToPtr(plr_unit), temp;
@@ -3015,7 +3181,7 @@ void DisplayLevelUpText(float x, float y)
 {
     int ptr, end;
 
-    MoveWaypoint(1, x, y);
+    TeleportLocation(1, x, y);
     ptr = CreateObject("InvisibleLightBlueHigh", 1);
     StrLevelUp();
     end = CreateObject("InvisibleLightBlueHigh", 1);
@@ -3052,32 +3218,33 @@ void drawStrLevelUp(int arg_0, string name)
 
 	if (!count)
 	{
-		pos_x = GetWaypointX(1);
-		pos_y = GetWaypointY(1);
+		pos_x = LocationX(1);
+		pos_y = LocationY(1);
 	}
 	for (i = 1 ; i > 0 && count < 558 ; i <<= 1)
 	{
 		if (i & arg_0)
 			CreateObject(name, 1);
 		if (count % 45 == 44)
-			MoveWaypoint(1, GetWaypointX(1) - 88.000000, GetWaypointY(1) + 2.000000);
+            TeleportLocationVector(1, -88.0, 2.0);
 		else
-			MoveWaypoint(1, GetWaypointX(1) + 2.000000, GetWaypointY(1));
+            TeleportLocationVector(1, 2.0, 0.0);
 		count ++;
 	}
 	if (count >= 558)
 	{
 		count = 0;
-		MoveWaypoint(1, pos_x, pos_y);
+		TeleportLocation(1, pos_x, pos_y);
 	}
 }
 
 void FieldRewardPic(int cur)
 {
     int unit;
-    MoveWaypoint(1, GetObjectX(cur), GetObjectY(cur));
+
+    TeleportLocation(1, GetObjectX(cur), GetObjectY(cur));
     Delete(cur);
-    unit = CallFunctionWithArgInt(GetRewardFunctionNum() + FieldReward(Random(0, 11)), 1);
+    unit = CallFunctionWithArgInt(NoAction + FieldReward(Random(0, 11)), 1);
     if (unit)
     {
         CheckPotionThingID(unit);
@@ -3095,11 +3262,6 @@ int FieldReward(int idx)
         arr[10] = 5; arr[11] = 4;
     }
     return arr[idx];
-}
-
-int GetRewardFunctionNum()
-{
-    StopScript(NoAction);
 }
 
 int NoAction(int arg)
@@ -3130,9 +3292,7 @@ int ExpBook(int wp)
 {
     int unit = CreateObject("AbilityBook", wp);
 
-    Raise(unit, ExpBookPic);
-    SetUnitPickEvent(unit, ToInt(GetObjectZ(unit)));
-    Raise(unit, 0.0);
+    SetUnitPickEvent(unit, ExpBookPic);
     return unit;
 }
 
@@ -3143,7 +3303,7 @@ int DefaultPotion(int wp)
 
 int SpecialItemSpawn(int wp)
 {
-    CallFunctionWithArgInt(SpecialItemFunc() + Random(0, 2), wp);
+    CallFunctionWithArgInt(ShockItemCreate + Random(0, 2), wp);
 }
 
 void ExpBookPic()
@@ -3152,10 +3312,10 @@ void ExpBookPic()
 
     if (plr + 1)
     {
-        MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+        TeleportLocation(1, GetObjectX(other), GetObjectY(other));
         AudioEvent("AwardSpell", 1);
         Effect("VIOLET_SPARKS", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
-        PrintToPlayer(other, "킬 스코어 +" + IntToString(rnd) + " 점이 적립되었습니다");
+        UniPrint(other, "킬 스코어 +" + IntToString(rnd) + " 점이 적립되었습니다");
         AddPlayerKillScore(plr, rnd);
     }
     Delete(self);
@@ -3163,21 +3323,12 @@ void ExpBookPic()
 
 int CallFunctionWithArgInt(int func, int arg)
 {
-    int link, ptr;
+    int link;
 
     if (!link)
-    {
-        ptr = CreateObject("RedPotion", 1);
-        Raise(ptr, CalleeArgInt);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x20));
-        Delete(ptr);
-        return 0;
-    }
-    else
-    {
-        SetMemory(link + 0x10, func);
-        return CalleeArgInt(arg);
-    }
+        link = GetScrCodeField(CalleeArgInt);
+    SetMemory(link + 0x10, func);
+    return CalleeArgInt(arg);
 }
 
 int CalleeArgInt(int arg)
@@ -3260,8 +3411,8 @@ void DescriptionBuyGrenade()
     else
     {
         Enchant(other, "ENCHANT_AFRAID", 0.2);
-        Print("수류탄 1개를 구입하시겠습니까?, 요구금액: 320골드, 요구레밸: 4 이상");
-        Print("이 작업을 계속하려면 [예]를 누르세요");
+        UniPrint(other, "수류탄 1개를 구입하시겠습니까?, 요구금액: 320골드, 요구레밸: 4 이상");
+        UniPrint(other, "이 작업을 계속하려면 [예]를 누르세요");
     }
 }
 
@@ -3274,20 +3425,20 @@ void TradeGrenadePay()
         EnchantOff(other, "ENCHANT_AFRAID");
         if (GetGold(other) < 320)
         {
-            Print("금화가 부족합니다! 320골드 필요");
+            UniPrint(other, "금화가 부족합니다! 320골드 필요");
             return;
         }
         if (GetPlayerLevel(plr) < 4)
         {
-            Print("레밸이 부족합니다, 요구레밸: 4");
+            UniPrint(other, "레밸이 부족합니다, 요구레밸: 4");
             return;
         }
         ChangeGold(other, -320);
-        MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+        TeleportLocation(1, GetObjectX(other), GetObjectY(other));
         AudioEvent("TreasureDrop", 1);
         AudioEvent("DiamondDrop", 1);
         CreateObject("ProtectionFire", 1);
-        Print("거래성공! 수류탄은 당신의 아래에 생성되었습니다");
+        UniPrint(other, "거래성공! 수류탄은 당신의 아래에 생성되었습니다");
     }
 }
 
@@ -3299,12 +3450,12 @@ void DescriptionRepairAll()
     {
         if (IsObjectOn(GetLastItem(other)))
         {
-            Print("인벤토리 내 아이템 모두 수리해드립니다, 요구금액: 30 골드");
-            Print("[예]를 누르시면 작업을 시작합니다");
+            UniPrint(other, "인벤토리 내 아이템 모두 수리해드립니다, 요구금액: 30 골드");
+            UniPrint(other, "[예]를 누르시면 작업을 시작합니다");
             Enchant(other, "ENCHANT_AFRAID", 0.2);
         }
         else
-            Print("가진게 없으시군요... ㅠㅠ");
+            UniPrint(other, "가진게 없으시군요... ㅠㅠ");
     }
 }
 
@@ -3316,14 +3467,14 @@ void RepairAllResult()
         if (GetGold(other) >= 30)
         {
             ChangeGold(other, -30);
-            MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+            TeleportLocation(1, GetObjectX(other), GetObjectY(other));
             Effect("THIN_EXPLOSION", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
             Effect("DAMAGE_POOF", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
             AudioEvent("ShopRepairItem", 1);
-            Print(IntToString(RepairAll(other)) + " 개의 아이템이 수리되었습니다, 30골드 차감됨");
+            UniPrint(other, IntToString(RepairAll(other)) + " 개의 아이템이 수리되었습니다, 30골드 차감됨");
         }
         else
-            Print("금화가 부족합니다, 이 작업은 30골드가 필요합니다");
+            UniPrint(other, "금화가 부족합니다, 이 작업은 30골드가 필요합니다");
     }
 }
 
@@ -3354,12 +3505,12 @@ void DescriptionChakramPowerUpTrade()
         if (HasSubclass(inv, "CHAKRAM"))
         {
             lv = GetDirection(inv);
-            Print("강화: 현재 착용중인 채크럼을 강화합니다, 강화레밸에 따라 요구금액이 달라집니다. 당신의 채크럼 강화 레밸: " + IntToString(lv));
-            Print("이 작업은 " + IntToString(300 + (lv * 100)) + "골드를 요구합니다, 작업을 계속하려면 더블클릭하세요");
+            UniPrint(other, "강화: 현재 착용중인 채크럼을 강화합니다, 강화레밸에 따라 요구금액이 달라집니다. 당신의 채크럼 강화 레밸: " + IntToString(lv));
+            UniPrint(other, "이 작업은 " + IntToString(300 + (lv * 100)) + "골드를 요구합니다, 작업을 계속하려면 더블클릭하세요");
             Enchant(other, "ENCHANT_AFRAID", 0.2);
         }
         else
-            Print("채크럼 강화기능: 채크럼을 착용중이지 않습니다, 채크럼을 착용하여 다시 시도해보세요");
+            UniPrint(other, "채크럼 강화기능: 채크럼을 착용중이지 않습니다, 채크럼을 착용하여 다시 시도해보세요");
     }
 }
 
@@ -3376,7 +3527,7 @@ void PowerupTradeResult()
         {
             if (lv < 10)
             {
-                MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+                TeleportLocation(1, GetObjectX(other), GetObjectY(other));
                 AudioEvent("ShopRepairItem", 1);
                 ChangeGold(other, -pay);
                 Delete(inv);
@@ -3385,13 +3536,13 @@ void PowerupTradeResult()
                 {
                     lv ++;
                     Effect("YELLOW_SPARKS", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
-                    Print("강화성공! 강화된 무기가 당신의 아래에 있습니다");
+                    UniPrint(other, "강화성공! 강화된 무기가 당신의 아래에 있습니다");
                 }
                 else
                 {
                     lv --;
                     Effect("SPARK_EXPLOSION", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
-                    Print("강화실패! 무기의 강화레밸이 -1 저하되었습니다, 0 레밸에서 실패한 경우 무기가 사라집니다!!");
+                    UniPrint(other, "강화실패! 무기의 강화레밸이 -1 저하되었습니다, 0 레밸에서 실패한 경우 무기가 사라집니다!!");
                 }
                 if (lv >= 0)
                 {
@@ -3403,11 +3554,11 @@ void PowerupTradeResult()
                     Delete(unit);
             }
             else
-                Print("무기가 이미 최대로 강화된 상태입니다!");
+                UniPrint(other, "무기가 이미 최대로 강화된 상태입니다!");
         }
         else
         {
-            Print("금화가 부족합니다");
+            UniPrint(other, "금화가 부족합니다");
         }
     }
 }
@@ -3439,7 +3590,7 @@ void StrNotComplete()
 {
 	int arr[92], i, count = 0;
 	string name = "ManaBombOrb";
-	float pos_x = GetWaypointX(1), pos_y = GetWaypointY(1);
+	float pos_x = LocationX(1), pos_y = LocationY(1);
 
 	arr[0] = 117497856; arr[1] = 28; arr[2] = 458752; arr[3] = 58720312; arr[4] = 0; arr[5] = 1612454912; arr[6] = 66978689; arr[7] = 1088421888; 
 	arr[8] = 1882720063; arr[9] = 0; arr[10] = 58949632; arr[11] = 1910534200; arr[12] = 486522881; arr[13] = 117501752; arr[14] = 28; arr[15] = 1886388224; 
@@ -3455,7 +3606,7 @@ void StrNotComplete()
 	arr[88] = 268402912; arr[89] = 32764; arr[90] = 1073612544; arr[91] = 65408; 
 	for (i = 0 ; i < 92 ; i ++)
 		count = DrawStrNotComplete(arr[i], name, count);
-	MoveWaypoint(1, pos_x, pos_y);
+	TeleportLocation(1, pos_x, pos_y);
 }
 
 int DrawStrNotComplete(int arg, string name, int count)
@@ -3467,60 +3618,9 @@ int DrawStrNotComplete(int arg, string name, int count)
 		if (i & arg)
 			CreateObject(name, 1);
 		if (count % 160 == 159)
-			MoveWaypoint(1, GetWaypointX(1) - 318.0, GetWaypointY(1) + 3.0);
+			TeleportLocationVector(1, -318.0, 3.0);
 		else
-			MoveWaypoint(1, GetWaypointX(1) + 2.0, GetWaypointY(1));
-		count ++;
-	}
-	return count;
-}
-
-void StrPepeCharacter()
-{
-	int arr[180], i, count = 0;
-	string name = "ManaBombOrb";
-	float pos_x = GetWaypointX(1), pos_y = GetWaypointY(1);
-
-	arr[0] = 0; arr[1] = 32766; arr[2] = 0; arr[3] = 0; arr[4] = 29360576; arr[5] = 2096640; arr[6] = 0; arr[7] = 7168; 
-	arr[8] = 1879111710; arr[9] = 1; arr[10] = 98304; arr[11] = 243712; arr[12] = 384; arr[13] = 3145728; arr[14] = 6291456; arr[15] = 196608; 
-	arr[16] = 100663296; arr[17] = 1610612736; arr[18] = 16777216; arr[19] = 0; arr[20] = 1073676291; arr[21] = 64; arr[22] = 2; arr[23] = 33030336; 
-	arr[24] = 17376; arr[25] = 768; arr[26] = 125833216; arr[27] = 2137915392; arr[28] = 81919; arr[29] = 1074003968; arr[30] = 939524096; arr[31] = 266338304; 
-	arr[32] = 16777216; arr[33] = 0; arr[34] = 96; arr[35] = 1073741936; arr[36] = 1610612737; arr[37] = 1610743807; arr[38] = 49223; arr[39] = 64; 
-	arr[40] = 1132592927; arr[41] = 16777215; arr[42] = 4096; arr[43] = 1065417840; arr[44] = 534773758; arr[45] = 1032199; arr[46] = 247552; arr[47] = 32640; 
-	arr[48] = 103809984; arr[49] = 1849344; arr[50] = 0; arr[51] = 67312640; arr[52] = 32964610; arr[53] = 1639448576; arr[54] = 62979871; arr[55] = 6291714; 
-	arr[56] = 8382336; arr[57] = 33546270; arr[58] = 1610645634; arr[59] = 2134409023; arr[60] = 2121793665; arr[61] = 8195; arr[62] = 2113959936; arr[63] = 2113946111; 
-	arr[64] = 1606631; arr[65] = 12582912; arr[66] = 3797503; arr[67] = 103940062; arr[68] = 201326592; arr[69] = 2046812046; arr[70] = 239075263; arr[71] = 2; 
-	arr[72] = 67092720; arr[73] = 12; arr[74] = 129; arr[75] = 2064384; arr[76] = 496; arr[77] = 8288; arr[78] = 0; arr[79] = 3616; 
-	arr[80] = 1055744; arr[81] = 0; arr[82] = 402898944; arr[83] = 114688; arr[84] = 0; arr[85] = 4063232; arr[86] = 4193264; arr[87] = 0; 
-	arr[88] = 33030144; arr[89] = 1879539712; arr[90] = 0; arr[91] = 67108864; arr[92] = 0; arr[93] = 192; arr[94] = 0; arr[95] = 0; 
-	arr[96] = 32768; arr[97] = 0; arr[98] = 0; arr[99] = 8388608; arr[100] = 0; arr[101] = 0; arr[102] = 1073741824; arr[103] = 1; 
-	arr[104] = 0; arr[105] = 0; arr[106] = 128; arr[107] = 2031616; arr[108] = 0; arr[109] = 49152; arr[110] = 2046296064; arr[111] = 255; 
-	arr[112] = 16515072; arr[113] = 50331648; arr[114] = 33546240; arr[115] = 1139802112; arr[116] = 1073741825; arr[117] = 1073745473; arr[118] = 268435455; arr[119] = 64; 
-	arr[120] = 268427328; arr[121] = 0; arr[122] = 7168; arr[123] = 8192; arr[124] = 65528; arr[125] = 261120; arr[126] = 24182784; arr[127] = 2146435072; 
-	arr[128] = 8912895; arr[129] = 1635778560; arr[130] = 262143; arr[131] = 1073741824; arr[132] = 257; arr[133] = 2139095043; arr[134] = 15; arr[135] = 65648; 
-	arr[136] = 7936; arr[137] = 2147483136; arr[138] = 50335743; arr[139] = 524288; arr[140] = 0; arr[141] = 1610620416; arr[142] = 63; arr[143] = 0; 
-	arr[144] = 98304; arr[145] = 261632; arr[146] = 0; arr[147] = 3932160; arr[148] = 2122055680; arr[149] = 0; arr[150] = 62914560; arr[151] = 1610612736; 
-	arr[152] = 262019; arr[153] = 520093696; arr[154] = 0; arr[155] = 2080382720; arr[156] = 2147483647; arr[157] = 1; arr[158] = 532676608; arr[159] = 0; 
-	arr[160] = 286; arr[161] = 0; arr[162] = 1744830400; arr[163] = 917759; arr[164] = 0; arr[165] = 0; arr[166] = 402653184; arr[167] = 0; 
-	arr[168] = 0; arr[169] = 0; arr[170] = 96; arr[171] = 0; arr[172] = 0; arr[173] = 24576; arr[174] = 0; arr[175] = 0; 
-	arr[176] = 4194304; arr[177] = 0; arr[178] = 0; arr[179] = 1073741824; 
-	for (i = 0 ; i < 180 ; i ++)
-		count = DrawStrPepeCharacter(arr[i], name, count);
-	MoveWaypoint(1, pos_x, pos_y);
-}
-
-int DrawStrPepeCharacter(int arg, string name, int count)
-{
-	int i;
-
-	for (i = 1 ; i > 0 && count < 5580 ; i <<= 1)
-	{
-		if (i & arg)
-			CreateObject(name, 1);
-		if (count % 100 == 99)
-			MoveWaypoint(1, GetWaypointX(1) - 198.0, GetWaypointY(1) + 3.5);
-		else
-			MoveWaypoint(1, GetWaypointX(1) + 2.0, GetWaypointY(1));
+			TeleportLocation(1, 2.0, 0.0);
 		count ++;
 	}
 	return count;
@@ -3532,7 +3632,6 @@ int ChakRealLevel(int unit)
 
     if (ptr)
     {
-        //SetMemory(GetMemory(ptr + 0x2b4), GetItemColors(color));
         ptr = GetMemory(GetMemory(ptr + 0x2b4));
         for (i = 1 ; i <= 10 ; i ++)
         {
@@ -3619,7 +3718,7 @@ void PlayerTeleportHandler(int idx, int unit)
     {
         if (HasEnchant(unit, "ENCHANT_LIGHT"))
         {
-            PrintToPlayer(unit, "공간이동 명령어 쿨다운 입니다... 몇초 후 다시 시도해보세요");
+            UniPrint(unit, "공간이동 명령어 쿨다운 입니다... 몇초 후 다시 시도해보세요");
             return;
         }
         if (IsVisibleTo(CampArea, unit))
@@ -3627,10 +3726,10 @@ void PlayerTeleportHandler(int idx, int unit)
             if (IsObjectOn(arr[idx]))
             {
                 PlayerTeleportAt(unit, GetObjectX(arr[idx]), GetObjectY(arr[idx]));
-                PrintToPlayer(unit, "저장된 위치로 이동되었습니다");
+                UniPrint(unit, "저장된 위치로 이동되었습니다");
             }
             else
-                PrintToPlayer(unit, "아직 저장된 위치가 없습니다");
+                UniPrint(unit, "아직 저장된 위치가 없습니다");
         }
         else
         {
@@ -3644,8 +3743,8 @@ void PlayerTeleportHandler(int idx, int unit)
                 Enchant(arr[idx], "ENCHANT_ANCHORED", 0.0);
             }
             PlayerTeleportAt(unit, GetObjectX(CampArea), GetObjectY(CampArea));
-            PrintToPlayer(unit, "이동 전 위치를 저장 후 시작지점으로 이동되었습니다");
-            PrintToPlayer(unit, "시작지점 주변에서 이탈하여 공간이동 명령어를 사용할 경우 위치가 다시 저장되므로, 원래위치로 가려면 반드시 시작지점 주변에서 사용하세요");
+            UniPrint(unit, "이동 전 위치를 저장 후 시작지점으로 이동되었습니다");
+            UniPrint(unit, "시작지점 주변에서 이탈하여 공간이동 명령어를 사용할 경우 위치가 다시 저장되므로, 원래위치로 가려면 반드시 시작지점 주변에서 사용하세요");
         }
     }
 }
@@ -3678,7 +3777,7 @@ void PullAtLocation()
     {
         if (HasEnchant(other, "ENCHANT_PROTECT_FROM_MAGIC"))
         {
-            MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+            TeleportLocation(1, GetObjectX(other), GetObjectY(other));
             AudioEvent("BallBounce", 1);
             DeleteObjectTimer(CreateObject("MagicEnergy", 1), 9);
             Effect("LIGHTNING", GetObjectX(other), GetObjectY(other), GetObjectX(GetTrigger() + 1), GetObjectY(GetTrigger() + 1));
@@ -3735,7 +3834,7 @@ void PlayerKillToBossHandler(int unit)
 
 void VictoryEvent(int ptr)
 {
-    MoveWaypoint(1, GetObjectX(ptr), GetObjectY(ptr));
+    TeleportLocation(1, GetObjectX(ptr), GetObjectY(ptr));
     StrSuccessMission();
     DeleteObjectTimer(CreateObject("LevelUp", 1), 600);
     AudioEvent("StaffOblivionAchieve1", 1);
@@ -3867,7 +3966,7 @@ void ShotMultiDeathray(int ptr)
 
     if (CurrentHealth(owner) && CurrentHealth(target))
     {
-        MoveWaypoint(1, GetObjectX(owner), GetObjectY(owner));
+        TeleportLocation(1, GetObjectX(owner), GetObjectY(owner));
         AudioEvent("SpellPhonemeDownRight", 1);
         unit = CreateObjectAt("WeirdlingBeast", GetObjectX(owner) + UnitRatioX(target, owner, 3.0), GetObjectY(owner) + UnitRatioY(target, owner, 3.0));
         UnitNoCollide(unit);
@@ -3915,9 +4014,9 @@ void CollideEnergyPar()
 
     if (CurrentHealth(other) && IsAttackedBy(other, owner))
     {
-        MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+        TeleportLocation(1, GetObjectX(other), GetObjectY(other));
         AudioEvent("SentryRayHit", 1);
-        Effect("VIOLET_SPARKS", GetWaypointX(1), GetWaypointY(1), 0.0, 0.0);
+        Effect("VIOLET_SPARKS", LocationX(1), LocationY(1), 0.0, 0.0);
         Damage(other, owner, 100, 14);
         Enchant(other, "ENCHANT_CHARMING", 0.8);
     }
@@ -3929,8 +4028,8 @@ void HitMeteor(int ptr)
 
     if (CurrentHealth(owner))
     {
-        MoveWaypoint(1, GetObjectX(ptr), GetObjectY(ptr));
-        Effect("SPARK_EXPLOSION", GetWaypointX(1), GetWaypointY(1), 0.0, 0.0);
+        TeleportLocation(1, GetObjectX(ptr), GetObjectY(ptr));
+        Effect("SPARK_EXPLOSION", LocationX(1), LocationY(1), 0.0, 0.0);
         SplashDamage(owner, 105, 125.0, 1);
         DeleteObjectTimer(CreateObject("MeteorExplode", 1), 9);
         DeleteObjectTimer(CreateObject("Explosion", 1), 9);
@@ -3972,8 +4071,8 @@ void BlackHokMovingHandler(int arg)
             }
             else
             {
-                MoveWaypoint(1, GetObjectX(arg), GetObjectY(arg));
-                GreenExplosion(GetWaypointX(1), GetWaypointY(1));
+                TeleportLocation(1, GetObjectX(arg), GetObjectY(arg));
+                GreenExplosion(LocationX(1), LocationY(1));
                 Damage(arg, 0, MaxHealth(arg) + 1, 14);
                 SplashDamage(owner, 50, 85.0, 1);
             }
@@ -4206,7 +4305,7 @@ void StartBossRoom()
         BossRoomEntranceWall(1);
         ObjectOn(Object("BossRoomTeleport"));
         Frozen(CreateObjectAt("TraderArmorRack1", 208.0, 169.0), 1);
-        BossMonster("WizardRed", GetWaypointX(111), GetWaypointY(111));
+        BossMonster("WizardRed", LocationX(111), LocationY(111));
         SpawnTeleportMark(1599.0, 4749.0, 1234.0, 5374.0);
         RemoveFrogInArea(GetObjectX(self), GetObjectY(self), other);
         StartItemRing("RedPotion", 112, 20);
@@ -4215,7 +4314,7 @@ void StartBossRoom()
     else
     {
         LowerRightWalls();
-        Print("이 스위치를 조작하려면 보안 카드키가 필요합니다");
+        UniPrint(other, "이 스위치를 조작하려면 보안 카드키가 필요합니다");
     }
 }
 
@@ -4238,8 +4337,8 @@ void TakeMeToTargetLocation()
     {
         if (!HasEnchant(other, "ENCHANT_BURNING"))
         {
-            Print("지정된 장소로 공간이동을 시작합니다, 취소하려면 움직이세요");
-            MoveWaypoint(1, GetObjectX(self), GetObjectY(self));
+            UniPrint(other, "지정된 장소로 공간이동을 시작합니다, 취소하려면 움직이세요");
+            TeleportLocation(1, GetObjectX(self), GetObjectY(self));
             ptr = CreateObject("InvisibleLightBlueHigh", 1);
             CreateObjectAt("InvisibleLightBlueHigh", GetObjectX(GetTrigger() + 1), GetObjectY(GetTrigger() + 1));
             CreateObject("VortexSource", 1);
@@ -4293,7 +4392,7 @@ void StrSuccessMission()
 {
 	int arr[60], i, count = 0;
 	string name = "HealOrb";
-	float pos_x = GetWaypointX(1), pos_y = GetWaypointY(1);
+	float pos_x = LocationX(1), pos_y = LocationY(1);
 
 	arr[0] = 491520; arr[1] = 469762048; arr[2] = 0; arr[3] = 1883012992; arr[4] = 1677460479; arr[5] = 1; arr[6] = 31956480; arr[7] = 1022368775; 
 	arr[8] = 33553422; arr[9] = 255356928; arr[10] = 1103159352; arr[11] = 234881139; arr[12] = 2072102814; arr[13] = 235340224; arr[14] = 1879049144; arr[15] = 1544436976; 
@@ -4305,7 +4404,7 @@ void StrSuccessMission()
 	arr[56] = 29362175; arr[57] = 2097024; arr[58] = 0; arr[59] = 234881024;
 	for (i = 0 ; i < 60 ; i ++)
 		count = DrawStrSuccessMission(arr[i], name, count);
-	MoveWaypoint(1, pos_x, pos_y);
+	TeleportLocation(1, pos_x, pos_y);
 }
 
 int DrawStrSuccessMission(int arg, string name, int count)
@@ -4317,9 +4416,9 @@ int DrawStrSuccessMission(int arg, string name, int count)
 		if (i & arg)
 			CreateObject(name, 1);
 		if (count % 96 == 95)
-			MoveWaypoint(1, GetWaypointX(1) - 190.0, GetWaypointY(1) + 3.0);
+			TeleportLocationVector(1, -190.0, 3.0);
 		else
-			MoveWaypoint(1, GetWaypointX(1) + 2.0, GetWaypointY(1));
+			TeleportLocationVector(1, 2.0, 0.0);
 		count ++;
 	}
 	return count;
@@ -4362,13 +4461,13 @@ void PowerShooterHandler(int glow)
             Raise(unit, vectX);
             SetOwner(owner, unit);
             FrameTimerWithArg(1, unit, ShooterFlying);
-            MoveWaypoint(1, GetObjectX(owner), GetObjectY(owner));
+            TeleportLocation(1, GetObjectX(owner), GetObjectY(owner));
             AudioEvent("FemaleSpellPhonemeUpLeft", 1);
             Delete(ToInt(GetObjectZ(glow + 1)));
-            Chat(owner, "수류탄 투척");
+            UniChatMessage(owner, "수류탄 투척", 150);
         }
         else
-            PrintToPlayer(owner, "그곳은 볼 수 없는 지역이기 때문에 시전되지 않았습니다, 수류탄은 소모되지 않았습니다");
+            UniPrint(owner, "그곳은 볼 수 없는 지역이기 때문에 시전되지 않았습니다, 수류탄은 소모되지 않았습니다");
     }
     Delete(glow);
     Delete(glow + 1);
@@ -4413,7 +4512,7 @@ void ExplosionBomb(int ptr)
 
     for (i = 0 ; i < 8 ; i ++)
         CreateObjectAt("InvisibleLightBlueLow", GetObjectX(unit) + MathSine(i * 45 + 90, 23.0), GetObjectY(unit) + MathSine(i * 45, 23.0));
-    MoveWaypoint(1, GetObjectX(unit), GetObjectY(unit));
+    TeleportLocation(1, GetObjectX(unit), GetObjectY(unit));
     SplashDamage(owner, 60, 135.0, 1);
     SpreadExplosionSparks(unit);
 }
@@ -4424,7 +4523,7 @@ void SpreadExplosionSparks(int ptr)
 
     if (count < 15)
     {
-        MoveWaypoint(1, GetObjectX(ptr), GetObjectY(ptr));
+        TeleportLocation(1, GetObjectX(ptr), GetObjectY(ptr));
         for (i = 7 ; i >= 0 ; i --)
         {
             Effect("SPARK_EXPLOSION", GetObjectX(ptr2 + i), GetObjectY(ptr2 + i), 0.0, 0.0);
@@ -4505,24 +4604,13 @@ void PoisonGasUse()
     PutGasTrap(other);
 }
 
-int SpecialItemFunc()
-{
-    StopScript(ShockItemCreate);
-}
-
 int ShockItemCreate(int location)
 {
     int item = CreateObject("Fear", location);
     int ptr = GetMemory(0x750710);
-    int func;
-
-    if (!func)
-    {
-        CancelTimer(FrameTimerWithArg(10, ShockItemUse, ShockItemUse));
-        func = GetMemory(GetMemory(0x83395c) + 8);
-    }
+    
     SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-    SetMemory(ptr + 0x2fc, func);
+    SetMemory(ptr + 0x2fc, ShockItemUse);
 
     return item;
 }
@@ -4531,15 +4619,9 @@ int HealingItemCreate(int location)
 {
     int item = CreateObject("AmuletofManipulation", location);
     int ptr = GetMemory(0x750710);
-    int func;
-
-    if (!func)
-    {
-        CancelTimer(FrameTimerWithArg(10, HealingItemUse, HealingItemUse));
-        func = GetMemory(GetMemory(0x83395c) + 8);
-    }
+    
     SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-    SetMemory(ptr + 0x2fc, func);
+    SetMemory(ptr + 0x2fc, HealingItemUse);
 
     return item;
 }
@@ -4548,15 +4630,9 @@ int TrapItemCreate(int location)
 {
     int item = CreateObject("AmuletofNature", location);
     int ptr = GetMemory(0x750710);
-    int func;
-
-    if (!func)
-    {
-        CancelTimer(FrameTimerWithArg(10, PoisonGasUse, PoisonGasUse));
-        func = GetMemory(GetMemory(0x83395c) + 8);
-    }
+    
     SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-    SetMemory(ptr + 0x2fc, func);
+    SetMemory(ptr + 0x2fc, PoisonGasUse);
 
     return item;
 }
@@ -4569,8 +4645,7 @@ int ImportUseItemFunc()
         arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x1424748B; arr[3] = 0x18246C8B;
         arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
         arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
-        CancelTimer(FrameTimerWithArg(10, ImportUseItemFunc, ImportUseItemFunc));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportUseItemFunc);
     }
     return link;
 }
@@ -4584,8 +4659,738 @@ int ImportUnitDieFunc()
         arr[0] = 0x50731068; arr[1] = 0x8B565000; arr[2] = 0x8B102474; arr[3] = 0x0002FC86;
         arr[4] = 0x006A5600; arr[5] = 0x2454FF50; arr[6] = 0x0CC48314; arr[7] = 0xC483585E;
         arr[8] = 0x9090C304; 
-        CancelTimer(FrameTimerWithArg(10, ImportUnitDieFunc, ImportUnitDieFunc));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportUnitDieFunc);
     }
     return link;
+}
+
+int NetClientExec()
+{
+    int arr[2], link;
+
+    arr[0] = 0xdf;
+    link = GetMemory(GetMemory(0x75ae28) + (0x30 * NetClientExec + 0x1c));
+    return link;
+}
+
+void ClientSetMemory(int user, int targetAddr, int byte)
+{
+    int ptr = NetClientExec();
+
+    SetMemory(ptr + 1, targetAddr - 0x6d495c);
+    SetMemory(ptr + 5, byte);
+    NetClientSend(user, ptr, 6);
+}
+
+void DelayLink(int pUnit)
+{
+    ClientSetMemory(pUnit, 0x69ba98 + 0, 0);
+    ClientSetMemory(pUnit, 0x69ba98 + 1, 0x10);
+    ClientSetMemory(pUnit, 0x69ba98 + 2, 0x75);
+}
+
+void ClientEntry(int cliUnit)
+{
+    //6A 00 6A 00/ 68 7F 00 00/ 00 E8 02 63/ DB FF 83 C4/ 0C 68 B0 95/ 4B 00 C3 90: 24Byte
+    ClientSetMemory(cliUnit, 0x751000, 0x6a);
+    ClientSetMemory(cliUnit, 0x751001, 0x00);
+    ClientSetMemory(cliUnit, 0x751002, 0x6a);
+    ClientSetMemory(cliUnit, 0x751003, 0x00);
+    ClientSetMemory(cliUnit, 0x751004, 0x68);
+    ClientSetMemory(cliUnit, 0x751005, ClientMain & 0xff);
+    ClientSetMemory(cliUnit, 0x751006, (ClientMain >> 8) & 0xff);
+    ClientSetMemory(cliUnit, 0x751007, 0);
+    ClientSetMemory(cliUnit, 0x751008, 0);
+    ClientSetMemory(cliUnit, 0x751009, 0xe8);
+    ClientSetMemory(cliUnit, 0x75100a, 0x02);
+    ClientSetMemory(cliUnit, 0x75100b, 0x63);
+    ClientSetMemory(cliUnit, 0x75100c, 0xdb);
+    ClientSetMemory(cliUnit, 0x75100d, 0xff);
+    ClientSetMemory(cliUnit, 0x75100e, 0x83);
+    ClientSetMemory(cliUnit, 0x75100f, 0xc4);
+    ClientSetMemory(cliUnit, 0x751010, 0x0c);
+    ClientSetMemory(cliUnit, 0x751011, 0x68);
+    ClientSetMemory(cliUnit, 0x751012, 0x10);
+    ClientSetMemory(cliUnit, 0x751013, 0xde);
+    ClientSetMemory(cliUnit, 0x751014, 0x43);
+    ClientSetMemory(cliUnit, 0x751015, 0x00);
+    ClientSetMemory(cliUnit, 0x751016, 0xc3);
+    FrameTimerWithArg(1, cliUnit, DelayLink);
+}
+
+int ImportNetSendClient()
+{
+    int arr[15], link;
+
+    if (!link)
+    {
+        arr[0] = 0x40EBC068; arr[1] = 0x72506800; arr[2] = 0x83500050; arr[3] = 0x54FF10EC; arr[4] = 0x44891424;
+        arr[5] = 0x54FF0C24; arr[6] = 0x44891424; arr[7] = 0x54FF0824; arr[8] = 0x44891424; arr[9] = 0x54FF0424;
+        arr[10] = 0x04891424; arr[11] = 0x2454FF24; arr[12] = 0x10C48318; arr[13] = 0x08C48358; arr[14] = 0x909090C3;
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ImportNetSendClient + 0x1c));
+    }
+    return link;
+}
+
+void NetClientSend(int plrUnit, int buffPtr, int buffSize)
+{
+    //netClientSend,0x0040EBC0
+    int plrPtr = UnitToPtr(plrUnit), plrIdx;
+    int temp = GetMemory(0x5c31ac);
+
+    if (plrPtr)
+    {
+        if (GetMemory(plrPtr + 0x08) & 0x04)
+        {
+            plrIdx = GetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0x810);
+            //5c31ac
+            SetMemory(0x5c31ac, ImportNetSendClient());
+            PushObject(plrIdx, ToFloat(1), ToFloat(buffPtr), ToFloat(buffSize));
+            SetMemory(0x5c31ac, temp);
+        }
+    }
+}
+
+int PlayMusicPacket()
+{
+    int packet = 0x6466e5, link;
+
+    if (!link)
+    {
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * PlayMusicPacket + 0x1c));
+    }
+    return link;
+}
+
+void NetPlayBgm(int user)
+{
+    if (CurrentHealth(user))
+    {
+        NetClientSend(user, PlayMusicPacket(), 3);
+    }
+}
+
+int ImportWriteBinaryFile()
+{
+    int arr[17], link;
+
+    if (!link)
+    {
+        arr[0] = 0xDB624BE8; arr[1] = 0x246850FF; arr[2] = 0xFF005882; arr[3] = 0x485AE830; arr[4] = 0xC483FFE1;
+        arr[5] = 0x74C08508; arr[6] = 0x748B5624; arr[7] = 0x768B0424; arr[8] = 0x8D0E8B04; arr[9] = 0x50500476; arr[10] = 0x5651016A; arr[11] = 0xE149D1E8;
+        arr[12] = 0x10C483FF; arr[13] = 0xCB64FAE8; arr[14] = 0x04C483FF; arr[15] = 0x04C4835E; arr[16] = 0x909090C3;
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ImportWriteBinaryFile + 0x1c));
+        FixCallOpcode(link + 0, 0x507250);
+        FixCallOpcode(link + 0xd, 0x56586c);
+        FixCallOpcode(link + 0x2c, 0x565a02);
+        FixCallOpcode(link + 0x34, 0x407533);
+    }
+    return link;
+}
+
+void WriteBinaryFile(string fileName, int stream)
+{
+    int temp = 0x5c310c;
+
+    fileName = ToStr(GetMemory(0x97bb40 + (SToInt(fileName) * 4)));
+    SetMemory(0x5c310c, ImportWriteBinaryFile());
+    Unused20(GetMemory(GetMemory(0x75ae28) + (0x30 * WriteBinaryFile + 0x1c)));
+    SetMemory(0x5c310c, temp);
+}
+
+int ShowMessageBoxImport()
+{
+    int arr[9], link;
+
+    if (!link)
+    {
+        arr[0] = 0x006A5650; arr[1] = 0x216A006A; arr[2] = 0xDB6243E8; arr[3] = 0x0470FFFF; arr[4] = 0x35FF30FF; arr[5] = 0x006E08E4;
+        arr[6] = 0xCF89F3E8; arr[7] = 0x18C483FF; arr[8] = 0x90C3585E;
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ShowMessageBoxImport) + 0x1c);
+        FixCallOpcode(link + 8, 0x507250);
+        FixCallOpcode(link + 0x18, 0x449a10);
+    }
+    return link;
+}
+
+void ShowMessageBoxCore(int ttDest, int cDest)
+{
+    int link, temp = GetMemory(0x5c3108);
+
+    link = GetMemory(GetMemory(0x75ae28) + (0x30 * ShowMessageBoxCore) + 0x1c);
+    SetMemory(0x5c3108, ShowMessageBoxImport());
+    Unused1f(link);
+    SetMemory(0x5c3108, temp);
+}
+
+void ShowMessageBox(string title, string content)
+{
+    int ttDest[100], cDest[100], link;
+    int ttPtr = GetMemory(0x97bb40 + (SToInt(title) * 4));
+    int cPtr = GetMemory(0x97bb40 + (SToInt(content) * 4));
+
+    link = GetMemory(GetMemory(0x75ae28) + (0x30 * ShowMessageBox) + 0x1c);
+    NoxUtf8ToUnicode(ttPtr, link + 8);
+    NoxUtf8ToUnicode(cPtr, link + 408);
+
+    ShowMessageBoxCore(link + 8, link + 408);
+}
+
+int FixCallOpcode(int curAddr, int targetAddr)
+{
+    SetMemory(curAddr + 1, targetAddr - curAddr - 5);
+}
+
+int MathAbs(int num)
+{
+    return ((num >> 30) | 1) * num;
+}
+
+int GetWordValue(int num)
+{
+	return num & 0xffff;
+}
+
+void WriteAddressByteValue(int addr, int byt)
+{
+	int temp = GetMemory(addr) & 0xffffff00;
+	SetMemory(addr, temp | byt);
+}
+
+int NoxUnicodeToUtf8(int src, int destPtr)
+{
+	int i, byt, dest = destPtr;
+
+	for (i = 0 ; i < 20 ; i ++)
+	{
+		byt = GetWordValue(GetMemory(src));
+        if (!byt) break;
+		if (byt < 0x80)
+		{
+			WriteAddressByteValue(dest, byt);
+			dest ++;
+		}
+		else if (byt < 0x800)
+		{
+			WriteAddressByteValue(dest, ((byt >> 6) & 0x1f) | 0xc0);
+			WriteAddressByteValue(dest + 1, (byt & 0x3f) | 0x80);
+			dest += 2;
+		}
+		else
+		{
+			WriteAddressByteValue(dest, ((byt >> 12) & 0x0f) | 0xe0);
+			WriteAddressByteValue(dest + 1, ((byt >> 6) & 0x3f) | 0x80);
+			WriteAddressByteValue(dest + 2, (byt & 0x3f) | 0x80);
+			dest += 3;
+		}
+        src += 2;
+	}
+    WriteAddressByteValue(dest, 0);
+	return dest - destPtr;
+}
+
+string PlayerIngameNick(int sUnit)
+{
+    string emptyName = {
+        "00:01234567890123456789abcd0123456789abxyz", "01:01234567890123456789abcd0123456789abxyz",
+        "02:01234567890123456789abcd0123456789abxyz", "03:01234567890123456789abcd0123456789abxyz",
+        "04:01234567890123456789abcd0123456789abxyz", "05:01234567890123456789abcd0123456789abxyz",
+        "06:01234567890123456789abcd0123456789abxyz", "07:01234567890123456789abcd0123456789abxyz",
+        "08:01234567890123456789abcd0123456789abxyz", "09:01234567890123456789abcd0123456789abxyz",
+        "10:01234567890123456789abcd0123456789abxyz", "11:01234567890123456789abcd0123456789abxyz",
+        "12:01234567890123456789abcd0123456789abxyz", "13:01234567890123456789abcd0123456789abxyz",
+        "14:01234567890123456789abcd0123456789abxyz", "15:01234567890123456789abcd0123456789abxyz",
+        "16:01234567890123456789abcd0123456789abxyz", "17:01234567890123456789abcd0123456789abxyz",
+        "18:01234567890123456789abcd0123456789abxyz", "19:01234567890123456789abcd0123456789abxyz",
+        "20:01234567890123456789abcd0123456789abxyz", "21:01234567890123456789abcd0123456789abxyz",
+        "22:01234567890123456789abcd0123456789abxyz", "23:01234567890123456789abcd0123456789abxyz",
+        "24:01234567890123456789abcd0123456789abxyz", "25:01234567890123456789abcd0123456789abxyz",
+        "26:01234567890123456789abcd0123456789abxyz", "27:01234567890123456789abcd0123456789abxyz",
+        "28:01234567890123456789abcd0123456789abxyz", "29:01234567890123456789abcd0123456789abxyz",
+        "30:01234567890123456789abcd0123456789abxyz", "31:01234567890123456789abcd0123456789abxyz"};
+    int ptr = UnitToPtr(sUnit), plrIndex, destPtr, srcPtr;
+    
+    if (ptr)
+    {
+        if (GetMemory(ptr + 0x08) & 4)
+        {
+            plrIndex = GetMemory(GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x810);
+            destPtr = GetMemory(0x97bb40 + ((SToInt(emptyName) + plrIndex) * 4));
+            srcPtr = GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x889;
+            NoxUnicodeToUtf8(srcPtr, destPtr);
+            return ToStr(SToInt(emptyName) + plrIndex);
+        }
+    }
+    return "NULL";
+}
+
+void WriteMusicStrings(int targetAddr)
+{
+    int arr[78], i;
+
+    arr[0] = 0x70616863; arr[1] = 0x61772E31; arr[2] = 0x68630076; arr[3] = 0x77327061; arr[4] = 0x772E7A69; arr[5] = 0x63007661; arr[6] = 0x32706168;
+    arr[7] = 0x2E6E6F63; arr[8] = 0x00766177; arr[9] = 0x70616863; arr[10] = 0x72617732; arr[11] = 0x7661772E; arr[12] = 0x61686300; arr[13] = 0x772E3370;
+    arr[14] = 0x63007661; arr[15] = 0x34706168; arr[16] = 0x7661772E; arr[17] = 0x61686300; arr[18] = 0x772E3570; arr[19] = 0x63007661; arr[20] = 0x36706168;
+    arr[21] = 0x7661772E; arr[22] = 0x61686300; arr[23] = 0x772E3770; arr[24] = 0x63007661; arr[25] = 0x38706168; arr[26] = 0x7661772E; arr[27] = 0x61686300;
+    arr[28] = 0x772E3970; arr[29] = 0x63007661; arr[30] = 0x61706168; arr[31] = 0x7661772E; arr[32] = 0x61686300; arr[33] = 0x772E6270; arr[34] = 0x74007661;
+    arr[35] = 0x656C7469; arr[36] = 0x7661772E; arr[37] = 0x776F7400; arr[38] = 0x772E316E; arr[39] = 0x74007661; arr[40] = 0x326E776F; arr[41] = 0x7661772E;
+    arr[42] = 0x776F7400; arr[43] = 0x772E336E; arr[44] = 0x73007661; arr[45] = 0x2E316275; arr[46] = 0x00766177; arr[47] = 0x32627573; arr[48] = 0x7661772E;
+    arr[49] = 0x62757300; arr[50] = 0x61772E33; arr[51] = 0x61770076; arr[52] = 0x7265646E; arr[53] = 0x61772E31; arr[54] = 0x61770076; arr[55] = 0x7265646E;
+    arr[56] = 0x61772E32; arr[57] = 0x61770076; arr[58] = 0x7265646E; arr[59] = 0x61772E33; arr[60] = 0x72630076; arr[61] = 0x74696465; arr[62] = 0x61772E73;
+    arr[63] = 0x68730076; arr[64] = 0x2E6C6C65; arr[65] = 0x00766177; arr[66] = 0x69746361; arr[67] = 0x2E316E6F; arr[68] = 0x00766177; arr[69] = 0x69746361;
+    arr[70] = 0x2E326E6F; arr[71] = 0x00766177; arr[72] = 0x69746361; arr[73] = 0x2E336E6F; arr[74] = 0x00766177; arr[75] = 0x646E6177; arr[76] = 0x2E347265;
+    arr[77] = 0x00766177;
+    for (i = 0 ; i < 78 ; i ++)
+        SetMemory(targetAddr + (i * 4), arr[i]);
+}
+
+void PreProcessPlayBgm(int targetAddr)
+{
+    int oldBase = 0x59da7c;
+
+    WriteMusicStrings(targetAddr);
+    SetMemory(oldBase + 0, targetAddr);
+    SetMemory(oldBase + 4, targetAddr + 0xa);
+    SetMemory(oldBase + 8, targetAddr + 0x17);
+    SetMemory(oldBase + 12, targetAddr + 0x24);
+    SetMemory(oldBase + 16, targetAddr + 0x31);
+    SetMemory(oldBase + 20, targetAddr + 0x3b);
+    SetMemory(oldBase + 24, targetAddr + 0x45);
+    SetMemory(oldBase + 28, targetAddr + 0x4f);
+    SetMemory(oldBase + 32, targetAddr + 0x59);
+    SetMemory(oldBase + 36, targetAddr + 0x63);
+    SetMemory(oldBase + 40, targetAddr + 0x6d);
+    SetMemory(oldBase + 44, targetAddr + 0x77);
+    SetMemory(oldBase + 48, targetAddr + 0x81);
+    SetMemory(oldBase + 52, targetAddr + 0x8b);
+    SetMemory(oldBase + 56, targetAddr + 0x95);
+    SetMemory(oldBase + 60, targetAddr + 0x9f);
+    SetMemory(oldBase + 64, targetAddr + 0xa9);
+    SetMemory(oldBase + 68, targetAddr + 0xb3);
+    SetMemory(oldBase + 72, targetAddr + 0xbc);
+    SetMemory(oldBase + 76, targetAddr + 0xc5);
+    SetMemory(oldBase + 80, targetAddr + 0xce);
+    SetMemory(oldBase + 84, targetAddr + 0xda);
+    SetMemory(oldBase + 88, targetAddr + 0xe6);
+    SetMemory(oldBase + 92, targetAddr + 0xf2);
+    SetMemory(oldBase + 96, targetAddr + 0xfe);
+    SetMemory(oldBase + 100, targetAddr + 0x108);
+    SetMemory(oldBase + 104, targetAddr + 0x114);
+    SetMemory(oldBase + 108, targetAddr + 0x120);
+    SetMemory(oldBase + 112, targetAddr + 0x12c);
+    SetMemory(0x59dbfc, 0);
+}
+
+void ResourceBGMdata()
+{
+    return;
+}
+
+void ExtractMapBgm(int arg)
+{
+    string fileName = ToStr(arg >> 0x10);
+    int rscF = arg & 0xffff;
+    int stream = GetMemory(GetMemory(0x75ae28) + (0x30 * rscF + 0x20));
+
+    SetMemory(0x59dc10, GetMemory(0x97bb40 + (SToInt(fileName) * 4)));
+    WriteBinaryFile("music\\" + fileName, stream);
+
+    PreProcessPlayBgm(0x5becc4);
+}
+
+void MakeMusicDirectory()
+{
+    int temp = GetMemory(0x5c33b8);
+    int code = 0x979740 + ((GetMemory(0x75ae40) - 2) * 4);
+
+    //6A 00 68 C8/ 17 58 00 FF
+    0xf468006a; 0xff0059db; 0x58116815; 0x9090C300;
+    SetMemory(0x5c33b8, code);
+    MusicPopEvent();
+    SetMemory(0x5c33b8, temp);
+}
+
+int NetClassUserPtrTable()
+{
+    int userArr[32];
+
+    return GetScrDataField(NetClassUserPtrTable);
+}
+
+int GetPlayerCount()
+{
+    int ptr = GetMemory(0x97ec60);
+
+    if (ptr)
+        return GetMemory(ptr + 84) + 1;
+    return 0;
+}
+
+int NetClassUserCountCheck(int userTablePtr)
+{
+    int userCount, realCount = GetPlayerCount(), prevCount;
+
+    if ((realCount ^ userCount) && realCount)
+    {
+        prevCount = userCount;
+        userCount = realCount;
+        return MathAbs(prevCount - realCount);
+    }
+    return 0;
+}
+
+int NetClassFlags(int pIndex, int setValue)
+{
+    int flags[32];
+
+    if (setValue)
+    {
+        if (setValue & (1 << 0x1c))
+            flags[pIndex] = 0;
+        else
+            flags[pIndex] = setValue;
+    }
+    return flags[pIndex];
+}
+
+int NetClassObserverFlagCheck(int pIndex)
+{
+    return NetClassFlags(pIndex, 0) & 0x02;
+}
+
+void NetClassObserverFlagSet(int pIndex)
+{
+    NetClassFlags(pIndex, NetClassFlags(pIndex, 0) ^ 0x02);
+}
+
+int NetClassDuelFlagCheck(int pIndex)
+{
+    return NetClassFlags(pIndex, 0) & 0x04;
+}
+
+void NetClassDuelFlagSet(int pIndex)
+{
+    NetClassFlags(pIndex, NetClassFlags(pIndex, 0) ^ 0x04);
+}
+
+int NetClassCamUserFlagCheck(int pIndex)
+{
+    return NetClassFlags(pIndex, 0) & 0x08;
+}
+
+void NetClassCamUserFlagSet(int pIndex)
+{
+    NetClassFlags(pIndex, NetClassFlags(pIndex, 0) ^ 0x08);
+}
+
+int NetClassDeathFlagCheck(int pIndex)
+{
+    return NetClassFlags(pIndex, 0) & 0x80;
+}
+
+void NetClassDeathFlagSet(int pIndex)
+{
+    NetClassFlags(pIndex, NetClassFlags(pIndex, 0) ^ 0x80);
+}
+
+void NetClassOnInit(int plrUnit, int pIndex)
+{
+    NetClassFlags(pIndex, 1);
+    if (plrUnit ^ GetHost())
+    {
+        ClientEntry(plrUnit);
+        // FrameTimerWithArg(60, plrUnit, ClientDelayAfterEntry);
+    }
+    else
+        PlayerClassCommonWhenEntry();
+    UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 지도에 입장하셨어요");
+    FrameTimerWithArg(100, plrUnit, NetPlayBgm);
+}
+
+void NetClassOnExit(int pIndex)
+{
+    NetClassFlags(pIndex, 1 << 0x1c);
+}
+
+int NetClassAssign(int destPtr, int plrPtr, int pIndex)
+{
+    int unitId;
+
+    if (plrPtr)
+    {
+        unitId = GetMemory(plrPtr + 0x2c);
+        if (GetMemory(destPtr) ^ unitId)
+        {
+            NetClassOnInit(unitId, pIndex);
+            SetMemory(destPtr, unitId);
+            return 1;
+        }
+    }
+    else if (GetMemory(destPtr))
+    {
+        NetClassOnExit(pIndex);
+        SetMemory(destPtr, 0);
+        return 1;
+    }
+    return 0;
+}
+
+int NetClassMapDownloading(int pIndex, int plrPtr)
+{
+    if (pIndex ^ 31)
+    {
+        if ((GetMemory(plrPtr + 128) & 0xff) || (GetMemory(plrPtr + 0x648) == 0xdeadface))
+            return 1;
+        return (GetMemory(0x81b260 + (pIndex * 0x30)) >> 0x10);
+    }
+    return 0;
+}
+
+void NetClassMakeTable(int userTablePtr)
+{
+    int plrPtr = 0x62f9e0, i;
+
+    for (i = 0 ; i < 32 ; i ++)
+    {
+        if (!NetClassMapDownloading(i, plrPtr))
+            NetClassAssign(userTablePtr + (4 * i), GetMemory(plrPtr), i);
+        plrPtr += 0x12dc;
+    }
+}
+
+void NetClassOnDeath(int plrUnit, int pIndex)
+{
+    UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 적에게 격추되었습니다");
+}
+
+void NetClassOnRespawn(int plrUnit, int pIndex)
+{
+    return;
+}
+
+void NetClassOnGoObserver(int plrUnit, int pIndex)
+{
+    if (NetClassDeathFlagCheck(pIndex))
+    {
+        NetClassDeathFlagSet(pIndex);
+    }
+}
+
+void NetClassOnAlive(int plrUnit, int pIndex)
+{
+    if (MaxHealth(plrUnit))
+    {
+        if (GetUnitFlags(plrUnit) & 0x40)
+        {
+            if (!NetClassObserverFlagCheck(pIndex))
+            {
+                NetClassObserverFlagSet(pIndex);
+                NetClassOnGoObserver(plrUnit, pIndex);
+            }
+        }
+        else if (CurrentHealth(plrUnit))
+        {
+            if (NetClassDeathFlagCheck(pIndex))
+            {
+                NetClassDeathFlagSet(pIndex);
+                NetClassOnRespawn(plrUnit, pIndex);
+            }
+        }
+        else
+        {
+            if (NetClassDeathFlagCheck(pIndex)) 1;
+            else
+            {
+                NetClassDeathFlagSet(pIndex);
+                NetClassOnDeath(plrUnit, pIndex);
+            }
+        }
+    }
+}
+
+void NetClassUserHandle(int userTablePtr)
+{
+    int i;
+
+    for (i = 31 ; i >= 0 ; i --)
+    {
+        if (GetMemory(userTablePtr + (4 * i)))
+            NetClassOnAlive(GetMemory(userTablePtr + (4 * i)), i);
+    }
+}
+
+void NetClassLoop(int userTablePtr)
+{
+    NetClassMakeTable(userTablePtr);
+    NetClassUserHandle(userTablePtr);
+
+    FrameTimerWithArg(1, userTablePtr, NetClassLoop);
+}
+
+void LoopRun()
+{
+    FrameTimerWithArg(1, NetClassUserPtrTable(), NetClassLoop);
+}
+
+void ClientMain()
+{
+    int chksum;
+
+    if (!chksum)
+    {
+        chksum = EnableMemoryReadWriteFunction(0);
+        SetMemory(0x69ba98, 0x43de10);
+        PlayerClassCommonWhenEntry();
+
+        chksum ++;
+    }
+}
+
+void PepeImage1()
+{ }
+
+void PepeImage2()
+{ }
+
+void PepeImage3()
+{ }
+
+
+void PlayerClassCommonWhenEntry()
+{
+    SetMemory(0x69b974, 0x64);
+    SetMemory(0x59dbe4, 1);
+
+    ImageInit();
+    // SetMemory(0x85b7d0, (GetMemory(0x85b7d0) & 0xffff0000) ^ 0x1fe0);
+    // MakeMusicDirectory();
+    // ExtractMapBgm(SToInt("hail666.mp3") << 0x10 | ResoureCommonBgmData);
+    // SomeObjectChangeToInnerImage();
+    // ModifyMenuText();
+    // ShowMessageBox("개인 랜덤디펜스", "랜덤한 유닛을 뽑아서 라인을 무찔러 봅시다!\n개꿀팁: J버튼 누르면 타 유저를 구경할 수 있어요!");
+}
+
+int ImageResourceDrawFunctionFix(int bptr)
+{
+    int arr[58];
+
+    arr[0] = 0x83EC8B55; arr[1] = 0x8B5608EC; arr[2] = 0x358B0845; arr[3] = 0x0069F224; arr[4] = 0x8BFC4589; arr[5] = 0x348B6C40; arr[6] = 0xF8758986;
+    arr[7] = 0x5D5350A1; arr[8] = 0x60768B00; arr[9] = 0x1374F039; arr[10] = 0xB8F8758B; arr[11] = 0x004BCC20; arr[12] = 0x8B584689; arr[13] = 0x4689FC75;
+    arr[14] = 0x5EC03158; arr[15] = 0x5D08C483; arr[16] = 0x909090C3; arr[17] = 0x83EC8B55; arr[18] = 0x8B5620EC; arr[19] = 0xE8560C75; arr[20] = 0xFFFFFFAC;
+    arr[21] = 0x8504C483; arr[22] = 0x8B2274C0; arr[23] = 0xC0850846; arr[24] = 0x31561B74; arr[25] = 0x708B66F6; arr[26] = 0x4860A108; arr[27] = 0x348D0069;
+    arr[28] = 0xB0048DF6; arr[29] = 0x8BF04589; arr[30] = 0xEC458900; arr[31] = 0xE445895E; arr[32] = 0x3474C085; arr[33] = 0x896C468B; arr[34] = 0xB68BF445;
+    arr[35] = 0x00000130; arr[36] = 0x8904768B; arr[37] = 0x068BFC75; arr[38] = 0x8BF84589; arr[39] = 0x69F22435; arr[40] = 0xF4458B00; arr[41] = 0x8B86348D;
+    arr[42] = 0x74468B36; arr[43] = 0x89F0758B; arr[44] = 0xFC458B06; arr[45] = 0x3089F631; arr[46] = 0x8B08758D; arr[47] = 0xFF500446; arr[48] = 0xBA96E836;
+    arr[49] = 0xC483FFD6; arr[50] = 0x458B5008; arr[51] = 0x74C085E4; arr[52] = 0xFC458B10; arr[53] = 0x89F8758B; arr[54] = 0xF0458B30; arr[55] = 0x89EC758B;
+    arr[56] = 0x835E5830; arr[57] = 0xC35D20C4;
+    StreamCopy(GetScrDataField(ImageResourceDrawFunctionFix) + 4, bptr, 58);
+    return bptr + 0x44;
+}
+
+void ApplyImageResourceFix(int thingId, int rscPtr, int drawF)
+{
+    int chandle = GetMemory(0x5d5350);
+    int tPtr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
+
+    //SetMemory(tPtr + 0x54, chandle);
+    SetMemory(tPtr + 0x60, chandle);
+    SetMemory(tPtr + 0x58, drawF);
+    SetMemory(tPtr + 0x74, rscPtr);
+}
+
+void ImageInit()
+{
+    int drawF = ImageResourceDrawFunctionFix(0x7510c4);
+
+    ApplyImageResourceFix(372, GetScrCodeField(PepeImage1) + 4, drawF);
+    ApplyImageResourceFix(371, GetScrCodeField(PepeImage2) + 4, drawF);
+    ApplyImageResourceFix(359, GetScrCodeField(PepeImage3) + 4, drawF);
+}
+
+
+int ImportStreamCopy()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50515756; arr[1] = 0xDB6247E8; arr[2] = 0xE8C88BFF; arr[3] = 0xFFDB6240; arr[4] = 0x39E8F88B; arr[5] = 0x8BFFDB62; arr[6] = 0x58A5F3F0; arr[7] = 0xC35E5F59;
+        link = GetMemory(GetMemory(0x75ae28) + ((0x30 * ImportStreamCopy) + 0x1c));
+        FixCallOpcode(link + 4, 0x507250);
+        FixCallOpcode(link + 0xb, 0x507250);
+        FixCallOpcode(link + 0x12, 0x507250);
+    }
+    return link;
+}
+
+void StreamCopy(int src, int dst, int len)
+{
+    int temp = GetMemory(0x5c3320);
+
+    SetMemory(0x5c3320, ImportStreamCopy());
+    GroupRunAway(src, dst, len);
+    SetMemory(0x5c3320, temp);
+}
+
+
+int ImportPlayerAutoTeamSign()
+{
+    int arr[17], link;
+
+    if (!link)
+    {
+        arr[0] = 0x4191D068; arr[1] = 0x50515600; arr[2] = 0x000020B9; arr[3] = 0xF9E0B800; arr[4] = 0xC9850062;
+        arr[5] = 0x8B492774; arr[6] = 0x12DC0530; arr[7] = 0xF6850000; arr[8] = 0x5150F074; arr[9] = 0x8D24468B;
+        arr[10] = 0x016A304E; arr[11] = 0x51016A50; arr[12] = 0x54FF016A; arr[13] = 0xC4832824; arr[14] = 0xEB585914;
+        arr[15] = 0x5E5958D5; arr[16] = 0xC304C483;
+        link = GetScrDataField(ImportPlayerAutoTeamSign);
+    }
+    return link;
+}
+
+void PlayerAutoTeamSign()
+{
+    int temp = GetMemory(0x5c3178);
+
+    SetMemory(0x5c3178, ImportPlayerAutoTeamSign());
+    GetHost();
+    SetMemory(0x5c3178, temp);
+}
+
+void MakeCoopTeam()
+{
+    int arr[3];
+    int teamCount = GetMemory(0x654D5C), temp, link;
+
+    if (!teamCount && !link)
+    {
+        arr[0] = 0x417E1068; arr[1] = 0x2414FF00; arr[2] = 0xC304C483;
+        link = GetScrDataField(MakeCoopTeam);
+        temp = GetMemory(0x5c3178);
+        SetMemory(0x5c3178, link);
+        GetHost();
+        SetMemory(0x5c3178, temp);
+        SetMemory(0x5d53a4, 268640519);
+    }
+}
+
+void RemoveCoopTeamMode()
+{
+    int arr[6], link, temp;
+
+    if (!link && GetMemory(0x654d5c) == 1)
+    {
+        arr[0] = 0x4DB8BE56; arr[1] = 0x20680065; arr[2] = 0x6A00418F; arr[3] = 0x54FF5600; arr[4] = 0xC4830824; arr[5] = 0x90C35E0C;
+        link = GetScrDataField(RemoveCoopTeamMode);
+        temp = GetMemory(0x5c3178);
+        SetMemory(0x5c3178, link);
+        GetHost();
+        SetMemory(0x5c3178, temp);
+    }
+}
+
+void SetGameTypeCoopMode()
+{
+    MakeCoopTeam();
+    PlayerAutoTeamSign();
 }
