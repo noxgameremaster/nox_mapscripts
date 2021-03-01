@@ -1390,9 +1390,9 @@ void MapInitialize()
     ImportUniPrintCore();
     VoiceList(0);
     GetOwner(MasterUnit());
-    CallFunction(0);
-    CallFunctionWithArg(0, 0);
-    CallFunctionWithArgInt(0, 0);
+    // CallFunction(0);                 //@brief: not need init
+    // CallFunctionWithArg(0, 0);
+    // CallFunctionWithArgInt(0, 0);
     FrameTimer(1, DelayMapSetting);
 }
 
@@ -1589,7 +1589,7 @@ void SummonLineMobStepByStep(int ptr)
 
 int SpawnLineMonster(int wave, int loc)
 {
-    int unit = CallFunctionWithArgInt(LineMobPtr() + wave, loc);
+    int unit = CallFunctionWithArgInt(SpawnSmallWhiteSpider + wave, loc);
 
     LookWithAngle(CreateObjectAt("InvisibleLightBlueLow", GetObjectX(unit), GetObjectY(unit)), wave);
     SetOwner(MasterUnit(), unit);
@@ -1639,11 +1639,6 @@ void KillEvent(int me)
         DisplayNumber(20, NumberData(val % 10));
         ChangeGold(kill, val);
     }
-}
-
-int LineMobPtr()
-{
-    StopScript(SpawnSmallWhiteSpider);
 }
 
 int SpawnSmallWhiteSpider(int loc)
@@ -2274,7 +2269,7 @@ int CallFunctionWithArgInt(int func, int arg)
     int link;
 
     if (!link)
-        link = GetScrCodeField(CallFunctionWithArgInt);
+        link = GetScrCodeField(CalleeArgInt);
     SetMemory(link + 0x10, func);
     return CalleeArgInt(arg);
 }
