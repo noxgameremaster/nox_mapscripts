@@ -10,20 +10,16 @@ string PlrIdPtr;
 
 
 int EnableMemoryReadWriteFunction(int t)
-{
-	int addr = 0x97974c;
-	int arr[29];
+{ }
 
-	arr[0] = 0x1090BE56; arr[1] = 0x06C70075; arr[2] = 0x50725068; arr[3] = 0x000446C7;
-	arr[4] = 0xC7723068; arr[5] = 0x00500846; arr[6] = 0x46C754FF; arr[7] = 0xFF04240C;
-	arr[8] = 0x1046C730; arr[9] = 0x042454FF; arr[10] = 0x831446C7; arr[11] = 0xC7310CC4;
-	arr[12] = 0xC3C01846; arr[13] = 0x46C79090; arr[14] = 0x5068561C; arr[15] = 0x2046C772;
-	arr[16] = 0x14FF0050; arr[17] = 0x242446C7; arr[18] = 0xC7FFF08B; arr[19] = 0x24142846;
-	arr[20] = 0x46C73089; arr[21] = 0x04C4832C; arr[22] = 0x3046C75E; arr[23] = 0x909090C3;
-	arr[24] = 0x33703589; arr[25] = 0x05C7005C; arr[26] = 0x005C31F0; arr[27] = 0x007510ac;
-	arr[28] = 0x9090C35E; 
-	//0xed9af
-	return GetScore(t);
+int GetScrDataField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x1c));
+}
+
+int GetScrCodeField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x20));
 }
 
 void BomberNormalCollide(int unit)
@@ -61,6 +57,7 @@ void UnitZeroFleeRange(int unit)
 int WeirdlingBeastBinTable()
 {
 	int arr[62], link;
+
 	if (!link)
 	{
 		arr[0] = 1919509847; arr[1] = 1852402788; arr[2] = 1634026087; arr[3] = 29811; arr[4] = 0; 
@@ -69,15 +66,9 @@ int WeirdlingBeastBinTable()
 		arr[15] = 0; arr[16] = 0; arr[17] = 85; arr[18] = 50; arr[19] = 55; 
 		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 32776; arr[24] = 1068708659; 
 		arr[25] = 0; arr[26] = 4; arr[27] = 0; arr[28] = 1082130432; arr[29] = 20; 
-		arr[30] = 0; arr[31] = 2; arr[32] = 8; arr[33] = 16; arr[34] = 0; 
-		arr[35] = 0; arr[36] = 0; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 0; arr[54] = 0; 
-		arr[55] = 0; arr[56] = 0; arr[57] = 5548112; arr[58] = 0; arr[59] = 5542784; 
-		arr[60] = 0; arr[61] = 0; 
-		CancelTimer(FrameTimerWithArg(10, WeirdlingBeastBinTable, WeirdlingBeastBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		arr[30] = 0; arr[31] = 2; arr[32] = 8; arr[33] = 16;
+		arr[57] = 5548112; arr[58] = 0; arr[59] = 5542784; 
+        link = GetScrDataField(WeirdlingBeastBinTable);
 	}
 	return link;
 }
@@ -92,16 +83,9 @@ int WizardRedBinTable()
 		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
 		arr[15] = 0; arr[16] = 80000; arr[17] = 300; arr[18] = 100; arr[19] = 50; 
 		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 40; arr[24] = 1067869798; 
-		arr[25] = 0; arr[26] = 4; arr[27] = 4; arr[28] = 0; arr[29] = 0; 
-		arr[30] = 0; arr[31] = 0; arr[32] = 0; arr[33] = 0; arr[34] = 0; 
-		arr[35] = 0; arr[36] = 0; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 1128792064; arr[54] = 4; 
-		arr[55] = 0; arr[56] = 0; arr[57] = 0; arr[58] = 0; arr[59] = 0; 
-		arr[60] = 0; arr[61] = 0; 
-		CancelTimer(FrameTimerWithArg(10, WizardRedBinTable, WizardRedBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		arr[25] = 0; arr[26] = 4; arr[27] = 4; arr[53] = 1128792064; arr[54] = 4; 
+
+        link = GetScrDataField(WizardRedBinTable);
 	}
 	return link;
 }
@@ -111,21 +95,11 @@ int MaidenBinTable()
 	int arr[62], link;
 	if (!link)
 	{
-		arr[0] = 1684627789; arr[1] = 28261; arr[2] = 0; arr[3] = 0; arr[4] = 0; 
-		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
-		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
-		arr[15] = 0; arr[16] = 0; arr[17] = 30; arr[18] = 92; arr[19] = 60; 
+		arr[0] = 1684627789; arr[1] = 28261; arr[17] = 30; arr[18] = 92; arr[19] = 60; 
 		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 32776; arr[24] = 1065688760; 
 		arr[25] = 0; arr[26] = 0; arr[27] = 1; arr[28] = 1106247680; arr[29] = 22; 
-		arr[30] = 1101004800; arr[31] = 2; arr[32] = 22; arr[33] = 30; arr[34] = 0; 
-		arr[35] = 0; arr[36] = 0; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 0; arr[54] = 0; 
-		arr[55] = 0; arr[56] = 0; arr[57] = 0; arr[58] = 5546320; arr[59] = 5542784; 
-		arr[60] = 0; arr[61] = 0; 
-		CancelTimer(FrameTimerWithArg(10, MaidenBinTable, MaidenBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		arr[30] = 1101004800; arr[31] = 2; arr[32] = 22; arr[33] = 30; arr[58] = 5546320; arr[59] = 5542784; 
+        link = GetScrDataField(MaidenBinTable);
 	}
 	return link;
 }
@@ -135,21 +109,11 @@ int FireSpriteBinTable()
 	int arr[62], link;
 	if (!link)
 	{
-		arr[0] = 1701996870; arr[1] = 1769107539; arr[2] = 25972; arr[3] = 0; arr[4] = 0; 
-		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
-		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
-		arr[15] = 0; arr[16] = 0; arr[17] = 85; arr[18] = 25; arr[19] = 90; 
+		arr[0] = 1701996870; arr[1] = 1769107539; arr[2] = 25972; arr[17] = 85; arr[18] = 25; arr[19] = 90; 
 		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 65544; arr[24] = 1065353216; 
-		arr[25] = 0; arr[26] = 0; arr[27] = 0; arr[28] = 0; arr[29] = 0; 
-		arr[30] = 0; arr[31] = 0; arr[32] = 0; arr[33] = 0; arr[34] = 0; 
-		arr[35] = 0; arr[36] = 0; arr[37] = 1801545047; arr[38] = 1701996870; arr[39] = 1819042146; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 1128792064; arr[54] = 0; 
-		arr[55] = 15; arr[56] = 21; arr[57] = 0; arr[58] = 5545472; arr[59] = 0; 
-		arr[60] = 0; arr[61] = 0; 
-		CancelTimer(FrameTimerWithArg(10, FireSpriteBinTable, FireSpriteBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		arr[37] = 1801545047; arr[38] = 1701996870; arr[39] = 1819042146; 
+        arr[53] = 1128792064; arr[55] = 15; arr[56] = 21; arr[58] = 5545472;
+        link = GetScrDataField(FireSpriteBinTable);
 	}
 	return link;
 }
@@ -159,23 +123,146 @@ int BomberGreenBinTable()
 	int arr[62], link;
 	if (!link)
 	{
-		arr[0] = 1651339074; arr[1] = 1917284965; arr[2] = 7234917; arr[3] = 0; arr[4] = 0; 
-		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
-		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
+		arr[0] = 1651339074; arr[1] = 1917284965; arr[2] = 7234917;
 		arr[15] = 0; arr[16] = 0; arr[17] = 20; arr[18] = 0; arr[19] = 80; 
 		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 0; arr[24] = 1065353216; 
-		arr[25] = 0; arr[26] = 0; arr[27] = 0; arr[28] = 0; arr[29] = 0; 
 		arr[30] = 0; arr[31] = 4; arr[32] = 0; arr[33] = 0; arr[34] = 0; 
 		arr[35] = 0; arr[36] = 0; arr[37] = 1801545047; arr[38] = 1701996870; arr[39] = 1819042146; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 1128792064; arr[54] = 0; 
+		arr[53] = 1128792064;
 		arr[55] = 11; arr[56] = 17; arr[57] = 5548112; arr[58] = 5545344; arr[59] = 5543344; 
-		arr[60] = 0; arr[61] = 0; 
-		CancelTimer(FrameTimerWithArg(10, BomberGreenBinTable, BomberGreenBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(FireSpriteBinTable);
 	}
 	return link;
+}
+
+int ImportUniChatCore()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0xC0685657; arr[1] = 0x6800528A; arr[2] = 0x00507250; arr[3] = 0x8B2414FF; arr[4] = 0x2414FFF8;
+        arr[5] = 0x14FFF08B; arr[6] = 0x56505724; arr[7] = 0x102454FF; arr[8] = 0x5E14C483; arr[9] = 0x9090C35F;
+        link = GetScrDataField(ImportUniChatCore);
+    }
+    return link;
+}
+
+void UniChatCore(int plrPtr, int sPtr, int sTime)
+{
+    int temp = GetMemory(0x5c3320);
+
+    SetMemory(0x5c3320, ImportUniChatCore());
+    GroupRunAway(sPtr, plrPtr, sTime);
+    SetMemory(0x5c3320, temp);
+}
+
+int ImportUniPrintCore()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x9EB06856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xF08B2414; arr[4] = 0x502414FF;
+        arr[5] = 0x2454FF56; arr[6] = 0x10C4830C; arr[7] = 0x9090C35E;
+        link = GetScrDataField(ImportUniPrintCore);
+    }
+    return link;
+}
+
+void UniPrintCore(int plrPtr, int sPtr)
+{
+    int temp = GetMemory(0x5c31f4);
+
+    SetMemory(0x5c31f4, ImportUniPrintCore());
+    Unused5a(sPtr, plrPtr);
+    SetMemory(0x5c31f4, temp);
+}
+
+int GetByteValue(int ptr)
+{
+    return GetMemory(ptr) & 0xff;
+}
+
+void WriteAddressWordValue(int addr, int word)
+{
+    int temp = GetMemory(addr) & 0xffff0000;
+    SetMemory(addr, temp | word);
+}
+
+void NoxUtf8ToUnicode(int src, int dest)
+{
+    int i = 0, byt;
+
+    while (1)
+    {
+        byt = GetByteValue(src + i);
+        if (!byt) break;
+        if (!(byt & 0x80))
+        {
+            WriteAddressWordValue(dest, byt);
+            i ++;
+        }
+        else if ((byt & 0xe0) == 0xc0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0x1f) <<6) | (GetByteValue(src + i + 1) & 0x3f));
+            i += 2;
+        }
+        else if ((byt & 0xf0) == 0xe0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0xf) << 12) | ((GetByteValue(src + i + 1) & 0x3f) << 6) | (GetByteValue(src + i + 2) & 0x3f));
+            i += 3;
+        }
+        dest += 2;
+    }
+    WriteAddressWordValue(dest, 0);
+}
+
+void UniPrint(int sUnit, string sMsg)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link)
+            link = GetScrDataField(UniPrint);
+        NoxUtf8ToUnicode(str, link + 8);
+        UniPrintCore(ptr, link + 8);
+    }
+}
+
+void UniChatMessage(int sUnit, string sMsg, int duration)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link)
+            link = GetScrDataField(UniChatMessage);
+        NoxUtf8ToUnicode(str, link + 12);
+        UniChatCore(ptr, link + 12, duration);
+    }
+}
+
+void UniPrintToAll(string sMsg)
+{
+    int wDest[200];
+    int plrPtr = 0x62f9e0, link, str = SToInt(sMsg), i;
+
+    if (!link)
+        link = GetScrDataField(UniPrint) + 4;
+    str = GetMemory(0x97bb40 + (str * 4));
+    NoxUtf8ToUnicode(str, link);
+    for (i = 0 ; i < 32 ; i ++)
+    {
+        if (GetMemory(plrPtr))
+            UniPrintCore(GetMemory(plrPtr), link);
+        plrPtr += 0x12dc;
+    }
 }
 
 int GetMemory(int addr)
@@ -223,7 +310,7 @@ void ShowGameMent(int ttt)
 {
     if (ttt < 6)
     {
-        PrintToAll(ToStr(SToInt(GameNoticeMent()) + ttt));
+        UniPrintToAll(ToStr(SToInt(GameNoticeMent()) + ttt));
         SecondTimerWithArg(7, ttt + 1, ShowGameMent);
     }
 }
@@ -275,8 +362,8 @@ void HowToPlayThisGame()
 {
     if (HasClass(other, "PLAYER"))
     {
-        Print("클릭 디펜스 게임 방법: 적을 마우스로 클릭하여 격추시키자, 적으로 부터 위스프를 보호하는게 주 목적!");
-        Print("마우스 커서를 화면 끝에 두면 화면 이동을 할 수 있다, L키= 상점, K키= 센터로 화면 전환 단축키 이다");
+        UniPrint(other, "클릭 디펜스 게임 방법: 적을 마우스로 클릭하여 격추시키자, 적으로 부터 위스프를 보호하는게 주 목적!");
+        UniPrint(other, "마우스 커서를 화면 끝에 두면 화면 이동을 할 수 있다, L키= 상점, K키= 센터로 화면 전환 단축키 이다");
     }
 }
 
@@ -295,13 +382,13 @@ void ShowShopItemInfo()
         if (!HasEnchant(owner, "ENCHANT_PROTECT_FROM_MAGIC") && plr + 1)
         {
             Enchant(owner, "ENCHANT_PROTECT_FROM_MAGIC", 1.5);
-            PrintToPlayer(owner, "상점 구입품목 설명:");
-            PrintToPlayer(owner, "위스프 클릭: 라이프 타워 구입[600골드], 체력물약 클릭: 라이프 타워 체력회복 및 피통 50증가[400골드]");
-            PrintToPlayer(owner, "흡혈물약 클릭: 라이프 타워 뎀지 업글[" + IntToString(TwDmg * 100 + 300) + "골드]");
-            PrintToPlayer(owner, "어친샤만 클릭: 클릭 뎀지 업글[" + IntToString(UpgradPay(owner)) + "골드] 현재레밸: " + IntToString(GetDirection(GetLastItem(owner))));
-            PrintToPlayer(owner, "해골로드 클릭: 새로운 무기 구입[" + IntToString(ChangeWeaponPrice(GetUnitOffset1C(PlrCam + plr))) + "골드] 현재 무기코드: "
+            UniPrint(owner, "상점 구입품목 설명:");
+            UniPrint(owner, "위스프 클릭: 라이프 타워 구입[600골드], 체력물약 클릭: 라이프 타워 체력회복 및 피통 50증가[400골드]");
+            UniPrint(owner, "흡혈물약 클릭: 라이프 타워 뎀지 업글[" + IntToString(TwDmg * 100 + 300) + "골드]");
+            UniPrint(owner, "어친샤만 클릭: 클릭 뎀지 업글[" + IntToString(UpgradPay(owner)) + "골드] 현재레밸: " + IntToString(GetDirection(GetLastItem(owner))));
+            UniPrint(owner, "해골로드 클릭: 새로운 무기 구입[" + IntToString(ChangeWeaponPrice(GetUnitOffset1C(PlrCam + plr))) + "골드] 현재 무기코드: "
                 + IntToString(GetUnitOffset1C(PlrCam + plr)));
-            PrintToPlayer(owner, "자세한 내용은 콘솔키(F1)을 눌러서 확인하세요");
+            UniPrint(owner, "자세한 내용은 콘솔키(F1)을 눌러서 확인하세요");
         }
     }
 }
@@ -316,10 +403,10 @@ void UpgradeGaurdTowerDamage()
         {
             ChangeGold(owner, -(TwDmg * 100 + 300));
             TwDmg ++;
-            PrintToPlayer(owner, "라이프 타워 데미지 업그레이드! 현재 레밸: " + IntToString(TwDmg));
+            UniPrint(owner, "라이프 타워 데미지 업그레이드! 현재 레밸: " + IntToString(TwDmg));
         }
         else
-            PrintToPlayer(owner, "라이프 타워 데미지 업그레이드: 금화가 부족합니다. 요구되는 금액: " + IntToString(TwDmg * 100 + 300));
+            UniPrint(owner, "라이프 타워 데미지 업그레이드: 금화가 부족합니다. 요구되는 금액: " + IntToString(TwDmg * 100 + 300));
     }
 }
 
@@ -336,15 +423,15 @@ void BuyDamageUpgrade()
             {
                 ChangeGold(owner, -UpgradPay(owner));
                 LookWithAngle(GetLastItem(owner), lv + 1);
-                PrintToPlayer(owner, "데미지 업그레이드 완료! 현재 레밸: " + IntToString(lv + 1));
+                UniPrint(owner, "데미지 업그레이드 완료! 현재 레밸: " + IntToString(lv + 1));
             }
             else
             {
-                PrintToPlayer(owner, "금화가 부족합니다");
+                UniPrint(owner, "금화가 부족합니다");
             }
         }
         else
-            PrintToPlayer(owner, "이미 업그레이드 최대치에 달성했습니다");
+            UniPrint(owner, "이미 업그레이드 최대치에 달성했습니다");
     }
 }
 
@@ -360,13 +447,13 @@ void BuyNewTower()
             {
                 SpawnLife("WillOWisp", 3, 1000);
                 ChangeGold(owner, -600);
-                PrintToPlayer(owner, "라이프타워 하나를 생성했습니다!, 라이프 타워 [" + IntToString(LifeCnt) + " / 20]");
+                UniPrint(owner, "라이프타워 하나를 생성했습니다!, 라이프 타워 [" + IntToString(LifeCnt) + " / 20]");
             }
             else
-                PrintToPlayer(owner, "더 이상 라이프 타워를 소환할 수 없습니다");
+                UniPrint(owner, "더 이상 라이프 타워를 소환할 수 없습니다");
         }
         else
-            PrintToPlayer(owner, "금화가 부족합니다, 라이프 타워를 생성하려면 600골드가 요구됩니다");
+            UniPrint(owner, "금화가 부족합니다, 라이프 타워를 생성하려면 600골드가 요구됩니다");
     }
 }
 
@@ -380,12 +467,12 @@ void BuyTowerHealthUp()
         {
             LifeTowerIncreaseGuard(Stack(GetListNext(ListPtr()), 1));
             ChangeGold(owner, -400);
-            PrintToPlayer(owner, "[+] 라이프 타워의 최대 체력이 50 증가 되었습니다 (최대치: 2000)                        ");
-            PrintToPlayer(owner, "[+] 라이프 타워의 체력이 회복되었습니다                                               ");
+            UniPrint(owner, "[+] 라이프 타워의 최대 체력이 50 증가 되었습니다 (최대치: 2000)                        ");
+            UniPrint(owner, "[+] 라이프 타워의 체력이 회복되었습니다                                               ");
         }
         else
         {
-            PrintToPlayer(owner, "[-] 금화가 부족합니다, 라이프 타워 체력강화는 400골드를 요구합니다                      ");
+            UniPrint(owner, "[-] 금화가 부족합니다, 라이프 타워 체력강화는 400골드를 요구합니다                      ");
         }
     }
 }
@@ -407,7 +494,7 @@ void LifeTowerIncreaseGuard(int node)
                 Enchant(unit, "ENCHANT_PROTECT_FROM_FIRE", 1.0);
                 Enchant(unit, "ENCHANT_PROTECT_FROM_ELECTRICITY", 1.0);
                 Enchant(unit, "ENCHANT_PROTECT_FROM_POISON", 1.0);
-                Chat(unit, "현재체력: " + IntToString(MaxHealth(unit)));
+                UniChatMessage(unit, "현재체력: " + IntToString(MaxHealth(unit)), 150);
             }
         }
     }
@@ -442,13 +529,13 @@ void BuyNewWeapon()
                     Effect("WHITE_FLASH", GetObjectX(PlrCam + plr), GetObjectY(PlrCam + plr), 0.0, 0.0);
                     CastSpellObjectObject("SPELL_TURN_UNDEAD", PlrCam + plr, PlrCam + plr);
                     AudioEvent("AwardSpell", 1);
-                    PrintToPlayer(player[plr], "무기가 강화되었습니다! 현재 강화레밸: " + IntToString(lv + 1) + "/ 11");
+                    UniPrint(player[plr], "무기가 강화되었습니다! 현재 강화레밸: " + IntToString(lv + 1) + "/ 11");
                 }
                 else
-                    PrintToPlayer(player[plr], "이미 무기가 최고급 상태입니다!");
+                    UniPrint(player[plr], "이미 무기가 최고급 상태입니다!");
             }
             else
-                PrintToPlayer(player[plr], "금화가 부족합니다, 무기 강화는 " + IntToString(ChangeWeaponPrice(lv)) + " 골드가 요구됩니다");
+                UniPrint(player[plr], "금화가 부족합니다, 무기 강화는 " + IntToString(ChangeWeaponPrice(lv)) + " 골드가 요구됩니다");
         }
     }
 }
@@ -499,7 +586,7 @@ void DisplayLadderBoard()
         if (CurrentHealth(player[k]))
             str += (ToStr(SToInt(PlrIdPtr) + k) + ": " + IntToString(GetGold(player[k])) + "\n");
     }
-    Chat(self, str);
+    UniChatMessage(self, str, 120);
 }
 
 void MapExit()
@@ -541,7 +628,7 @@ void PlayerInit(int plr)
     SetUnitOffset1C(PlrCam + plr, 0);
     EnchantOff(player[plr], "ENCHANT_LIGHT");
     InitiPlayerCamera(player[plr]);
-    PrintToAll(ToStr(SToInt(PlrIdPtr) + plr) + " 님께서 들어왔습니다");
+    UniPrintToAll(ToStr(SToInt(PlrIdPtr) + plr) + " 님께서 들어왔습니다");
 }
 
 void PlayerJoin(int plr)
@@ -562,7 +649,7 @@ void KickPlayer()
     Enchant(other, "ENCHANT_ANTI_MAGIC", 0.0);
     Enchant(other, "ENCHANT_BLINDED", 0.0);
     MoveObject(other, GetWaypointX(2), GetWaypointY(2));
-    Print("게임 진입에 실패하였습니다");
+    UniPrint(other, "게임 진입에 실패하였습니다");
 }
 
 void PreservePlayerTrigger()
@@ -589,7 +676,7 @@ void PreservePlayerTrigger()
             }
             if (player[k + 10])
             {
-                PrintToAll(PlayerName(player[k]) + " 이(가) 게임을 떠나셨습니다");
+                UniPrintToAll(PlayerName(player[k]) + " 이(가) 게임을 떠나셨습니다");
                 player[k] = 0;
                 player[k + 10] = 0;
                 FreePlayerCamera(k);
@@ -704,7 +791,7 @@ void HotKeyEvent1(int cam)
         if (HasEnchant(player[plr], "ENCHANT_LIGHT"))
             return;
         if (HasEnchant(player[plr], "ENCHANT_ETHEREAL"))
-            PrintToPlayer(player[plr], "상점으로 화면 전환 핫키: 쿨다운 입니다...");
+            UniPrint(player[plr], "상점으로 화면 전환 핫키: 쿨다운 입니다...");
         else
         {
             Enchant(player[plr], "ENCHANT_LIGHT", 0.0);
@@ -713,7 +800,7 @@ void HotKeyEvent1(int cam)
             AudioEvent("ElevLOTDUp", 6);
             AudioEvent("ElevLOTDDown", 6);
             AudioEvent("BeholderMove", 6);
-            PrintToPlayer(player[plr], "핫키 사용!! 화면을 상점으로 이동시킵니다");
+            UniPrint(player[plr], "핫키 사용!! 화면을 상점으로 이동시킵니다");
         }
         SetPlayerAction(player[plr], 0);
     }
@@ -726,7 +813,7 @@ void HotKeyEvent2(int cam)
     if (CurrentHealth(player[plr]))
     {
         if (HasEnchant(player[plr], "ENCHANT_ETHEREAL"))
-            PrintToPlayer(player[plr], "센터로 화면 전환 핫키: 쿨다운 입니다...");
+            UniPrint(player[plr], "센터로 화면 전환 핫키: 쿨다운 입니다...");
         else
         {
             EnchantOff(player[plr], "ENCHANT_LIGHT");
@@ -735,7 +822,7 @@ void HotKeyEvent2(int cam)
             AudioEvent("ElevLOTDUp", 3);
             AudioEvent("ElevLOTDDown", 3);
             AudioEvent("BeholderMove", 3);
-            PrintToPlayer(player[plr], "핫키 사용!! 화면을 센터로 이동시킵니다");
+            UniPrint(player[plr], "핫키 사용!! 화면을 센터로 이동시킵니다");
         }
         SetPlayerAction(player[plr], 0);
     }
@@ -1299,6 +1386,8 @@ void MapInitialize()
     ImportGiveUnitFunc();
     ImportPlayerLookFunc();
     ImportGreenExplosionFunc();
+    ImportUniChatCore();
+    ImportUniPrintCore();
     VoiceList(0);
     GetOwner(MasterUnit());
     CallFunction(0);
@@ -1319,7 +1408,11 @@ void PutDefaultUnits()
 int SpawnLife(string name, int wp, int hp)
 {
     int unit = CreateObject(name, wp);
+    int ptr = GetMemory(0x750710);
 
+    if (!ptr)
+        return 0;
+    SetMemory(ptr + 0x0c, 65538);   //Disable fire, electric immune
     MoveObject(AddList(unit), GetObjectX(unit), GetObjectY(unit));
     SetOwner(GetHost(), unit);
     SetUnitMaxHealth(unit, hp);
@@ -1371,7 +1464,7 @@ void HuntLife()
     if (!HasEnchant(self, "ENCHANT_ETHEREAL"))
     {
         Enchant(self, "ENCHANT_ETHEREAL", 1.0);
-        Chat(self, "체력: " + IntToString(CurrentHealth(self)) + " / " + IntToString(MaxHealth(self)));
+        UniChatMessage(self, "체력: " + IntToString(CurrentHealth(self)) + " / " + IntToString(MaxHealth(self)), 150);
     }
 }
 
@@ -1382,7 +1475,7 @@ void LifeUnitDeath()
     DefeatEvent(LifeCnt);
     DeleteObjectTimer(self, 30);
     RemoveList(GetTrigger() + 1);
-    PrintToAll("방금 라이프 타워 하나가 파괴되었습니다! 남은 타워 수: " + IntToString(LifeCnt));
+    UniPrintToAll("방금 라이프 타워 하나가 파괴되었습니다! 남은 타워 수: " + IntToString(LifeCnt));
     PlayWav("DeathOn");
 }
 
@@ -1401,7 +1494,7 @@ void DefeatEvent(int rem)
                 player[k] = 0;
             }
         }
-        PrintToAll("패배 하셨습니다!!");
+        UniPrintToAll("패배 하셨습니다!!");
         FrameTimer(30, DefeatTheGame);
     }
 }
@@ -1410,14 +1503,14 @@ void DefeatTheGame()
 {
     StrDefeat();
     AudioEvent("StaffOblivionAchieve1", 27);
-    PrintToAll("패배... ㅠㅠ");
+    UniPrintToAll("패배... ㅠㅠ");
 }
 
 void MapMainProc()
 {
     if (CheckPlayerCount())
     {
-        PrintToAll("잠시 후 게임이 시작됩니다");
+        UniPrintToAll("잠시 후 게임이 시작됩니다");
         PlayWav("ManaBombCast");
         FrameTimerWithArg(180, 0, ControlLineMob);
     }
@@ -1434,7 +1527,7 @@ void ControlLineMob(int wave)
         LookWithAngle(ptr, wave);
         Raise(ptr, ToFloat(15));
         FrameTimerWithArg(95, ptr, SummonLineMobStepByStep);
-        PrintToAll("현재 웨이브: " + IntToString(wave) + ", 지금 시작됨");
+        UniPrintToAll("현재 웨이브: " + IntToString(wave) + ", 지금 시작됨");
     }
     else
         VictoryEvent();
@@ -1451,7 +1544,7 @@ void VictoryEvent()
     CreateObject("LevelUp", 25);
     PlayWav("BigGong");
     PlayWav("LongBellsDown");
-    PrintToAll("축하합니다_! 모든 웨이브를 클리어 하셨습니다!");
+    UniPrintToAll("축하합니다_! 모든 웨이브를 클리어 하셨습니다!");
     FrameTimer(160, YouWin);
 }
 
@@ -1529,7 +1622,7 @@ void ClearThisWave(int wave)
     {
         LifeTowerHeal(ListPtr());
         FrameTimerWithArg(180, wave + 1, ControlLineMob);
-        PrintToAll("현재 " + IntToString(wave) + " 웨이브 클리어를 하셨습니다, 잠시 후 다음 게임이 시작되오니 미리 준비해 주시기 바랍니다");
+        UniPrintToAll("현재 " + IntToString(wave) + " 웨이브 클리어를 하셨습니다, 잠시 후 다음 게임이 시작되오니 미리 준비해 주시기 바랍니다");
     }
 }
 
@@ -1897,20 +1990,15 @@ int Stack(int num, int pp)
 
 int ImportCreateAtFunc()
 {
-    int arr[20], ptr, link;
-    if (!ptr)
+    int arr[20], link;
+
+    if (!link)
     {
         arr[0] = 0xAA506856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xFF502414; arr[4] = 0x50042454;
         arr[5] = 0x082454FF; arr[6] = 0x4085048B; arr[7] = 0x680097BB; arr[8] = 0x004E3810; arr[9] = 0x2454FF50;
         arr[10] = 0x08C48304; arr[11] = 0xF685F08B; arr[12] = 0x006A0A74; arr[13] = 0x2454FF56; arr[14] = 0x08C48314;
-        arr[15] = 0x50723068; arr[16] = 0x54FF5600; arr[17] = 0xC4830424; arr[18] = 0x5EC03118; arr[19] = 0x909090C3; 
-        if (GetMemory(0x83c7fc))
-        {
-            ptr = CreateObject("AmbBeachBirds", GetMemory(GetMemory(0x83c7fc)));
-            Raise(ptr, ImportCreateAtFunc);
-            link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x1c));
-            Delete(ptr);
-        }
+        arr[15] = 0x50723068; arr[16] = 0x54FF5600; arr[17] = 0xC4830424; arr[18] = 0x5EC03118; arr[19] = 0x909090C3;
+        link = GetScrDataField(ImportCreateAtFunc);
     }
     return link;
 }
@@ -1982,14 +2070,12 @@ float UnitAngleSin(int unit, float size)
 int ImportUnitToPtrFunc()
 {
     int arr[10], ptr, link;
-    if (!arr[0])
+
+    if (!link)
     {
         arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
-        arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3; 
-        ptr = CreateObject("AmbBeachBirds", 1);
-        Raise(ptr, ImportUnitToPtrFunc);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x1c));
-        Delete(ptr);
+        arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3;
+        link = GetScrDataField(ImportUnitToPtrFunc);
     }
     return link;
 }
@@ -2044,16 +2130,14 @@ void GiveUnit(int owner, int unit)
 
 int ImportGiveUnitFunc()
 {
-    int arr[17], ptr, link;
-    if (!arr[0])
+    int arr[17], link;
+
+    if (!link)
     {
         arr[0] = 0x50725068; arr[1] = 0x1B606800; arr[2] = 0x00680051; arr[3] = 0xFF004E7B; arr[4] = 0x50082454; arr[5] = 0x082454FF; arr[6] = 0x8B04C483; arr[7] = 0x74FF85F8;
         arr[8] = 0x2454FF19; arr[9] = 0x54FF5008; arr[10] = 0xC4830824; arr[11] = 0x74C08504; arr[12] = 0xFF505709; arr[13] = 0x83082454; arr[14] = 0xC48308C4; arr[15] = 0x31FF310C;
         arr[16] = 0x0000C3C0;
-        ptr = CreateObject("InvisibleLightBlueHigh", 1);
-        Raise(ptr, ImportGiveUnitFunc);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x1c));
-        Delete(ptr);
+        link = GetScrDataField(ImportGiveUnitFunc);
     }
     return link;
 }
@@ -2072,15 +2156,12 @@ int ImportPlayerLookFunc()
 {
     int arr[17], ptr, link;
 
-    if (!arr[0])
+    if (!link)
     {
         arr[0] = 0x50725068; arr[1] = 0x1B606800; arr[2] = 0x80680051; arr[3] = 0xFF004DDE; arr[4] = 0x50082454; arr[5] = 0x082454FF; arr[6] = 0x8B04C483; arr[7] = 0x74FF85F8;
         arr[8] = 0x2454FF19; arr[9] = 0x54FF5008; arr[10] = 0xC4830824; arr[11] = 0x74C08504; arr[12] = 0xFF505709; arr[13] = 0x83082454; arr[14] = 0xC48308C4;
         arr[15] = 0x31FF310C; arr[16] = 0x0000C3C0;
-        ptr = CreateObject("InvisibleLightBlueHigh", 1);
-        Raise(ptr, ImportPlayerLookFunc);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x1c));
-        Delete(ptr);
+        link = GetScrDataField(ImportPlayerLookFunc);
     }
     return link;
 }
@@ -2139,20 +2220,12 @@ string PlayerName(int unit)
 
 void CallFunction(int func)
 {
-    int link, ptr;
+    int link;
 
     if (!link)
-    {
-        ptr = CreateObject("RedPotion", 1);
-        Raise(ptr, Callee);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x20));
-        Delete(ptr);
-    }
-    else
-    {
-        SetMemory(link + 4, func);
-        Callee();
-    }
+        link = GetScrCodeField(Callee);
+    SetMemory(link + 4, func);
+    Callee();
 }
 
 void Callee()
@@ -2162,20 +2235,12 @@ void Callee()
 
 void CallFunctionWithArg(int func, int arg)
 {
-    int link, ptr;
+    int link;
 
     if (!link)
-    {
-        ptr = CreateObject("RedPotion", 1);
-        Raise(ptr, CalleeArg);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x20));
-        Delete(ptr);
-    }
-    else
-    {
-        SetMemory(link + 0x10, func);
-        CalleeArg(arg);
-    }
+        link = GetScrCodeField(CalleeArg);
+    SetMemory(link + 0x10, func);
+    CalleeArg(arg);
 }
 
 void CalleeArg(int arg)
@@ -2206,21 +2271,12 @@ void BlueFireColudFx(float x, float y)
 
 int CallFunctionWithArgInt(int func, int arg)
 {
-    int link, ptr;
+    int link;
 
     if (!link)
-    {
-        ptr = CreateObject("RedPotion", 1);
-        Raise(ptr, CalleeArgInt);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x20));
-        Delete(ptr);
-        return 0;
-    }
-    else
-    {
-        SetMemory(link + 0x10, func);
-        return CalleeArgInt(arg);
-    }
+        link = GetScrCodeField(CallFunctionWithArgInt);
+    SetMemory(link + 0x10, func);
+    return CalleeArgInt(arg);
 }
 
 int CalleeArgInt(int arg)
@@ -2314,18 +2370,6 @@ void SetPlayerAction(int unit, int val)
 
     if (ptr)
         SetMemory(GetMemory(ptr + 0x2ec) + 0x58, val);
-}
-
-void PrintToPlayer(int unit, string text)
-{
-    int ptr = UnitToPtr(unit), temp = GetMemory(0x979720);
-
-    if (ptr)
-    {
-        SetMemory(0x979720, ptr);
-        Print(text);
-        SetMemory(0x979720, temp);
-    }
 }
 
 int GetPlayerIndex(int unit)
@@ -2691,17 +2735,15 @@ void ClearAllCreList(int node)
 
 int ImportGreenExplosionFunc()
 {
-    int arr[17], ptr, link;
-    if (!arr[0])
+    int arr[17], link;
+
+    if (!link)
     {
         arr[0] = 0x32006856; arr[1] = 0x50680052; arr[2] = 0x68005072; arr[3] = 0x00403560; arr[4] = 0x54FF086A;
 		arr[5] = 0xC4830424; arr[6] = 0xFFF08B04; arr[7] = 0x89042454; arr[8] = 0x2454FF06; arr[9] = 0x04468904;
 		arr[10] = 0x0000C868; arr[11] = 0x54FF5600; arr[12] = 0xC4831024; arr[13] = 0x425D6814; arr[14] = 0xFF560040;
-		arr[15] = 0x83042454; arr[16] = 0xC35E08C4; 
-        ptr = CreateObject("AmbBeachBirds", 1);
-        Raise(ptr, ImportGreenExplosionFunc);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x1c));
-        Delete(ptr);
+		arr[15] = 0x83042454; arr[16] = 0xC35E08C4;
+        link = GetScrDataField(ImportGreenExplosionFunc);
     }
     return link;
 }

@@ -1067,7 +1067,10 @@ int SpawnLichlord(int positionUnit)
 
 void MakeBlackBook()
 {
-    SummonStoneGiant(other);
+    int wisp = CreateObjectAt("WillOWisp", GetObjectX(self), GetObjectY(self));
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 0x0c, 65538);
 }
 
 void CallNode4e9ac0()
