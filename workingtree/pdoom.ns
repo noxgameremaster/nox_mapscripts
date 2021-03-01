@@ -469,16 +469,6 @@ int PlayerClassOnInit(int plr, int pUnit)
     player[plr] = pUnit;
     player[plr + 9] = 1;
     SetOwner(pUnit, PlayerMaster(plr));
-    /*if (VaildPlayerCheck(pUnit))
-    {
-        if (pUnit ^ 1000000001)
-            ClientEntry(pUnit);
-        else
-            PlayerClassCommonWhenEntry();
-        FrameTimerWithArg(60, pUnit, NetPlayBgm);
-        PlayerClassOnFirstEntry(pUnit);
-        return plr << 0x10;
-    }*/
     return plr;
 }
 
@@ -816,6 +806,7 @@ void startButton()
             FrameTimerWithArg(150, RETIME[plr], DecreaseTimer);
             if (!PlayerClassFullClearCheck(plr))
                 PlayerClassFullClearSet(plr);
+            FrameTimerWithArg(1, player[plr], NetClientPlayVoice);
         }
         else
         {
@@ -2966,14 +2957,40 @@ void ClientDirectSetMemory(int pIndex, int targetAddr, int byte)
     NetClientSendDirect(pIndex, ptr, 6);
 }
 
-void DelayLink(int pUnit)
+void SendClientExec(int args)
 {
-    ClientSetMemory(pUnit, 0x69ba98 + 0, 0);
-    ClientSetMemory(pUnit, 0x69ba98 + 1, 0x10);
-    ClientSetMemory(pUnit, 0x69ba98 + 2, 0x75);
+    int pIndex = args & 0xff, byteOrder = (args >> 8) & 0xff;
+    int pUnit = GetMemory(GetScrDataField(NetArgumentTable) + (pIndex * 4));
+
+    if (!MaxHealth(pUnit))
+        return;
+    if (GetMemory(0x62f9e0 + (pIndex * 0x12dc)))
+    {
+        ClientDirectSetMemory(pIndex, 0x69ba98 + 0, 0);
+        ClientDirectSetMemory(pIndex, 0x69ba98 + 1, 0x10);
+        ClientDirectSetMemory(pIndex, 0x69ba98 + 2, 0x75);
+    }
 }
 
-void ClientEntry(int cliUnit)
+int NetArgumentTable()  //@brief: declared local array
+{
+    int arr[32];    //@brief: safe method
+}
+
+void SendClientOrder(int pUnit, int orderId)
+{
+    int tablePtr = GetScrDataField(NetArgumentTable);
+    int pIndex = GetPlayerIndex(pUnit);
+
+    if (pIndex >= 0)
+    {
+        SetMemory(tablePtr + (4 * pIndex), pUnit);
+        ClientDirectSetMemory(pIndex, 0x75101c, orderId & 0xff);    //@brief: send orderId
+        FrameTimerWithArg(1, pIndex | ((orderId & 0xff) << 8), SendClientExec);
+    }
+}
+
+void ExportClientMain(int cliUnit)
 {
     //6A 00 6A 00/ 68 7F 00 00/ 00 E8 02 63/ DB FF 83 C4/ 0C 68 B0 95/ 4B 00 C3 90: 24Byte
     ClientSetMemory(cliUnit, 0x751000, 0x6a);
@@ -2999,37 +3016,6 @@ void ClientEntry(int cliUnit)
     ClientSetMemory(cliUnit, 0x751014, 0x43);
     ClientSetMemory(cliUnit, 0x751015, 0x00);
     ClientSetMemory(cliUnit, 0x751016, 0xc3);
-    FrameTimerWithArg(1, cliUnit, DelayLink);
-}
-
-void ClientDelayAfterEntry(int cliUnit)          //here
-{
-    if (!MaxHealth(cliUnit)) return; //Fail
-    //6A 00 6A 00/ 68 7F 00 00/ 00 E8 02 63/ DB FF 83 C4/ 0C 68 B0 95/ 4B 00 C3 90: 24Byte
-    ClientSetMemory(cliUnit, 0x751000, 0x6a);
-    ClientSetMemory(cliUnit, 0x751001, 0x00);
-    ClientSetMemory(cliUnit, 0x751002, 0x6a);
-    ClientSetMemory(cliUnit, 0x751003, 0x00);
-    ClientSetMemory(cliUnit, 0x751004, 0x68);
-    ClientSetMemory(cliUnit, 0x751005, ClientDelayAfter & 0xff);
-    ClientSetMemory(cliUnit, 0x751006, (ClientDelayAfter >> 8) & 0xff);
-    ClientSetMemory(cliUnit, 0x751007, 0);
-    ClientSetMemory(cliUnit, 0x751008, 0);
-    ClientSetMemory(cliUnit, 0x751009, 0xe8);
-    ClientSetMemory(cliUnit, 0x75100a, 0x02);
-    ClientSetMemory(cliUnit, 0x75100b, 0x63);
-    ClientSetMemory(cliUnit, 0x75100c, 0xdb);
-    ClientSetMemory(cliUnit, 0x75100d, 0xff);
-    ClientSetMemory(cliUnit, 0x75100e, 0x83);
-    ClientSetMemory(cliUnit, 0x75100f, 0xc4);
-    ClientSetMemory(cliUnit, 0x751010, 0x0c);
-    ClientSetMemory(cliUnit, 0x751011, 0x68);
-    ClientSetMemory(cliUnit, 0x751012, 0x10);
-    ClientSetMemory(cliUnit, 0x751013, 0xde);
-    ClientSetMemory(cliUnit, 0x751014, 0x43);
-    ClientSetMemory(cliUnit, 0x751015, 0x00);
-    ClientSetMemory(cliUnit, 0x751016, 0xc3);
-    FrameTimerWithArg(1, cliUnit, DelayLink);
 }
 
 int ImportNetSendClient()
@@ -3394,29 +3380,54 @@ int BuildTextDrawFunction()
 
 void ClientMain()
 {
+    int chksum, availableMemlib;
+
+    if (!availableMemlib)
+        availableMemlib = EnableMemoryReadWriteFunction(0) + 1;
+    SetMemory(0x69ba98, 0x43de10);  //VeryVery important!
+
+    int orderId = GetMemory(0x75101c);
+    if (!orderId)   //@brief: Init order
+    {
+        NetEventCommon0();
+    }
+    else if (orderId == 1)   //@brief: Extract custom music
+    {
+        NetEventCommon1();
+    }
+    else if (orderId == 2)
+        NetEventCommon2();
+}
+
+void NetEventCommon0()
+{
+    //@brief: initial process
     int chksum;
 
     if (!chksum)
     {
-        chksum = EnableMemoryReadWriteFunction(0);
-        SetMemory(0x69ba98, 0x43de10);
+        chksum = true;
         PlayerClassCommonWhenEntry();
-
-        chksum ++;
     }
 }
 
-void ClientDelayAfter()
+void NetEventCommon1()
 {
-    int chk;
+    //@brief: custom bgm extract
+    int chksum;
 
-    if (!chk)
+    if (!chksum)
     {
-        SetMemory(0x69ba98, 0x43de10);
+        chksum = true;
         MakeMusicDirectory();
         ExtractMapBgm(SToInt("hail666.mp3") << 0x10 | ResoureCommonBgmData);
-        chk = 1;
     }
+}
+
+void NetEventCommon2()
+{
+    //@brief: play dialog
+    PlayNPC_Voice("W6GD203K");
 }
 
 void WriteMusicStrings(int targetAddr)
@@ -3510,8 +3521,8 @@ void PlayerClassCommonWhenEntry()
     SetMemory(0x69b974, 0x64);
     SetMemory(0x59dbe4, 1);
     SetMemory(0x85b7d0, (GetMemory(0x85b7d0) & 0xffff0000) ^ 0x1fe0);
-    MakeMusicDirectory();
-    ExtractMapBgm(SToInt("hail666.mp3") << 0x10 | ResoureCommonBgmData);
+    // MakeMusicDirectory();
+    // ExtractMapBgm(SToInt("hail666.mp3") << 0x10 | ResoureCommonBgmData);
     SomeObjectChangeToInnerImage();
     ModifyMenuText();
     ShowMessageBox("개인 랜덤디펜스", "랜덤한 유닛을 뽑아서 라인을 무찔러 봅시다!\n개꿀팁: J버튼 누르면 타 유저를 구경할 수 있어요!");
@@ -3919,16 +3930,26 @@ void NetClassDeathFlagSet(int pIndex)
     NetClassFlags(pIndex, NetClassFlags(pIndex, 0) ^ 0x80);
 }
 
+void NetClassExtractCustomMusic(int plrUnit)
+{
+    if (MaxHealth(plrUnit))
+        SendClientOrder(plrUnit, 1);
+}
+
 void NetClassOnInit(int plrUnit, int pIndex)
 {
     NetClassFlags(pIndex, 1);
-    if (plrUnit ^ GetHost())
+    if (plrUnit ^ GetHost())    //@brief: Client Only
     {
-        ClientEntry(plrUnit);
-        FrameTimerWithArg(60, plrUnit, ClientDelayAfterEntry);
+        ExportClientMain(plrUnit);
+        SendClientOrder(plrUnit, 0);    //@brief: init packet
+        FrameTimerWithArg(50, plrUnit, NetClassExtractCustomMusic);
     }
     else
-        PlayerClassCommonWhenEntry();
+    {
+        NetEventCommon0();  //Server Only
+        FrameTimer(50, NetEventCommon1);
+    }
     UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 지도에 입장하셨어요");
     FrameTimerWithArg(100, plrUnit, NetPlayBgm);
 }
@@ -4161,5 +4182,38 @@ void PlayerClassIncreaseKill(int plr)
         ChangeGold(player[plr], 1000);
         UniPrint(player[plr], IntToString(CommonKillBonusTable(kIndex)) + "킬 보너스:: 1000 골드를 지원받으셨습니다");
         SetMemory(PlayerClassKillTable(plr), GetMemory(PlayerClassKillTable(plr)) + 0x10000);
+    }
+}
+
+int ImportPlayNPC_Voice()
+{
+    int arr[9], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50685150; arr[1] = 0xFF005072; arr[2] = 0x0C8B2414; arr[3] = 0x97BB4085;
+        arr[4] = 0xD9006800; arr[5] = 0x646A0044; arr[6] = 0x2454FF51; arr[7] = 0x10C48308; arr[8] = 0x90C35859;
+        link = GetScrDataField(ImportPlayNPC_Voice);
+    }
+    return link;
+}
+
+void PlayNPC_Voice(string voiceFilename)
+{
+    int temp = GetMemory(0x5c3108);
+
+    SetMemory(0x5c3108, ImportPlayNPC_Voice());
+    Unused1f(SToInt(voiceFilename));
+    SetMemory(0x5c3108, temp);
+}
+
+void NetClientPlayVoice(int plrUnit)
+{
+    if (MaxHealth(plrUnit))
+    {
+        if (GetHost() ^ plrUnit)    //Client
+            SendClientOrder(plrUnit, 2);
+        else    //Server
+            NetEventCommon2();
     }
 }

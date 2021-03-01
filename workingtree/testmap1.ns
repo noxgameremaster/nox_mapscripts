@@ -1065,12 +1065,31 @@ int SpawnLichlord(int positionUnit)
     return lichlord;
 }
 
+int ImportPlayNPC_Voice()
+{
+    int arr[9], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50685150; arr[1] = 0xFF005072; arr[2] = 0x0C8B2414; arr[3] = 0x97BB4085;
+        arr[4] = 0xD9006800; arr[5] = 0x646A0044; arr[6] = 0x2454FF51; arr[7] = 0x10C48308; arr[8] = 0x90C35859;
+        link = GetScrDataField(ImportPlayNPC_Voice);
+    }
+    return link;
+}
+
+void PlayNPC_Voice(string voiceFilename)
+{
+    int temp = GetMemory(0x5c3108);
+
+    SetMemory(0x5c3108, ImportPlayNPC_Voice());
+    Unused1f(SToInt(voiceFilename));
+    SetMemory(0x5c3108, temp);
+}
+
 void MakeBlackBook()
 {
-    int wisp = CreateObjectAt("WillOWisp", GetObjectX(self), GetObjectY(self));
-    int ptr = GetMemory(0x750710);
-
-    SetMemory(ptr + 0x0c, 65538);
+    PlayNPC_Voice("C2GD108K");
 }
 
 void CallNode4e9ac0()
