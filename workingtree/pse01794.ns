@@ -822,6 +822,7 @@ void MapInitialize()
     FrameTimer(1, DelayInitRun);
 
     MusicEvent();
+    RewardItemFunctionTable(-1);
     ImportCreateAtFunc();
     ImportUnitToPtrFunc();
     MapWaypointInit();
@@ -894,7 +895,7 @@ void ImpShotCollide()
 void LoopCatchImpshot(int curId)
 {
     int owner = GetOwner(curId);
-    int scrPt = MakeMagicMissileScrPt("Pixie", owner);
+    int scrPt = MakeMagicMissileScrPt("DeathBallFragment", owner);
     int mis = GetMemory(scrPt), ptr = GetMemory(scrPt + 4);
 
     SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
@@ -2117,6 +2118,14 @@ void UnitZeroFleeRange(int unit)
         SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0); //Flee Range set to 0
 }
 
+void SetUnitVoice(int unit, int voiceIndex)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x1e8, VoiceList(voiceIndex));
+}
+
 int WillOWispBinTable()
 {
 	int arr[62], link;
@@ -2858,6 +2867,306 @@ int MonTypeGhost(int anyArg)
     return unit;
 }
 
+int GoonBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1852796743; arr[17] = 295; arr[19] = 97; arr[21] = 1065353216; arr[23] = 32768; 
+		arr[24] = 1066192077; arr[26] = 4; arr[28] = 1106247680; arr[29] = 50; arr[30] = 1092616192; 
+		arr[31] = 4; arr[32] = 18; arr[33] = 21; arr[34] = 3; arr[35] = 6; 
+		arr[36] = 20; arr[57] = 5548176; arr[58] = 5546608; arr[59] = 5543680; 
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GoonBinTable + 0x1c));
+	}
+	return link;
+}
+
+void GoonSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1077558640);
+		SetMemory(ptr + 0x224, 1077558640);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 32768);
+		SetMemory(GetMemory(ptr + 0x22c), 295);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 295);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, GoonBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int MonTypeGoon(int anyArg)
+{
+    int xyTable = AnyargUnitOrLocation(anyArg);
+    int unit = CreateObjectAt("Goon", GetMemoryFloat(xyTable), GetMemoryFloat(xyTable + 4));
+
+    GoonSubProcess(unit);
+    SetUnitVoice(unit, 63);
+    return unit;
+}
+
+int LichLordBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1751345484; arr[1] = 1685221196; arr[17] = 425; arr[19] = 126; arr[21] = 1065353216; 
+		arr[23] = 34816; arr[24] = 1065353216; arr[25] = 1; arr[26] = 4; arr[27] = 7; 
+		arr[28] = 1113325568; arr[29] = 100; arr[30] = 1092616192; arr[32] = 15; arr[33] = 21; 
+		arr[57] = 5548288; arr[59] = 5542784; 
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * LichLordBinTable + 0x1c));
+	}
+	return link;
+}
+
+void LichLordSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1081207685);
+		SetMemory(ptr + 0x224, 1081207685);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 34816);
+		SetMemory(GetMemory(ptr + 0x22c), 425);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 425);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, LichLordBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int MonTypeLichlord(int anyarg)
+{
+    int xyTable = AnyargUnitOrLocation(anyarg);
+    int unit = CreateObjectAt("LichLord", GetMemoryFloat(xyTable), GetMemoryFloat(xyTable + 4));
+
+    LichLordSubProcess(unit);
+    return unit;
+}
+
+int AirshipCaptainBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1936877889; arr[1] = 1131440488; arr[2] = 1635020897; arr[3] = 28265; arr[17] = 325; 
+		arr[19] = 90; arr[21] = 1065353216; arr[23] = 34817; arr[24] = 1065353216; arr[26] = 4; 
+		arr[37] = 1919248451; arr[38] = 1916887669; arr[39] = 7827314; arr[53] = 1133903872; arr[55] = 3; 
+		arr[56] = 8; arr[58] = 5546320; arr[60] = 1387; arr[61] = 46915328; 
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * AirshipCaptainBinTable + 0x1c));
+	}
+	return link;
+}
+
+void AirshipCaptainSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1076677837);
+		SetMemory(ptr + 0x224, 1076677837);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 34817);
+		SetMemory(GetMemory(ptr + 0x22c), 325);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 325);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, AirshipCaptainBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int MonTypeJandor(int anyarg)
+{
+    int xyTable = AnyargUnitOrLocation(anyarg);
+    int unit = CreateObjectAt("AirshipCaptain", GetMemoryFloat(xyTable), GetMemoryFloat(xyTable + 4));
+
+    AirshipCaptainSubProcess(unit);
+    return unit;
+}
+
+int CarnivorousPlantBinTable2()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1852989763; arr[1] = 1919907433; arr[2] = 1349743983; arr[3] = 1953390956; arr[17] = 600; 
+		arr[18] = 200; arr[19] = 100; arr[21] = 1065353216; arr[23] = 32768; arr[24] = 1065353216; 
+		arr[25] = 1; arr[26] = 4; arr[27] = 5; arr[28] = 1109393408; arr[29] = 100; 
+		arr[31] = 8; arr[34] = 3; arr[35] = 3; arr[36] = 20; arr[59] = 5544320; 
+		arr[60] = 1371; arr[61] = 46901760; 
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * CarnivorousPlantBinTable2 + 0x1c));
+	}
+	return link;
+}
+
+void CarnivorousPlantSubProcess2(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1077936128);
+		SetMemory(ptr + 0x224, 1077936128);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 32768);
+		SetMemory(GetMemory(ptr + 0x22c), 600);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 600);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, CarnivorousPlantBinTable2());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int MonTypeCarnPlant(int anyarg)
+{
+    int xyTable = AnyargUnitOrLocation(anyarg);
+    int unit = CreateObjectAt("CarnivorousPlant", GetMemoryFloat(xyTable), GetMemoryFloat(xyTable + 4));
+
+    CarnivorousPlantSubProcess2(unit);
+    return unit;
+}
+
+int MonTypeDryad(int anyarg)
+{
+    int xyTable = AnyargUnitOrLocation(anyarg);
+    int unit = CreateObjectAt("WizardGreen", GetMemoryFloat(xyTable), GetMemoryFloat(xyTable + 4));
+
+    SetUnitMaxHealth(unit, 275);
+    Enchant(unit, EnchantList(14), 0.0);
+
+    return unit;
+}
+
+int StoneGolemBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1852798035; arr[1] = 1819232101; arr[2] = 28005; arr[17] = 750; arr[19] = 70; 
+		arr[21] = 1065353216; arr[23] = 32768; arr[24] = 1067869798; arr[26] = 4; arr[27] = 5; 
+		arr[28] = 1117782016; arr[29] = 100; arr[31] = 2; arr[32] = 60; arr[33] = 90; 
+		arr[58] = 5545472; arr[59] = 5543904; arr[60] = 1324; arr[61] = 46901248; 
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * StoneGolemBinTable + 0x1c));
+	}
+	return link;
+}
+
+void StoneGolemSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1074161254);
+		SetMemory(ptr + 0x224, 1074161254);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 32768);
+		SetMemory(GetMemory(ptr + 0x22c), 750);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 750);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, StoneGolemBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int MonTypeStoneGiant(int anyarg)
+{
+    int xyTable = AnyargUnitOrLocation(anyarg);
+    int golem = CreateObjectAt("StoneGolem", GetMemoryFloat(xyTable), GetMemoryFloat(xyTable + 4));
+
+    StoneGolemSubProcess(golem);
+    return golem;
+}
+
+int HorrendousBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1920102216; arr[1] = 1868852837; arr[2] = 29557; arr[17] = 600; arr[19] = 100; 
+		arr[21] = 1065353216; arr[23] = 32768; arr[24] = 1065353216; arr[25] = 1; arr[26] = 9; 
+		arr[27] = 5; arr[28] = 1109393408; arr[29] = 62; arr[54] = 4; arr[59] = 5542784; 
+		arr[60] = 1386; arr[61] = 46907648; 
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * HorrendousBinTable + 0x1c));
+	}
+	return link;
+}
+
+void HorrendousSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1077936128);
+		SetMemory(ptr + 0x224, 1077936128);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 32768);
+		SetMemory(GetMemory(ptr + 0x22c), 600);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 600);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, HorrendousBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int MonTypeHorrendous(int anyarg)
+{
+    int xyTable = AnyargUnitOrLocation(anyarg);
+    int horr = CreateObjectAt("Horrendous", GetMemoryFloat(xyTable), GetMemoryFloat(xyTable + 4));
+
+    HorrendousSubProcess(horr);
+    return horr;
+}
+
+int StrongWizardWhiteBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1869771859; arr[1] = 1767335790; arr[2] = 1685217658; arr[3] = 1953065047; arr[4] = 101; 
+		arr[17] = 325; arr[19] = 65; arr[21] = 1065353216; arr[23] = 32768; arr[24] = 1069547520; 
+		arr[37] = 1701996870; arr[38] = 1819042146; arr[53] = 1128792064; arr[54] = 4; arr[55] = 20; 
+		arr[56] = 30; arr[58] = 5546320; 
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * StrongWizardWhiteBinTable + 0x1c));
+	}
+	return link;
+}
+
+void StrongWizardWhiteSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1073322393);
+		SetMemory(ptr + 0x224, 1073322393);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 32768);
+		SetMemory(GetMemory(ptr + 0x22c), 325);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 325);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, StrongWizardWhiteBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int MonTypeHovath(int anyarg)
+{
+    int xyTable = AnyargUnitOrLocation(anyarg);
+    int hovath = CreateObjectAt("StrongWizardWhite", GetMemoryFloat(xyTable), GetMemoryFloat(xyTable + 4));
+
+    StrongWizardWhiteSubProcess(hovath);
+    return hovath;
+}
+
 int CreateYellowPotion(int restoreAmount, float xProfile, float yProfile)
 {
     int unit = CreateObjectAt("RedPotion", xProfile, yProfile);
@@ -3094,8 +3403,7 @@ int ItemDropClassArmor(int sUnit)
 
 int ItemDropClassMoney(int sUnit)
 {
-    string money = {"Gold", "QuestGoldChest", "QuestGoldPile"};
-    int ggg = CreateObjectAt(ToStr(SToInt(money) + Random(0, 2)), GetObjectX(sUnit), GetObjectY(sUnit));
+    int ggg = CreateObjectAt("Gold", GetObjectX(sUnit), GetObjectY(sUnit));
     int ptr = GetMemory(0x750710), incRate = GameClassWaveCheck() * 50;
 
     SetMemory(GetMemory(ptr + 0x2b4), Random(100 + incRate, 400 + (incRate * 4)));
@@ -3115,18 +3423,30 @@ int ItemDropClassGerm(int sUnit)
     return germ;
 }
 
+int RewardItemFunctionTable(int pickIndex)
+{
+    int functions[6];
+
+    if (pickIndex < 0)  //@initial mode
+    {
+        functions[0] = ItemDropClassMoney;
+        functions[1] = ItemDropClassGerm;
+        functions[2] = ItemDropClassArmor;
+        functions[3] = ItemDropClassHotPotion;
+        functions[4] = ItemDropClassMagicalPotions;
+        functions[5] = ItemDropClassWeapon;
+    }
+    return functions[pickIndex];
+}
+
 int RewardClassItemCreateAtUnitPos(int sUnit)
 {
-    int fNumb, pic = Random(0, 5);
+    int pickFunction = RewardItemFunctionTable(Random(0, 5));
 
-    ItemDropClassMoney;
-    ItemDropClassGerm;
-    ItemDropClassArmor;
-    ItemDropClassHotPotion;
-    ItemDropClassMagicalPotions;
-    ItemDropClassWeapon;
-    fNumb = GetMemory(0x979740 + ((GetMemory(0x75ae40) - (4 + pic)) * 4));
-    return CallFunctionWithArgInt(fNumb, sUnit);
+    if (!pickFunction)
+        pickFunction = ItemDropClassHotPotion;
+
+    return CallFunctionWithArgInt(pickFunction, sUnit);
 }
 
 void AllWaveClear(int wave)
@@ -3140,7 +3460,7 @@ void AllWaveClear(int wave)
 
 int LineMobFunctionInfo(int index)
 {
-    int fTb[26];
+    int fTb[34];
 
     if (!fTb[0])
     {
@@ -3150,7 +3470,9 @@ int LineMobFunctionInfo(int index)
         fTb[12] = MonTypeShade; fTb[13] = MonTypeScorpion; fTb[14] = MonTypeOgreLord; fTb[15] = MonTypeOgreAxe;
         fTb[16] = MonTypeOgre; fTb[17] = MonTypeNecromancer; fTb[18] = MonTypeGargoyle; fTb[19] = MonTypeGhost;
         fTb[20] = MonTypeHecubah; fTb[21] = MonTypeImp; fTb[22] = MonTypeLeech; fTb[23] = MonTypeMecaFlying;
-        fTb[24] = MonTypeMecaGolem; fTb[25] = MonTypeSkeleton;
+        fTb[24] = MonTypeMecaGolem; fTb[25] = MonTypeSkeleton; fTb[26] = MonTypeGoon; fTb[27] = MonTypeLichlord;
+        fTb[28] = MonTypeCarnPlant; fTb[29] = MonTypeDryad; fTb[30] = MonTypeStoneGiant; fTb[31] = MonTypeHorrendous;
+        fTb[32] = MonTypeHovath; fTb[33] = MonTypeJandor;
     }
     return fTb[index % 26];
 }
@@ -3162,7 +3484,7 @@ void LineMobSetOrder(int arrPtr, int set1, int set2, int set3, int set4)
 
 int LineMobOrder(int wave)
 {
-    int arr[10], link;
+    int arr[14], link;
 
     if (wave < 0)
     {
@@ -3171,12 +3493,15 @@ int LineMobOrder(int wave)
         LineMobSetOrder(link + 4, 22, 22, 10, 10);
         LineMobSetOrder(link + 8, 8, 23, 8, 23);
         LineMobSetOrder(link + 12, 7, 9, 9, 7);
-        LineMobSetOrder(link + 16, 13, 13, 0, 0);
-        LineMobSetOrder(link + 20, 25, 25, 18, 18);
-        LineMobSetOrder(link + 24, 15, 16, 2, 2);
-        LineMobSetOrder(link + 28, 12, 11, 14, 11);
+        LineMobSetOrder(link + 16, 13, 13, 26, 0);
+        LineMobSetOrder(link + 20, 25, 9, 18, 18);
+        LineMobSetOrder(link + 24, 15, 16, 2, 26);
+        LineMobSetOrder(link + 28, 12, 27, 14, 11);
         LineMobSetOrder(link + 32, 17, 21, 3, 4);
         LineMobSetOrder(link + 36, 6, 19, 20, 24);
+        LineMobSetOrder(link + 40, 28, 29, 28, 30);
+        LineMobSetOrder(link + 44, 31, 32, 31, 33);
+        LineMobSetOrder(link + 48, 24, 6, 27, 33);
         return 0;
     }
     return arr[wave];
@@ -3371,7 +3696,7 @@ void MobWaveClassStart()
         return;
     }
     GameClassLineStartSet();
-    if (wave < 10)
+    if (wave < 12)
     {
         LineStatClassMobCountSet(300);
         RespawnLocationReset();
@@ -4234,7 +4559,7 @@ void AutoDetectMissileCollide()
 
 void ShotAutoDetectMissile()
 {
-    int mis = MakeMagicMissile("ImpShot", other);
+    int mis = MakeMagicMissile("Pixie", other);
     int ptr = GetMemory(0x750710);
 
     if (ptr)
@@ -5699,6 +6024,9 @@ void MagicPotionImage() {}
 
 void ResourceBucherImage() {}
 
+void ResourceDollar()
+{ }
+
 void ImageInit()
 {
     int drawF = ImageResourceDrawFunctionFix(0x7510c4);
@@ -5712,6 +6040,7 @@ void ImageInit()
     ApplyImageResourceFix(358, GetScrCodeField(ResourceBucherImage) + 4, drawF);
     ApplyImageResourceFix(359, GetScrCodeField(ImageResourceChin) + 4, drawF);
     ApplyImageResourceFix(360, GetScrCodeField(ImageResourceKor) + 4, drawF);
+    ApplyImageResourceFix(979, GetScrCodeField(ResourceDollar) + 4, drawF);
 }
 
 void PotionImgTest()
@@ -5753,9 +6082,9 @@ void SmokeRingBlast(int unit, int count, float gap)
 void ThrowBucherDestroyed(int sub)
 {
     SmokeRingBlast(sub, 8, 20.0);
-    SplashDamageAt(GetOwner(sub), 101, GetObjectX(sub), GetObjectY(sub), 200.0);
+    SplashDamageAt(GetOwner(sub), 101, GetObjectX(sub), GetObjectY(sub), 375.0);
     PlaySoundAround(sub, 759);
-    Effect("JIGGLE", GetObjectX(sub), GetObjectY(sub), 11.0, 0.0);
+    Effect("JIGGLE", GetObjectX(sub), GetObjectY(sub), 20.0, 0.0);
 }
 
 void ThrowBucherDurate(int sub)

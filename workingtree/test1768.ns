@@ -5104,7 +5104,7 @@ void NetClassOnInit(int plrUnit, int pIndex)
     else
         PlayerClassCommonWhenEntry();
     UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 지도에 입장하셨어요");
-    FrameTimerWithArg(100, plrUnit, NetPlayBgm);
+    // FrameTimerWithArg(100, plrUnit, NetPlayBgm);
 }
 
 void NetClassOnExit(int pIndex)
