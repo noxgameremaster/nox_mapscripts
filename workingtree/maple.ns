@@ -1,0 +1,1123 @@
+//@ignore_object_type
+
+int LastUnitID = 41;
+int player[30];
+string key_right = "ENCHANT_PROTECT_FROM_MAGIC";    //connect to 'sneak'
+string key_left = "ENCHANT_VILLAIN";                //connect to 'infra'
+int plr_mover[20], plr_fall[10];
+
+float INIT_HIGH = 25.0;
+
+int EnableMemoryReadWriteFunction(int t)
+{ }
+
+int ImportUniChatCore()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0xC0685657; arr[1] = 0x6800528A; arr[2] = 0x00507250; arr[3] = 0x8B2414FF; arr[4] = 0x2414FFF8;
+        arr[5] = 0x14FFF08B; arr[6] = 0x56505724; arr[7] = 0x102454FF; arr[8] = 0x5E14C483; arr[9] = 0x9090C35F;
+        link = GetScrDataField(ImportUniChatCore);
+    }
+    return link;
+}
+
+void UniChatCore(int plrPtr, int sPtr, int sTime)
+{
+    int temp = GetMemory(0x5c3320);
+
+    SetMemory(0x5c3320, ImportUniChatCore());
+    GroupRunAway(sPtr, plrPtr, sTime);
+    SetMemory(0x5c3320, temp);
+}
+
+int ImportUniPrintCore()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x9EB06856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xF08B2414; arr[4] = 0x502414FF;
+        arr[5] = 0x2454FF56; arr[6] = 0x10C4830C; arr[7] = 0x9090C35E; 
+        link = GetScrDataField(ImportUniPrintCore);
+    }
+    return link;
+}
+
+void UniPrintCore(int plrPtr, int sPtr)
+{
+    int temp = GetMemory(0x5c31f4);
+
+    SetMemory(0x5c31f4, ImportUniPrintCore());
+    Unused5a(sPtr, plrPtr);
+    SetMemory(0x5c31f4, temp);
+}
+
+int GetByteValue(int ptr)
+{
+    return GetMemory(ptr) & 0xff;
+}
+
+void WriteAddressWordValue(int addr, int word)
+{
+    int temp = GetMemory(addr) & 0xffff0000;
+    SetMemory(addr, temp | word);
+}
+
+void NoxUtf8ToUnicode(int src, int dest)
+{
+    int i = 0, byt;
+
+    while (1)
+    {
+        byt = GetByteValue(src + i);
+        if (!byt) break;
+        if (!(byt & 0x80))
+        {
+            WriteAddressWordValue(dest, byt);
+            i ++;
+        }
+        else if ((byt & 0xe0) == 0xc0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0x1f) <<6) | (GetByteValue(src + i + 1) & 0x3f));
+            i += 2;
+        }
+        else if ((byt & 0xf0) == 0xe0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0xf) << 12) | ((GetByteValue(src + i + 1) & 0x3f) << 6) | (GetByteValue(src + i + 2) & 0x3f));
+            i += 3;
+        }
+        dest += 2;
+    }
+    WriteAddressWordValue(dest, 0);
+}
+
+void UniPrint(int sUnit, string sMsg)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link) link = GetScrDataField(UniPrint);
+        NoxUtf8ToUnicode(str, link + 8);
+        UniPrintCore(ptr, link + 8);
+    }
+}
+
+void UniChatMessage(int sUnit, string sMsg, int duration)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link) link = GetScrDataField(UniChatMessage);
+        NoxUtf8ToUnicode(str, link + 12);
+        UniChatCore(ptr, link + 12, duration);
+    }
+}
+
+void UniPrintToAll(string sMsg)
+{
+    int wDest[200];
+    int plrPtr = 0x62f9e0, link, str = SToInt(sMsg), i;
+
+    if (!link) link = GetScrDataField(UniPrint) + 4;
+    str = GetMemory(0x97bb40 + (str * 4));
+    NoxUtf8ToUnicode(str, link);
+    for (i = 0 ; i < 32 ; i ++)
+    {
+        if (GetMemory(plrPtr))
+            UniPrintCore(GetMemory(plrPtr), link);
+        plrPtr += 0x12dc;
+    }
+}
+
+int GetScrDataField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x1c));
+}
+
+int GetScrCodeField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x20));
+}
+
+int ImportUnitToPtrFunc()
+{
+    int arr[10], ptr, link;
+
+    if (!link)
+    {
+        arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
+        arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3;
+        link = GetScrDataField(ImportUnitToPtrFunc);
+    }
+    return link;
+}
+
+int UnitToPtr(int unit)
+{
+    int temp = GetMemory(0x5c336c), res;
+    SetMemory(0x5c336c, ImportUnitToPtrFunc());
+    res = Unknownb8(unit);
+    SetMemory(0x5c336c, temp);
+	return res;
+}
+
+int CreateMoverFix(int targetUnit, int destLocation, float speed)
+{
+    int unitMover = CreateMover(targetUnit, destLocation, speed), unitPtr = UnitToPtr(targetUnit);
+    int movPtr;
+
+    if (unitMover)
+    {
+        movPtr = UnitToPtr(unitMover);
+        if (movPtr && unitPtr)
+        {
+            SetMemory(unitPtr + 0x28, LastUnitID);
+            movPtr = GetMemory(movPtr + 0x2ec);
+            SetMemory(movPtr + 0x20, LastUnitID);
+        }
+    }
+    LastUnitID ++;
+
+    return unitMover;
+}
+
+int ToInt(float x)
+{
+    StopScript(x);
+}
+
+float ToFloat(int x)
+{
+    StopScript(x);
+}
+
+string ToStr(int x)
+{
+    StopScript(x);
+}
+
+int SToInt(string x)
+{
+    StopScript(x);
+}
+
+void MapInitialize()
+{
+    int t = EnableMemoryReadWriteFunction(0);
+    
+    MusicEvent();
+    PlayerFlag(-1);
+    ImportUnitToPtrFunc();
+    ImportUniChatCore();
+    ImportUniPrintCore();
+    // FrameTimer(1, StrFinish);
+    FrameTimer(1, ModifyWarriorAbilityCooldown);
+    FrameTimer(20, DrawingMap);
+}
+
+void ModifyWarriorAbilityCooldown()
+{
+    SetMemory(0x666ADC, 3);
+    SetMemory(0x666AE0, 3);
+    SetMemory(0x666B10, 3);
+    SetMemory(0x666B14, 3);
+    SetMemory(0x666AA8, 30);
+}
+
+void MapExit()
+{
+    SetMemory(0x666ADC, 30);
+    SetMemory(0x666AE0, 99999);
+    SetMemory(0x666B10, 600);
+    SetMemory(0x666B14, 300);
+    SetMemory(0x666AA8, 150);
+    MusicEvent();
+}
+
+void MainGameLoop()
+{
+    GreenBallTrap();
+    ObjectOn(Object("MainGameSwitch"));
+    PlayerMoverSetting();
+    LaserTrap();
+    FrameTimer(5, LoopSearchIndex);
+    FrameTimer(10, LoopPreservePlayers);
+    FrameTimer(30, StartMovingBlockTrap);
+    FrameTimer(30, PutFlames);
+    FrameTimer(45, FinalDeathBallTrap);
+}
+
+void PlayerMoverSetting()
+{
+    string name = "Maiden",  fallName = "InvisibleLightBlueHigh";
+    int k;
+
+    for (k = 9 ; k >= 0 ; k --)
+    {
+        plr_mover[k] = CreateObject(name, k + 4);
+        plr_fall[k] = CreateObject(fallName, 14);
+        plr_mover[k + 10] = CreateObject(name, k + 15);
+        LookWithAngle(plr_mover[k], k);
+        Frozen(plr_mover[k], 1);
+        Frozen(plr_mover[k + 10], 1);
+        Raise(plr_fall[k], INIT_HIGH);
+        MoveWaypoint(14, GetWaypointX(14) + 23.0, GetWaypointY(14));
+    }
+}
+
+void BottomCollide()
+{
+    int plr = GetDirection(self), ptr;
+
+    if (HasClass(other, "IMMOBILE"))
+    {
+        if (HasEnchant(player[plr], "ENCHANT_INVISIBLE"))
+            UniChatMessage(player[plr], "관객모드로 전환", 150);
+        else if (!HasEnchant(player[plr], "ENCHANT_ETHEREAL"))
+        {
+            Raise(plr_fall[plr], INIT_HIGH);
+            Enchant(player[plr], "ENCHANT_DETECTING", 0.1);
+            Enchant(player[plr], "ENCHANT_CROWN", 0.1);
+            MoveObject(plr_mover[plr + 10], GetWaypointX(plr + 15), GetWaypointY(plr + 15));
+            Delete(self);
+        }
+    }
+}
+
+void DrawingMap()
+{
+    DrawBottomTexture(671.0, 1558.0, 4153.0);
+    DrawBottomTexture(1675.0, 1795.0, 4059.0);
+    DrawBottomTexture(1886.0, 1999.0, 3946.0);
+    DrawBottomTexture(1677.0, 1793.0, 3828.0);
+    DrawBottomTexture(1377.0, 1587.0, 3715.0);
+    DrawBottomTexture(1013.0, 1177.0, 3715.0);
+    DrawBottomTexture(688.0, 895.0, 3625.0);
+    DrawBottomTexture(966.0, 1182.0, 3485.0);
+    DrawBottomTexture(1377.0, 1592.0, 3485.0);
+    DrawBottomTexture(1377.0, 1592.0, 3485.0);
+
+    FrameTimer(1, DrawingMap2);
+    FrameTimer(2, DrawingMap3);
+    FrameTimer(2, MovingFlameLoop);
+    FrameTimer(2, SentryRayTrap1);
+    FrameTimer(3, DrawingMap4);
+    FrameTimer(4, ShurikenTrapLoop);
+    FrameTimer(10, StrKeyInfo);
+    FrameTimer(10, MovingBlockLoop2);
+    FrameTimer(10, FXExitPortal);
+    FrameTimer(20, MainGameLoop);
+
+    UniPrintToAll("맵을 그리는 중 입니다... 잠시만 기다려주십시오.");
+}
+
+void DrawingMap2()
+{
+    int unit = CreateObject("CarnivorousPlant", 37);
+    CreateObject("LargeFlame", 37);
+    SetCallback(unit, 9, TouchedFire);
+    Damage(unit, 0, 999, -1);
+    DrawBottomTexture(1794.0, 2140.0, 3485.0);
+    DrawBottomTexture(2161.0, 2416.0, 3669.0);
+    DrawBottomTexture(2569.0, 2743.0, 4034.0);
+    DrawBottomTexture(2893.0, 3060.0, 4034.0);
+    DrawBottomTexture(3221.0, 3380.0, 4034.0);
+    DrawBottomTexture(3543.0, 3705.0, 4034.0);
+    DrawBottomTexture(3841.0, 3956.0, 3918.0);
+    DrawBottomTexture(3539.0, 3700.0, 3804.0);
+    DrawBottomTexture(3218.0, 3380.0, 3804.0);
+    DrawBottomTexture(2897.0, 3060.0, 3804.0);
+    DrawBottomTexture(2707.0, 2829.0, 3713.0);
+    DrawBottomTexture(2917.0, 3082.0, 3603.0);
+}
+
+void DrawingMap3()
+{
+    DrawBottomTexture(3241.0, 3364.0, 3599.0);
+    DrawBottomTexture(3518.0, 3680.0, 3599.0);
+    DrawBottomTexture(3768.0, 3937.0, 3486.0);
+    DrawBottomTexture(3515.0, 3681.0, 3368.0);
+    DrawBottomTexture(3196.0, 3361.0, 3368.0);
+    DrawBottomTexture(2871.0, 3041.0, 3368.0);
+    DrawBottomTexture(2617.0, 2784.0, 3254.0);
+    DrawBottomTexture(2341.0, 2508.0, 3160.0);
+    DrawBottomTexture(2018.0, 2190.0, 3160.0);
+    DrawBottomTexture(1789.0, 1874.0, 3208.0);
+    DrawBottomTexture(1508.0, 1594.0, 3208.0);
+    DrawBottomTexture(1235.0, 1316.0, 3208.0);
+    DrawBottomTexture(1694.0, 1729.0, 3116.0);
+    DrawBottomTexture(1372.0, 1452.0, 3116.0);
+}
+
+void DrawingMap4()
+{
+    DrawBottomTexture(1005.0, 1089.0, 3208.0);
+    DrawBottomTexture(1005.0, 1089.0, 2980.0);
+    DrawBottomTexture(1005.0, 1089.0, 2750.0);
+    DrawBottomTexture(843.0, 923.0, 3094.0);
+    DrawBottomTexture(843.0, 923.0, 2864.0);
+    DrawBottomTexture(1214.0, 1704.0, 2818.0);
+    DrawBottomTexture(1811.0, 1938.0, 2726.0);
+    DrawBottomTexture(2042.0, 2485.0, 2816.0);
+    DrawBottomTexture(2620.0, 2696.0, 2747.0);
+    DrawBottomTexture(2800.0, 2882.0, 2700.0);
+    DrawBottomTexture(3057.0, 3726.0, 2957.0);
+}
+
+void MovingFlameLoop()
+{
+    int ptr;
+
+    if (ptr)
+    {
+        if (!GetDirection(ptr))
+        {
+            if (GetObjectY(ptr) <= 4082.0)
+            {
+                MoveObject(ptr, GetObjectX(ptr), GetObjectY(ptr) + 3.0);
+                MoveObject(ptr + 1, GetObjectX(ptr + 1), GetObjectY(ptr + 1) + 3.0);
+            }
+            else
+                LookWithAngle(ptr, 1);
+        }
+        else
+        {
+            if (GetObjectY(ptr) >= GetWaypointY(38))
+            {
+                MoveObject(ptr, GetObjectX(ptr), GetObjectY(ptr) - 3.0);
+                MoveObject(ptr + 1, GetObjectX(ptr + 1), GetObjectY(ptr + 1) - 3.0);
+            }
+            else
+                LookWithAngle(ptr, 0);
+        }
+    }
+    else
+    {
+        ptr = CreateObject("SpikeBlock", 38);
+        CreateObject("SpikeBlock", 39);
+        LookWithAngle(ptr, 0);
+        Frozen(ptr, 1);
+        Frozen(ptr + 1, 1);
+    }
+    FrameTimer(1, MovingFlameLoop);
+}
+
+void VictoryEvent()
+{
+    int k;
+
+    ObjectOff(Object("MainGameSwitch"));
+
+    for (k = 9 ; k >= 0 ; k --)
+    {
+        if (CurrentHealth(player[k]))
+        {
+            MoveObject(player[k], GetWaypointX(46), GetWaypointY(46));
+            player[k] = 0;
+        }
+    }
+    Effect("WHITE_FLASH", GetWaypointX(46), GetWaypointY(46), 0.0, 0.0);
+    AudioEvent("BigGong", 46);
+    AudioEvent("LongBellsDown", 46);
+    FrameTimer(1, StrVictory);
+    FrameTimer(10, YouWin);
+}
+
+void YouWin()
+{
+    UniPrintToAll("당신이 이겼습니다, 인내의 숲을 모두 통과하셨습니다_!!");
+}
+
+void RegistPlayer()
+{
+    int plr, k;
+
+    while (1)
+    {
+        if (CurrentHealth(other))
+        {
+            if (MaxHealth(other) == 150)
+            {
+                plr = CheckPlayer();
+                for (k = 9 ; k >= 0 && plr < 0 ; k --)
+                {
+                    if (!MaxHealth(player[k]))
+                    {
+                        player[k] = GetCaller();
+                        player[k + 10] = 1;
+                        player[k + 20] = GetMemory(0x979720);
+                        plr = k;
+                        UniPrintToAll(PlayerName(player[k + 20]) + "플레이어 님께서 게임에 들어왔습니다.");
+                        break;
+                    }
+                }
+                if (plr >= 0)
+                {
+                    PlayerJoinTheGame(plr);
+                    break;
+                }
+            }
+        }
+        CantJoin();
+        break;
+    }
+}
+
+void CantJoin()
+{
+    MoveObject(other, GetWaypointX(2), GetWaypointY(2));
+    Enchant(other, "ENCHANT_FREEZE", 0.0);
+    Enchant(other, "ENCHANT_ANTI_MAGIC", 0.0);
+    Enchant(other, "ENCHANT_ANCHORED", 0.0);
+    UniPrintToAll("현재 녹스에서는 이 맵을 구동할 수 없습니다");
+}
+
+void PlayerJoinTheGame(int k)
+{
+    RemoveInventory(k);
+    EnchantOff(player[k], "ENCHANT_INVULNERABLE");
+    Enchant(player[k], "ENCHANT_FREEZE", 0.0);
+    Enchant(player[k], "ENCHANT_ANCHORED", 0.0);
+    MoveObject(player[k], GetWaypointX(3), GetWaypointY(3));
+    LookWithAngle(player[k], 0);
+    Effect("TELEPORT", GetObjectX(player[k]), GetObjectY(player[k]), 0.0, 0.0);
+    Effect("SMOKE_BLAST", GetObjectX(player[k]), GetObjectY(player[k]), 0.0, 0.0);
+    AudioEvent("PlayerExit", 3);
+    Chat(player[k], "인내의 숲 입장!");
+}
+
+void LoopPreservePlayers()
+{
+    string name = "WeirdlingBeast";
+    int ptr[10], k, act;
+
+    for (k = 9 ; k >= 0 ; k --)
+    {
+        if (!MaxHealth(player[k]))
+        {
+            if (player[k + 10])
+            {
+                player[k] = 0;
+                player[k + 10] = 0;
+                UniPrintToAll(PlayerName(player[k + 20]) + " 님이 나갔습니다");
+            }
+        }
+        else
+        {
+            if (GetMemory(player[k + 20] + 0x10) & 0x40)
+            {
+                player[k] = 0;
+                continue;
+            }
+            else if (CurrentHealth(player[k]))
+            {
+                MoveWaypoint(k + 26, GetObjectX(player[k]), GetObjectY(player[k]) + 25.0);
+                ptr[k] = CreateObject(name, k + 26);
+                Frozen(ptr[k], 1);
+                LookWithAngle(ptr[k], k);
+                DeleteObjectTimer(ptr[k], 1);
+                SetCallback(ptr[k], 9, BottomCollide);
+                MoveObject(PlayerFlag(k), GetObjectX(player[k]), GetObjectY(player[k]));
+                //here
+                //if (HasEnchant(player[k], "ENCHANT_SNEAK")) //go_left
+                //act = GetPlayerAction(player[k + 20]);
+                //if (act == 0x19)
+                if (HasEnchant(player[k], "ENCHANT_SNEAK"))
+                {
+                    EnchantOff(player[k], "ENCHANT_SNEAK");
+                    //SetPlayerAction(player[k + 20], 0);
+                    EnchantOff(player[k], key_right); //off_right_berf
+                    if (!HasEnchant(player[k], key_left))
+                    {
+                        Enchant(player[k], key_left, 0.0); //on_left_berf
+                        LookWithAngle(player[k], 0);
+                    }
+                    else
+                        EnchantOff(player[k], key_left);
+                }
+                else if (HasEnchant(player[k], "ENCHANT_INFRAVISION")) //go_right
+                {
+                    EnchantOff(player[k], "ENCHANT_INFRAVISION");
+                    //SetPlayerAction(player[k + 20], 0);
+                    EnchantOff(player[k], key_left); //off_left_berf
+                    if (!HasEnchant(player[k], key_right))
+                    {
+                        Enchant(player[k], key_right, 0.0); //on_right_berf
+                        LookWithAngle(player[k], 128);
+                    }
+                    else
+                        EnchantOff(player[k], key_right);
+                }
+                else
+                {
+                    if (GetObjectX(player[k]) <= 637.0 || GetObjectY(player[k]) >= 4218.0)
+                        Damage(player[k], 0, 255, 14);
+                }
+                if (HasEnchant(player[k], key_left)) //move to 'left'
+                    MoveObject(plr_mover[k], GetObjectX(player[k]) - 18.0, GetObjectY(player[k]));
+                else if (HasEnchant(player[k], key_right)) //move to 'right'
+                    MoveObject(plr_mover[k], GetObjectX(player[k]) + 18.0, GetObjectY(player[k]));
+                else
+                    MoveObject(plr_mover[k], GetWaypointX(k + 4), GetWaypointY(k + 4));
+                if (!HasEnchant(player[k], "ENCHANT_DETECTING") && !HasEnchant(player[k], "ENCHANT_ETHEREAL"))
+                {
+                    MoveObject(plr_mover[k + 10], GetObjectX(player[k]), GetObjectY(player[k]) - GetObjectZ(plr_fall[k]));
+                    if (GetObjectZ(plr_fall[k]) > 1.0)
+                        Raise(plr_fall[k], GetObjectZ(plr_fall[k]) - 1.0);
+                }
+            }
+        }
+    }
+    FrameTimer(1, LoopPreservePlayers);
+}
+
+void RemoveInventory(int k)
+{
+    while (GetLastItem(player[k]))
+        Delete(GetLastItem(player[k]));
+}
+
+void DrawBottomTexture(float x_left, float x_right, float high)
+{
+    string name = "Bench3Immobile";
+    int k;
+
+    MoveWaypoint(25, x_left, high + 10.0);
+    while (GetWaypointX(25) < x_right)
+    {
+        CreateObject(name, 25);
+        MoveWaypoint(25, GetWaypointX(25) + 21.0, GetWaypointY(25));
+    }
+}
+
+int GetUnitThingID(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 4);
+    return 0;
+}
+
+void LoopSearchIndex()
+{
+    int cur, last = CreateObject("InvisibleLightBlueHigh", 1), owner;
+
+    if (cur)
+    {
+        while (cur < last)
+        {
+            if (HasClass(cur, "MISSILE"))
+            {
+                if (GetUnitThingID(cur) == 526)
+                {
+                    owner = CheckOwner(cur);
+                    if (owner >= 0)
+                    {
+                        Delete(cur);
+                        JumpEvent(owner);
+                    }
+                }
+            }
+            cur ++;
+        }
+    }
+    else
+        cur = last;
+    Delete(last);
+    FrameTimer(1, LoopSearchIndex);
+}
+
+void JumpEvent(int k)
+{
+    if (CurrentHealth(player[k]) && !HasEnchant(player[k], "ENCHANT_ETHEREAL") && HasEnchant(player[k], "ENCHANT_DETECTING"))
+    {
+        Enchant(player[k], "ENCHANT_ETHEREAL", 0.0);
+        Raise(plr_fall[k], 8.0);
+        Effect("COUNTERSPELL_EXPLOSION", GetObjectX(player[k]), GetObjectY(player[k]), 0.0, 0.0);
+        MoveWaypoint(36, GetObjectX(player[k]), GetObjectY(player[k]));
+        AudioEvent("BallBounce", 36);
+        FrameTimerWithArg(1, k, PlayerOnJump);
+    }
+}
+
+void PlayerOnJump(int k)
+{
+    if (CurrentHealth(player[k]))
+    {
+        if (GetObjectZ(plr_fall[k]) < 25.0)
+        {
+            MoveObject(plr_mover[k + 10], GetObjectX(player[k]), GetObjectY(player[k]) + GetObjectZ(plr_fall[k]));
+            Raise(plr_fall[k], GetObjectZ(plr_fall[k]) + 1.0);
+            FrameTimerWithArg(1, k, PlayerOnJump);
+        }
+        else
+        {
+            EnchantOff(player[k], "ENCHANT_ETHEREAL");
+        }
+    }
+}
+
+void TouchedFire()
+{
+    if (HasClass(other, "PLAYER") && CurrentHealth(other))
+    {
+        Effect("SPARK_EXPLOSION", GetObjectX(self), GetObjectY(self), 0.0, 0.0);
+        Damage(other, self, 255, 14);
+    }
+}
+
+void SentryRayTrap1()
+{
+    int trap[4];
+
+    if (trap[0])
+    {
+        if (!IsObjectOn(trap[0]))
+        {
+            ObjectOn(trap[0]);
+            ObjectOn(trap[1]);
+            ObjectOn(trap[2]);
+            ObjectOn(trap[3]);
+            FrameTimer(15, SentryRayTrap1);
+        }
+        else
+        {
+            ObjectOff(trap[0]);
+            ObjectOff(trap[1]);
+            ObjectOff(trap[2]);
+            ObjectOff(trap[3]);
+            SecondTimer(3, SentryRayTrap1);
+        }
+    }
+    else
+    {
+        trap[0] = CreateObject("SentryGlobeMovable", 40);
+        MoveWaypoint(40, GetWaypointX(40), GetWaypointY(40) + 23.0);
+        trap[1] = CreateObject("SentryGlobeMovable", 40);
+        trap[2] = Object("LaserLeft1");
+        trap[3] = Object("LaserLeft2");
+        ObjectOff(trap[0]);
+        ObjectOff(trap[1]);
+        ObjectOff(trap[2]);
+        ObjectOff(trap[3]);
+        FrameTimer(1, SentryRayTrap1);
+    }
+}
+
+void GreenBallTrap()
+{
+    int ptr = CreateObject("DeathBall", 42);
+    DisableMagicalProperties(GetMemory(0x750710));
+    CreateObject("DeathBall", 43);
+    DisableMagicalProperties(GetMemory(0x750710));
+
+    DeleteObjectTimer(ptr, 60);
+    DeleteObjectTimer(ptr + 1, 60);
+
+    PushObject(ptr, -10.0, GetWaypointX(43), GetWaypointY(43));
+    PushObject(ptr + 1, -10.0, GetWaypointX(42), GetWaypointY(42));
+    AudioEvent("ForceOfNatureRelease", 42);
+    AudioEvent("ForceOfNatureRelease", 43);
+    SecondTimer(4, GreenBallTrap);
+}
+
+void StartMovingBlockTrap()
+{
+    int ptr;
+
+    ptr = CreateObject("SpikeBlock", 44);
+    CreateObject("SpikeBlock", 45);
+    Frozen(ptr, 1);
+    Frozen(ptr + 1, 1);
+    LookWithAngle(ptr + 1, 1);
+    FrameTimerWithArg(1, ptr, BlockRotation);
+    FrameTimerWithArg(1, ptr + 1, BlockRotation);
+}
+
+void BlockRotation(int block)
+{
+    if (!GetDirection(block))
+    {
+        if (GetObjectY(block) <= GetWaypointY(45))
+            MoveObject(block, GetObjectX(block), GetObjectY(block) + 3.0);
+        else if (GetObjectX(block) >= GetWaypointX(45))
+            MoveObject(block, GetObjectX(block) - 3.0, GetObjectY(block));
+        else
+            LookWithAngle(block, 1);
+    }
+    else
+    {
+        if (GetObjectY(block) >= GetWaypointY(44))
+            MoveObject(block, GetObjectX(block), GetObjectY(block) - 3.0);
+        else if (GetObjectX(block) <= GetWaypointX(44))
+            MoveObject(block, GetObjectX(block) + 3.0, GetObjectY(block));
+        else
+            LookWithAngle(block, 0);
+    }
+    FrameTimerWithArg(1, block, BlockRotation);
+}
+
+void ShurikenTrapLoop()
+{
+    int arr[10];
+    int flag[2];
+    int k;
+    string name = "OgreShuriken";
+
+    if (flag[0] | flag[1])
+    {
+        MoveWaypoint(51, GetWaypointX(flag[0] + 47), GetWaypointY(flag[0] + 47));
+        MoveWaypoint(52, GetWaypointX(flag[0] + 48), GetWaypointY(flag[0] + 48));
+        for (k = 4 ; k >= 0 ; k --)
+        {
+            arr[k * 2] = CreateObject(name, 51);
+            arr[k * 2 + 1] = CreateObject(name, 52);
+            PushObjectTo(arr[k * 2], 0.0, -15.0);
+            PushObjectTo(arr[k * 2 + 1], 0.0, 15.0);
+            MoveWaypoint(51, GetWaypointX(51) + 23.0, GetWaypointY(51));
+            MoveWaypoint(52, GetWaypointX(52) + 23.0, GetWaypointY(52));
+        }
+        flag[0] = flag[0] ^ flag[1];
+        flag[1] = flag[1] ^ flag[0];
+        flag[0] = flag[0] ^ flag[1];
+    }
+    else
+        flag[1] = 2;
+    SecondTimer(2, ShurikenTrapLoop);
+}
+
+void LaserTrap()
+{
+    int ptr[8];
+    int flag;
+    int k;
+
+    if (ptr[0])
+    {
+        for (k = 7 ; k >= 0 ; k --)
+            ObjectToggle(ptr[k]);
+    }
+    else
+    {
+        ptr[0] = Object("LaserBeamBase");
+        for (k = 1 ; k < 8 ; k ++)
+        {
+            ptr[k] = ptr[0] + (k * 2);
+            if (k >= 4)
+                ObjectOn(ptr[k]);
+        }
+    }
+    SecondTimer(4, LaserTrap);
+}
+
+void MovingBlockLoop2()
+{
+    int block;
+
+    if (block)
+    {
+        if (!GetDirection(block))
+        {
+            if (GetObjectX(block) <= GetWaypointX(54))
+                MoveObject(block, GetObjectX(block) + 3.0, GetObjectY(block));
+            else
+                LookWithAngle(block, 1);
+        }
+        else
+        {
+            if (GetObjectX(block) >= GetWaypointX(53))
+                MoveObject(block, GetObjectX(block) - 3.0, GetObjectY(block));
+            else
+                LookWithAngle(block, 0);
+        }
+    }
+    else
+    {
+        block = CreateObject("SpikeBlock", 53);
+        LookWithAngle(block, 0);
+        Frozen(block, 1);
+    }
+    FrameTimer(1, MovingBlockLoop2);
+}
+
+void FinalDeathBallTrap()
+{
+    int unit = CreateObject("DeathBall", 60);
+    DisableMagicalProperties(GetMemory(0x750710));
+    CreateObject("DeathBall", 62);
+    DisableMagicalProperties(GetMemory(0x750710));
+    FrameTimerWithArg(120, CreateMoverFix(unit, 59, 30.0), RemoveDeathballMover);
+    FrameTimerWithArg(120, CreateMoverFix(unit + 1, 61, 70.0), RemoveDeathballMover);
+    FrameTimer(125, FinalDeathBallTrap);
+}
+
+void RemoveDeathballMover(int unit)
+{
+    Delete(unit);
+}
+
+void PutFlames()
+{
+    int k;
+    int unit = CreateObject("InvisibleLightBlueHigh", 53);
+    int ptr;
+
+    for (k = 0 ; k < 5 ; k ++)
+    {
+        CreateObject("CarnivorousPlant", 65);
+        Frozen(CreateObject("LargeFist", 65), 1);
+        Damage(unit + (k * 2) + 1, 0, 999, -1);
+        SetCallback(unit + (k * 2) + 1, 9, TouchedFire);
+        MoveWaypoint(65, GetWaypointX(65) + 46.0, GetWaypointY(65));
+    }
+
+    ptr = CreateObject("CarnivorousPlant", 66);
+    Frozen(CreateObject("LargeFist", 66), 1);
+    Damage(unit + (k * 2) + 1, 0, 999, -1);
+    SetCallback(unit + (k * 2) + 1, 9, TouchedFire);
+    CreateMoverFix(ptr, 68, 20.0);
+    CreateMoverFix(ptr + 1, 68, 20.0);
+}
+
+void FXExitPortal()
+{
+    MoveWaypoint(56, GetWaypointX(55), GetWaypointY(55) - 25.0);
+    Frozen(CreateObject("Magic", 56), 1);
+    DisableMagicalProperties(GetMemory(0x750710));
+    MoveWaypoint(56, GetWaypointX(56), GetWaypointY(56) - 20.0);
+    Frozen(CreateObject("Magic", 56), 1);
+    DisableMagicalProperties(GetMemory(0x750710));
+    MoveWaypoint(56, GetWaypointX(56), GetWaypointY(56) - 20.0);
+    Frozen(CreateObject("Magic", 56), 1);
+    DisableMagicalProperties(GetMemory(0x750710));
+}
+
+void StrKeyInfo()
+{
+	int arr[58];
+	string name = "SpiderSpit";
+	int i = 0;
+	arr[0] = 4195070; arr[1] = 1056964616; arr[2] = 529526784; arr[3] = 2115235841; arr[4] = 271572995; arr[5] = 268469252; arr[6] = 536871424; arr[7] = 4194336; arr[8] = 68157512; arr[9] = 138412032; 
+	arr[10] = 69271816; arr[11] = 8357880; arr[12] = 268503056; arr[13] = 1677729280; arr[14] = 268699907; arr[15] = 144819460; arr[16] = 2; arr[17] = 4326400; arr[18] = 278548; arr[19] = 16924806; 
+	arr[20] = 1142048532; arr[21] = 16760836; arr[22] = 8257536; arr[23] = 17303680; arr[24] = 9445952; arr[25] = 84428928; arr[26] = 1857; arr[27] = 2046; arr[28] = 1103370240; arr[29] = 2131298304; 
+	arr[30] = 18092033; arr[31] = 16896; arr[32] = 4096; arr[33] = 2097152; arr[34] = 0; arr[35] = 0; arr[36] = 34636031; arr[37] = 263164; arr[38] = 134254588; arr[39] = 2130710512; 
+	arr[40] = 2114060289; arr[41] = 69214211; arr[42] = 17858561; arr[43] = 2105344; arr[44] = 1073742852; arr[45] = 8388672; arr[46] = 2131751040; arr[47] = 69206018; arr[48] = 524416; arr[49] = 268509176; 
+	arr[50] = 67047456; arr[51] = 270336; arr[52] = 134217856; arr[53] = 33559038; arr[54] = 1069547520; arr[55] = 522244; arr[56] = 2131230720; arr[57] = 1; 
+	while(i < 58)
+	{
+		drawStrKeyInfo(arr[i], name);
+		i ++;
+	}
+}
+
+void drawStrKeyInfo(int arg_0, string name)
+{
+	int count;
+	int i;
+	float pos_x;
+	float pos_y;
+
+	if (!count)
+	{
+		pos_x = GetWaypointX(41);
+		pos_y = GetWaypointY(41);
+	}
+	for (i = 1 ; i > 0 && count < 1798 ; i <<= 1)
+	{
+		if (i & arg_0)
+			Frozen(CreateObject(name, 41), 1);
+		if (count % 161 == 160)
+			MoveWaypoint(41, GetWaypointX(41) - 480.000000, GetWaypointY(41) + 3.000000);
+		else
+			MoveWaypoint(41, GetWaypointX(41) + 3.000000, GetWaypointY(41));
+		count ++;
+	}
+	if (count >= 1798)
+	{
+		count = 0;
+		MoveWaypoint(41, pos_x, pos_y);
+	}
+}
+
+void StrFinish()
+{
+	int arr[13];
+	string name = "SpiderSpit";
+	int i = 0;
+	arr[0] = 252844414; arr[1] = 1225556257; arr[2] = 172003472; arr[3] = 541608009; arr[4] = 1679828106; arr[5] = 1885489447; arr[6] = 1092915239; arr[7] = 340267537; arr[8] = 604571905; arr[9] = 75793556; 
+	arr[10] = 1111641124; arr[11] = 505811460; arr[12] = 66; 
+	while(i < 13)
+	{
+		drawStrFinish(arr[i], name);
+		i ++;
+	}
+}
+
+void drawStrFinish(int arg_0, string name)
+{
+	int count;
+	int i;
+	float pos_x;
+	float pos_y;
+
+	if (!count)
+	{
+		pos_x = GetWaypointX(57);
+		pos_y = GetWaypointY(57);
+	}
+	for (i = 1 ; i > 0 && count < 403 ; i <<= 1)
+	{
+		if (i & arg_0)
+			Frozen(CreateObject(name, 57), 1);
+		if (count % 38 == 37)
+			MoveWaypoint(57, GetWaypointX(57) - 111.000000, GetWaypointY(57) + 3.000000);
+		else
+			MoveWaypoint(57, GetWaypointX(57) + 3.000000, GetWaypointY(57));
+		count ++;
+	}
+	if (count >= 403)
+	{
+		count = 0;
+		MoveWaypoint(57, pos_x, pos_y);
+	}
+}
+
+void StrVictory()
+{
+	int arr[13];
+	string name = "SpiderSpit";
+	int i = 0;
+	arr[0] = 2613312; arr[1] = 301998097; arr[2] = 7080064; arr[3] = 1099186194; arr[4] = 35653889; arr[5] = 268762112; arr[6] = 33718242; arr[7] = 16777488; arr[8] = 132155394; arr[9] = 134217985; 
+	arr[10] = 570458248; arr[11] = 2086650888; arr[12] = 536999970; 
+	while(i < 13)
+	{
+		drawStrVictory(arr[i], name);
+		i ++;
+	}
+}
+
+void drawStrVictory(int arg_0, string name)
+{
+	int count;
+	int i;
+	float pos_x;
+	float pos_y;
+
+	if (!count)
+	{
+		pos_x = GetWaypointX(46);
+		pos_y = GetWaypointY(46);
+	}
+	for (i = 1 ; i > 0 && count < 403 ; i <<= 1)
+	{
+		if (i & arg_0)
+			Frozen(CreateObject(name, 46), 1);
+		if (count % 38 == 37)
+			MoveWaypoint(46, GetWaypointX(46) - 111.000000, GetWaypointY(46) + 3.000000);
+		else
+			MoveWaypoint(46, GetWaypointX(46) + 3.000000, GetWaypointY(46));
+		count ++;
+	}
+	if (count >= 403)
+	{
+		count = 0;
+		MoveWaypoint(46, pos_x, pos_y);
+	}
+}
+
+int CheckPlayer()
+{
+    int k;
+
+    for (k = 9 ; k >= 0 ; k --)
+    {
+        if (IsCaller(player[k]))
+            return k;
+    }
+    return -1;
+}
+
+string PlayerName(int ptr)
+{
+    int addr = GetMemory(0x97bb40), xwis_id = GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x830;
+
+	SetMemory(addr, GetMemory(xwis_id));
+    SetMemory(addr + 4, GetMemory(xwis_id + 4));
+    SetMemory(addr + 8, GetMemory(xwis_id + 8));
+	StopScript(0);
+}
+
+int PlayerFlag(int num)
+{
+    int flag[10];
+
+    if (num < 0)
+    {
+        flag[0] = Object("flagBase");
+        int k;
+        for (k = 1 ; k < 10 ; k ++)
+            flag[k] = flag[0] + (k * 2);
+        return 0;
+    }
+    return flag[num];
+}
+
+int CheckOwner(int unit)
+{
+    int k;
+
+    for (k = 9 ; k >= 0 ; k --)
+    {
+        if (IsOwnedBy(unit, player[k]))
+            return k;
+    }
+    return -1;
+}
+
+int GetMemory(int addr)
+{
+    return Unknownb9(addr);
+}
+
+void SetMemory(int addr, int value)
+{
+    Unused59(addr, value);
+}
+
+void SetUnitMaxHealth(int ptr, int amount)
+{
+	SetMemory(GetMemory(ptr + 0x22c), amount);
+	SetMemory(GetMemory(ptr + 0x22c) + 0x4, amount);
+}
+
+void DisableMagicalProperties(int ptr)
+{
+	SetMemory(ptr + 0xc, GetMemory(ptr + 0xc) ^ 0x1);
+}
+
+int GetPlayerAction(int ptr)
+{
+    //01- berserker, 05- run, 1a- laugh, 1b- point, 19- taunt
+    return GetMemory(GetMemory(ptr + 0x2ec) + 0x58) & 0xff;
+}
+
+void SetPlayerAction(int ptr, int val)
+{
+    int addr = GetMemory(ptr + 0x2ec);
+
+    if (addr)
+    {
+        SetMemory(addr + 0x58, ((GetMemory(addr + 0x58) >> 8) << 8) ^ val);
+        SetMemory(addr + 0xec, 0);
+    }
+}
