@@ -1139,7 +1139,7 @@ void PlayerClassEntry()
                     break;
                 }
             }
-            if (plr)
+            if (plr + 1)
             {
                 if (plr >> 8)
                     PlayerClassFirstJoin(other, plr & 0xff);
@@ -6082,7 +6082,7 @@ void SmokeRingBlast(int unit, int count, float gap)
 void ThrowBucherDestroyed(int sub)
 {
     SmokeRingBlast(sub, 8, 20.0);
-    SplashDamageAt(GetOwner(sub), 101, GetObjectX(sub), GetObjectY(sub), 375.0);
+    SplashDamageAt(GetOwner(sub), 240, GetObjectX(sub), GetObjectY(sub), 200.0);
     PlaySoundAround(sub, 759);
     Effect("JIGGLE", GetObjectX(sub), GetObjectY(sub), 20.0, 0.0);
 }
