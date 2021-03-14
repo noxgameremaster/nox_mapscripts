@@ -5163,7 +5163,7 @@ int ImportWriteBinaryFile()
         arr[0] = 0xDB624BE8; arr[1] = 0x246850FF; arr[2] = 0xFF005882; arr[3] = 0x485AE830; arr[4] = 0xC483FFE1;
         arr[5] = 0x74C08508; arr[6] = 0x748B5624; arr[7] = 0x768B0424; arr[8] = 0x8D0E8B04; arr[9] = 0x50500476; arr[10] = 0x5651016A; arr[11] = 0xE149D1E8;
         arr[12] = 0x10C483FF; arr[13] = 0xCB64FAE8; arr[14] = 0x04C483FF; arr[15] = 0x04C4835E; arr[16] = 0x909090C3;
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ImportWriteBinaryFile + 0x1c));
+        link = GetScrDataField(ImportWriteBinaryFile);
         FixCallOpcode(link + 0, 0x507250);
         FixCallOpcode(link + 0xd, 0x56586c);
         FixCallOpcode(link + 0x2c, 0x565a02);
