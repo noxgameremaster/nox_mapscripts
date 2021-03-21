@@ -84,6 +84,25 @@ int ToInt(float x)
     StopScript(x);
 }
 
+void ErrorPush(int errorPtr)
+{
+    int error[512], pick;
+
+    error[pick] = ErrorPush;
+    pick ++;
+}
+
+void ErrorPop()
+{
+    int ptr = GetScrDataField(ErrorPush) + 4;
+
+    while (GetMemory(ptr))
+    {
+        PrintToAll(IntToString(GetMemory(ptr)));
+        ptr += 4;
+    }
+}
+
 int GetMemory(int addr)
 {
     return Unknownb9(addr);
@@ -576,6 +595,7 @@ void MapInitialize()
 {
     int var0 = EnableMemoryReadWriteFunction(0);
 
+    FrameTimer(30, DelayInitRun);
     MathSine(1, 1.0 / 57.3);
     CallFunctionWithArgInt(0, 0);
     ImportUseItemFunc();
@@ -584,9 +604,13 @@ void MapInitialize()
     ImportUniChatCore();
     InitInvPropertiesSet();
     SetQuestStatus(16384, ToStr(4));
-    //FrameTimer(1, MapDecorations);
 
     CreateObject("LevelUp", 14);
+}
+
+void DelayInitRun()
+{
+    MonsterStrikeHandlerCopiedCode(MonsterStrikeCallback);
 }
 
 void MonsterSummonHandler(int sUnit)
@@ -1692,9 +1716,266 @@ void ResetRemappingDecReq(int plrOffset, int pIndex)
     ResetRemappingDecReq(plrOffset - 0x12dc, pIndex - 1);
 }
 
+void UseGodPotion()
+{
+    Delete(self);
+    UniPrint(other, "Wa!!");
+}
+
+int CreateYellowPotionFix(int location, int amount)
+{
+    int ypotion = CreateObject("YellowPotion", location);
+    int ptr = GetMemory(0x750710);
+    int allocPtr = MemAlloc(4);
+
+    SetMemory(ptr + 0x0c, GetMemory(ptr + 0x0c) | 0x10);
+    SetMemory(ptr + 0x2dc, 0x53ef70);
+    SetMemory(ptr + 0x20, 0x28);
+    SetMemory(allocPtr, amount);
+    SetMemory(ptr + 0x2e0, allocPtr);
+    
+    return ypotion;
+}
+
+void SetPlayerAction(int plrUnit, int actionId)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+    {
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x58, (GetMemory(GetMemory(ptr + 0x2ec) + 0x58) & (~0xff)) ^ actionId);
+    }
+}
+
+void UseStaff()
+{
+    SetPlayerAction(other, 5);
+    UniPrint(other, "Use..?");
+}
+
+int CreateMagicStaff(int location)
+{
+    int staff = CreateObject("OblivionOrb", location);
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 0x2dc, ImportUseItemFunc());
+    SetMemory(ptr + 0x2fc, UseStaff);
+    return staff;
+}
+
+int GetVictimUnit()
+{
+	int ptr = GetMemory(0x834a40);
+
+	if (ptr)
+		return GetMemory(ptr + 0x2c);
+	return 0;
+}
+
+void HorrendousMissileAttack()
+{
+    int victim = GetVictimUnit();
+
+    if (CurrentHealth(victim) && IsVisibleTo(self, victim))
+    {
+        Damage(victim, self, 20, 14);
+        Effect("SPARK_EXPLOSION", GetObjectX(victim), GetObjectY(victim), 0.0, 0.0);
+    }
+}
+
+int GetScrDataField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x1c));
+}
+
+int GetScrCodeField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x20));
+}
+
+int ImportMonsterStrikeFunc()
+{
+	int arr[14], link;
+
+	if (!link)
+	{
+		arr[0] = 0x448B5650; arr[1] = 0xC0850C24; arr[2] = 0xB08B2574; arr[3] = 0x000002EC; arr[4] = 0x1B74F685; arr[5] = 0x0830B68B; arr[6] = 0xFE830000;
+		arr[7] = 0x68107C00; arr[8] = 0x00507310; arr[9] = 0x56006A50; arr[10] = 0x0C2454FF; arr[11] = 0x5E10C483; arr[12] = 0x93806858; arr[13] = 0x90C30054;
+        link = GetScrDataField(ImportMonsterStrikeFunc);
+	}
+	return link;
+}
+
+int CallNode00549380()
+{
+    int link, node[3];
+
+    if (!link)
+    {
+        node[0] = 0x549394;
+        node[1] = 0x5493d0;
+        node[2] = 0x52df80;
+        link = GetScrDataField(CallNode00549380) + 4;
+    }
+    return link;
+}
+
+int MonsterStrikeHookSub()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x02CC96FF; arr[1] = 0x51500000; arr[2] = 0x0000FFB8; arr[3] = 0x50565700; arr[4] = 0xDB623BE8; arr[5] = 0x0CC483FF; arr[6] = 0xFB685859; arr[7] = 0xC3005493;
+
+        link = GetScrDataField(MonsterStrikeHookSub);
+    }
+    return link;
+}
+
+int OpcodeGetTargetAddr(int curAddr)
+{
+    return GetMemory(curAddr + 1) + curAddr + 5;
+}
+
+void OpcodeLoadEffectiveAddr(int loadAddr, int codeAddr, int offset)
+{
+    int targetAddr = OpcodeGetTargetAddr(codeAddr + offset);
+
+    SetMemory(loadAddr + offset + 1, targetAddr - (loadAddr + offset) - 5);
+}
+
+void OpcodeCopies(int destPtr, int callNodePtr, int startAddr, int endAddr)
+{
+    int destBase = destPtr;
+    int curAddr = startAddr;
+
+    while (curAddr <= endAddr)
+    {
+        SetMemory(destPtr, GetMemory(curAddr));
+        if (GetMemory(callNodePtr))
+        {
+            if (GetMemory(callNodePtr) + 1 <= curAddr)
+            {
+                OpcodeLoadEffectiveAddr(destBase, startAddr, GetMemory(callNodePtr) - startAddr);
+                callNodePtr += 4;
+            }
+        }
+        curAddr += 4;
+        destPtr += 4;
+    }
+}
+
+void ReculsiveOpcodeCopies(int destPtr, int callNodePtr, int curAddr)
+{
+    int paramPtr = GetScrDataField(OpcodeCopiesInvoke);
+
+    if (curAddr <= GetMemory(paramPtr + 12))
+    {
+        SetMemory(destPtr, GetMemory(curAddr));
+        if (GetMemory(callNodePtr))
+        {
+            if (GetMemory(callNodePtr) + 1 <= curAddr)
+            {
+                OpcodeLoadEffectiveAddr(GetMemory(paramPtr), GetMemory(paramPtr + 8), GetMemory(callNodePtr) - GetMemory(paramPtr + 8));
+                callNodePtr += 4;
+            }
+        }
+        ReculsiveOpcodeCopies(destPtr + 4, callNodePtr, curAddr + 4);
+    }
+}
+
+void OpcodeCopiesInvoke(int destPtr, int callNodePtr, int startAddr, int endAddr)
+{
+    ReculsiveOpcodeCopies(destPtr, callNodePtr, startAddr);
+}
+
+int MonsterStrikeHandlerCopiedCode(int callback)
+{
+    int code[48], link;
+
+    if (!link)
+    {
+        link = GetScrDataField(MonsterStrikeHandlerCopiedCode) + 4;
+        OpcodeCopiesInvoke(link, CallNode00549380(), 0x549380, 0x549434);
+        int subPart = MonsterStrikeHookSub();
+        SetMemory(subPart + 27, link + 0x7b);
+        SetMemory(subPart + 9, callback);
+        FixCallOpcode(subPart + 16, 0x507310);
+
+        SetMemory(link + 0x75, (GetMemory(link + 0x75) & (~0xff)) ^ 0x68);  //e8 xx xx xx xx
+        SetMemory(link + 0x7a, (GetMemory(link + 0x7a) & (~0xff)) ^ 0xc3);
+        SetMemory(link + 0x76, subPart);
+    }
+    return link;
+}
+
+void RegistUnitStrikeHook(int sUnit)
+{
+    int ptr = UnitToPtr(sUnit), temp, binScrPtr;
+
+    if (ptr)
+    {
+        temp = GetMemory(ptr + 0x2ec);
+        if (temp)
+        {
+            binScrPtr = GetMemory(GetMemory(ptr + 0x2ec) + 0x1e4);
+            if (binScrPtr)
+                SetMemory(binScrPtr + 0xec, MonsterStrikeHandlerCopiedCode(0));
+        }
+    }
+}
+
+void MonsterStrikeCallback()
+{
+    if (CurrentHealth(other))
+    {
+        Damage(other, self, 150, 14);
+        Effect("LIGHTNING", GetObjectX(other), GetObjectY(other), GetObjectX(self), GetObjectY(self));
+    }
+}
+
+int Bear2BinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1918985538; arr[1] = 50; arr[17] = 430; arr[19] = 200; arr[21] = 1065353216; 
+		arr[23] = 32769; arr[24] = 1065353216; arr[27] = 1; arr[28] = 1117126656; arr[29] = 30; 
+		arr[31] = 4; arr[32] = 18; arr[33] = 26; arr[58] = 5545472; arr[59] = 5542784; 
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * Bear2BinTable + 0x1c));
+	}
+	return link;
+}
+
+void Bear2SubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1086324736);
+		SetMemory(ptr + 0x224, 1086324736);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 32769);
+		SetMemory(GetMemory(ptr + 0x22c), 430);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 430);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, Bear2BinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+
 void MapTesting()
 {
-    ResetRemappingDecReq(0x654284, 31);
+    int link = MonsterStrikeHandlerCopiedCode(0);
+    int mob = ColorMaidenAt(0xff, 4343.0, 5288.0);
+
+    Bear2SubProcess(mob);
+    RegistUnitStrikeHook(mob);
+
+    UniPrint(other, IntToString(link));
 }
 
 void EditUnitScriptName(int sUnit, string sName)
