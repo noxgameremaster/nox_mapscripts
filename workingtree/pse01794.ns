@@ -1,5 +1,4 @@
 
-
 int XMonStat = 0;
 int XMainFlag = 0;
 int player[20];
@@ -2021,8 +2020,6 @@ void DelayInitRun()
     FrameTimer(1, CreClassMarketPlace);
     FrameTimer(3, LoopSearchIndex);
     FrameTimer(1, LineSetInit);
-
-
     //FrameTimer(3, PotionImgTest); //here: removeMe
 }
 
@@ -3201,6 +3198,18 @@ int CreateWhitePotion(int restoreAmount, float xProfile, float yProfile)
     return unit;
 }
 
+void GodModePotionFeatureSwap(int potion)
+{
+    int ptr = UnitToPtr(potion);
+
+    if (ptr)
+    {
+        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
+        SetMemory(ptr + 0x2fc, UseGodModePotion);
+        Enchant(potion, EnchantList(22), 0.0);
+    }
+}
+
 int CheckPotionThingID(int unit)
 {
     int thingID = GetUnitThingID(unit), x = unit;
@@ -3225,7 +3234,7 @@ int ImportAllowAllDrop()
 		arr[0] = 0x550CEC83; arr[1] = 0x14246C8B; arr[2] = 0x24748B56; arr[3] = 0xECAE391C; arr[4] = 0x74000001; arr[5] = 0xC0315E08; arr[6] = 0x0CC4835D;
 		arr[7] = 0x0845F6C3; arr[8] = 0x68207404; arr[9] = 0x0053EBF0; arr[10] = 0x2454FF56; arr[11] = 0x08C48304; arr[12] = 0x0F74C085; arr[13] = 0x53EC8068;
 		arr[14] = 0x56016A00; arr[15] = 0x082454FF; arr[16] = 0x680CC483; arr[17] = 0x004ED301; arr[18] = 0x909090C3;
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ImportAllowAllDrop + 0x1c));
+        link = GetScrDataField(ImportAllowAllDrop);
 	}
 	return link;
 }
@@ -3360,11 +3369,11 @@ int ItemDropClassMagicalPotions(int sUnit)
 {
     string potionList = {
         "RedPotion", "BluePotion", "CurePoisonPotion", "VampirismPotion",
-        "HastePotion", "InvisibilityPotion", "InfravisionPotion", "InvulnerabilityPotion",
+        "HastePotion", "InvisibilityPotion", "InfravisionPotion", "WhitePotion",
         "ShieldPotion", "FireProtectPotion", "ShockProtectPotion", "PoisonProtectPotion",
-        "YellowPotion", "BlackPotion", "WhitePotion"
+        "YellowPotion", "BlackPotion"
         };
-    return CheckPotionThingID( CreateObjectAt(ToStr(SToInt(potionList) + Random(0, 14)), GetObjectX(sUnit), GetObjectY(sUnit)));
+    return CheckPotionThingID(CreateObjectAt(ToStr(SToInt(potionList) + Random(0, 13)), GetObjectX(sUnit), GetObjectY(sUnit)));
 }
 
 int ItemDropClassWeapon(int sUnit)
@@ -3488,7 +3497,7 @@ int LineMobOrder(int wave)
 
     if (wave < 0)
     {
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * LineMobOrder + 0x1c)) + 4;
+        link = GetScrDataField(LineMobOrder) + 4;
         LineMobSetOrder(link, 5, 5, 1, 1);
         LineMobSetOrder(link + 4, 22, 22, 10, 10);
         LineMobSetOrder(link + 8, 8, 23, 8, 23);
@@ -6121,4 +6130,44 @@ void ThrowBucherFx(int owner)
     UnitNoCollide(sub + 1);
     Raise(sub + 1, 250.0);
     SetOwner(owner, sub);
+}
+
+void GodModePotionFx(int fxUnit)
+{
+    int owner = GetOwner(fxUnit);
+
+    while (IsObjectOn(fxUnit))
+    {
+        if (CurrentHealth(owner))
+        {
+            int durate = ToInt(GetObjectZ(fxUnit));
+
+            if (durate)
+            {
+                if (!UnitCheckEnchant(owner, GetLShift(23)))
+                    Enchant(owner, EnchantList(23), 0.0);
+                FrameTimerWithArg(1, fxUnit, GodModePotionFx);
+                Raise(fxUnit, durate - 1);
+                MoveObject(fxUnit + 1, GetObjectX(owner), GetObjectY(owner));
+            }
+            EnchantOff(owner, EnchantList(23));
+        }
+        Delete(fxUnit);
+        Delete(fxUnit + 1);
+        break;
+    }
+}
+
+void UseGodModePotion()
+{
+    Delete(self);
+    if (!UnitCheckEnchant(other, GetLShift(23)))
+    {
+        UniPrint(other, "무적의 물약을 사용하셨습니다. 15 초간 무적상태가 유지됩니다");
+        int fxUnit = CreateObjectAt("InvisibleLightBlueLow", GetObjectX(other), GetObjectY(other));
+
+        SetOwner(other, CreateObjectAt("Smoke", GetObjectX(other), GetObjectY(other)) - 1);
+        Raise(fxUnit, 450);
+        FrameTimerWithArg(1, fxUnit, GodModePotionFx);
+    }
 }
