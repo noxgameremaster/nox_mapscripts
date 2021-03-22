@@ -3374,6 +3374,7 @@ void MapInitialize()
     FrameTimer(8, MapDecorations);
     FrameTimerWithArg(3, Object("FirstMonsterMarker"), StartMarkerScan);
     FrameTimer(10, PlayerPreserveHandler);
+    FrameTimerWithArg(20, Object("UndergroundElev"), DisableObject);
 }
 
 int GetUnitThingID(int unit)
@@ -3619,7 +3620,8 @@ void BlueCrystalCollide()
     {
         if (CurrentHealth(other) && IsAttackedBy(other, owner))
         {
-            Damage(other, owner, 50, 9);
+            Damage(other, owner, 200, 9);
+            Effect("VIOLET_SPARKS", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
         }
         else if (!GetCaller())
             DestroyWallAtUnitPos(self);
@@ -3671,7 +3673,7 @@ void HecubahSight()
 
     if (!UnitCheckEnchant(self, GetLShift(30)))
     {
-        if (Distance(GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other)) < 130.0)
+        if (Distance(GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other)) < 200.0)
         {
             LookAtObject(self, other);
             HitLocation(self, GetObjectX(self), GetObjectY(self));
@@ -3685,7 +3687,7 @@ void HecubahSight()
             FrameTimerWithArg(1, unit, DelayShootToTarget);
             CreatureIdle(self);
             ForceCastSpell(self, 0, GetObjectX(self) + UnitRatioX(other, self, 30.0), GetObjectY(self) + UnitRatioY(other, self, 30.0));
-            PushObject(ThrowBlueCrystal(self, other), -1.0, GetObjectX(other), GetObjectY(other));
+            PushObject(ThrowBlueCrystal(self, other), -1.5, GetObjectX(other), GetObjectY(other));
             delay = 20;
         }
         Enchant(self, EnchantList(30), 0.5);
@@ -4351,7 +4353,7 @@ void ImpShotCollide()
     {
         if (CurrentHealth(other) && IsAttackedBy(other, owner))
         {
-            Damage(other, 0, 70, 1);
+            Damage(other, 0, 40, 1);
             break;
         }
         else if (!GetCaller())
@@ -4388,9 +4390,9 @@ void SpitImpShot(int ptr)
         UnitSetEnchantTime(mis, 8, 90);
         MoveObject(ptr, GetObjectX(target) + (vectX * GetObjectZ(ptr + 1)), GetObjectY(target) + (vectY * GetObjectZ(ptr + 1)));
         if (IsVisibleTo(ptr, owner))
-            PushObject(mis, -40.0, GetObjectX(ptr), GetObjectY(ptr));
+            PushObject(mis, -35.0, GetObjectX(ptr), GetObjectY(ptr));
         else
-            PushObject(mis, -40.0, GetObjectX(target), GetObjectY(target));
+            PushObject(mis, -35.0, GetObjectX(target), GetObjectY(target));
     }
     Delete(ptr);
     Delete(ptr + 1);
@@ -6693,13 +6695,14 @@ void OpcodeCopiesInvoke(int destPtr, int callNodePtr, int startAddr, int endAddr
 
 int CallNode00549380()
 {
-    int link, node[3];
+    int link, node[4];
 
     if (!link)
     {
         node[0] = 0x549394;
         node[1] = 0x5493d0;
         node[2] = 0x52df80;
+        node[3] = 0;    //nullptr
         link = GetScrDataField(CallNode00549380) + 4;
     }
     return link;
@@ -6803,7 +6806,7 @@ void BullDakSubProcess(int sUnit)
 
 void BullDakStrike()
 {
-    Damage(other, self, 125, 8);
+    Damage(other, self, 160, 8);
     DeleteObjectTimer(CreateObjectAt("Explosion", GetObjectX(other), GetObjectY(other)), 18);
 }
 
@@ -6818,4 +6821,33 @@ void BullDakImageLoop(int imgUnit)
     }
     else
         Delete(imgUnit);
+}
+
+void DisableObject(int obj)
+{
+    ObjectOff(obj);
+}
+
+void UnderGroundElevOn()
+{
+    ObjectOff(self);
+    ObjectOn(Object("UndergroundElev"));
+    UniPrint(other, "엘리베이터가 작동을 시작했습니다!");
+}
+
+void SecretWallOpen()
+{
+    ObjectOff(self);
+    WallOpen(Wall(118, 204));
+    WallOpen(Wall(119, 203));
+    WallOpen(Wall(120, 202));
+
+    WallOpen(Wall(122, 200));
+    WallOpen(Wall(123, 199));
+    WallOpen(Wall(124, 198));
+
+    WallOpen(Wall(126, 198));
+    WallOpen(Wall(127, 199));
+    WallOpen(Wall(128, 200));
+
 }
