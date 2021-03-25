@@ -5059,7 +5059,7 @@ int PlaceBucherStaff(int sArg)
 
 int NetClientExec()
 {
-    int arr[2], link;
+    int arr[3], link;
 
     arr[0] = 0xdf;
     link = GetMemory(GetMemory(0x75ae28) + (0x30 * NetClientExec + 0x1c));
@@ -5129,7 +5129,7 @@ void NetClientSend(int plrUnit, int buffPtr, int buffSize)
 {
     //netClientSend,0x0040EBC0
     int plrPtr = UnitToPtr(plrUnit), plrIdx;
-    int temp = GetMemory(0x5c31ac);
+    int temp = GetMemory(0x5c315c);
 
     if (plrPtr)
     {
@@ -5137,9 +5137,9 @@ void NetClientSend(int plrUnit, int buffPtr, int buffSize)
         {
             plrIdx = GetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0x810);
             //5c31ac
-            SetMemory(0x5c31ac, ImportNetSendClient());
-            PushObject(plrIdx, ToFloat(1), ToFloat(buffPtr), ToFloat(buffSize));
-            SetMemory(0x5c31ac, temp);
+            SetMemory(0x5c315c, ImportNetSendClient());
+            GroupDamage(plrIdx, 1, buffPtr, buffSize);
+            SetMemory(0x5c315c, temp);
         }
     }
 }

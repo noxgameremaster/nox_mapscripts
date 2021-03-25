@@ -34,7 +34,7 @@ void ClientMain()
 
 int NetClientExec()
 {
-    int arr[2];
+    int arr[3];
 
     arr[0] = 0xdf;
     return GetScrDataField(NetClientExec);
@@ -58,9 +58,8 @@ void DelayLink(int pUnit)
 
 void ClientEntry(int cliUnit)
 {
-    int scrNumber;
+    int scrNumber = ClientMain & 0xff;
 
-    scrNumber = ClientMain & 0xff;
     //6A 00 6A 00/ 6A 7F E8 05/ 63 DB FF 83/ C4 0C 68 B0/ 95 4B 00 C3
     ClientSetMemory(cliUnit, 0x751000, 0x6a);
     ClientSetMemory(cliUnit, 0x751001, 0x00);
@@ -115,7 +114,7 @@ void ItemUseClassTeleportAmulet()
     {
         Delete(self);
         Effect("SMOKE_BLAST", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
-        MoveObject(other, GetWaypointX(12), GetWaypointY(12));
+        MoveObject(other, LocationX(12), LocationY(12));
         PlaySoundAround(other, 592);
         Effect("COUNTERSPELL_EXPLOSION", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
         UniPrint(other, "시작 위치로 공간이동했습니다");
@@ -954,7 +953,7 @@ void LaiserSword(int owner)     //TODO: SpecialProperty - Laiser Sword
         DeleteObjectTimer(ptr + k, 1);
         SetCallback(ptr + k, 9, LaiserLifleTouched);
         Effect("SENTRY_RAY", GetObjectX(owner), GetObjectY(owner), GetObjectX(ptr + k), GetObjectY(ptr + k));
-        MoveWaypoint(1, GetWaypointX(1) + x_vect, GetWaypointY(1) + y_vect);
+        TeleportLocationVector(1, x_vect, y_vect);
         if (!IsVisibleTo(owner, ptr + k))
             break;
     }
@@ -1002,7 +1001,7 @@ void DeathraySword(int owner)       //TODO: SpecialProperty -
     MoveWaypoint(1, GetObjectX(owner), GetObjectY(owner));
     AudioEvent("TripleChime", 1);
     AudioEvent("FirewalkOn", 1);
-    Effect("WHITE_FLASH", GetWaypointX(1), GetWaypointY(1), 0.0, 0.0);
+    Effect("WHITE_FLASH", LocationX(1), LocationY(1), 0.0, 0.0);
     DeleteObjectTimer(CreateObjectAt("ManaBombCharge", GetObjectX(owner), GetObjectY(owner)), 18);
     SetOwner(owner, unit);
     SetUnitScanRange(unit, 450.0);
@@ -2054,9 +2053,9 @@ void PutSpecialShop()
 
 void AbilityAwardEvent(int unit)
 {
-    MoveWaypoint(1, GetObjectX(unit), GetObjectY(unit));
-    Effect("WHITE_FLASH", GetWaypointX(1), GetWaypointY(1), 0.0, 0.0);
-    GreenSparkFx(GetWaypointX(1), GetWaypointY(1));
+    TeleportLocation(1, GetObjectX(unit), GetObjectY(unit));
+    Effect("WHITE_FLASH", LocationX(1), LocationY(1), 0.0, 0.0);
+    GreenSparkFx(LocationX(1), LocationY(1));
     AudioEvent("AwardSpell", 1);
 }
 
@@ -2244,7 +2243,7 @@ void PoisonZombieDeathHandler()
 {
     MoveWaypoint(1, GetObjectX(self), GetObjectY(self));
     AudioEvent("BurnCast", 1);
-    Effect("SPARK_EXPLOSION", GetWaypointX(1), GetWaypointY(1), 0.0, 0.0);
+    Effect("SPARK_EXPLOSION", LocationX(1), LocationY(1), 0.0, 0.0);
     DeleteObjectTimer(CreateObject("MediumFlame", 1), 90);
     DeleteObjectTimer(CreateObject("ReleasedSoul", 1), 30);
     DungeonUnitDeathHandler();
@@ -2684,7 +2683,7 @@ void TeleportAllPlayer(int wp)
     for (i = 9 ; i >= 0 ; i --)
     {
         if (CurrentHealth(player[i]))
-            MoveObject(player[i], GetWaypointX(wp), GetWaypointY(wp));
+            MoveObject(player[i], LocationX(wp), LocationY(wp));
     }
 }
 
@@ -2692,7 +2691,7 @@ void ShutdownThisGame(int wp)
 {
     ObjectOff(Object("MainProcBeacon"));
     TeleportAllPlayer(wp);
-    MoveObject(StartLocationWithPlayer(), GetWaypointX(wp), GetWaypointY(wp));
+    MoveObject(StartLocationWithPlayer(), LocationX(wp), LocationY(wp));
 }
 
 void PlayerDeath()
@@ -2935,8 +2934,10 @@ int VaildPlayerCheck(int plrUnit)
     return 0;
 }
 
-void PlayerClassOnInit(int plrIdx, int plrUnit)
+int PlayerClassOnInit(int plrIdx, int plrUnit)
 {
+    int pResult = plrIdx;
+
     player[plrIdx] = plrUnit;
     player[plrIdx + 10] = 1;
     ChangeGold(plrUnit, -GetGold(plrUnit));
@@ -2948,8 +2949,10 @@ void PlayerClassOnInit(int plrIdx, int plrUnit)
             ClientEntry(plrUnit);
         else
             PlayerClassCommonWhenEntry();
+        pResult |= (1 << 8);
     }
     UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 게임에 참가하셨습니다");
+    return pResult;
 }
 
 void PlayerEntryPoint()
@@ -2967,14 +2970,16 @@ void PlayerEntryPoint()
                 {
                     if (!MaxHealth(player[i]))
                     {
-                        PlayerClassOnInit(i, GetCaller());
-                        plr = i;
+                        plr = PlayerClassOnInit(i, GetCaller());
                         break;
                     }
                 }
                 if (plr + 1)
                 {
-                    PlayerJoin(plr);
+                    if (plr >> 8)
+                        PlayerClassFirstJoin(other, plr & 0xff);
+                    else
+                        PlayerJoin(plr);
                     break;
                 }
             }
@@ -2996,6 +3001,22 @@ void EmptyAll(int unit)
         Delete(GetLastItem(unit));
 }
 
+void TeleportPlayer(int pArg)
+{
+    int location = pArg & 0x3ff, plr = (pArg >> 10) & 0x3ff;
+    int pUnit = player[plr];
+
+    if (CurrentHealth(pUnit))
+        MoveObject(pUnit, LocationX(location), LocationY(location));
+}
+
+void PlayerClassFirstJoin(int pUnit, int plr)
+{
+    MoveObject(pUnit, LocationX(91), LocationY(91));
+    FrameTimerWithArg(25, (plr << 10) | 89, TeleportPlayer);
+    UniPrint(pUnit, "지도에 입장을 시도하고 있습니다... 잠시만 기다려 주세요");
+}
+
 void PlayerJoin(int plr)
 {
     EmptyAll(player[plr]);
@@ -3004,8 +3025,8 @@ void PlayerJoin(int plr)
         PlayerClassPickAll(player[plr], GetScrDataField(PlayerClassItemTable) + 4, PlayerClassItemIndexTable(plr));
         PlayerClassSetDeathFlag(plr);
     }
-    MoveObject(player[plr], GetWaypointX(12), GetWaypointY(12));
-    Effect("TELEPORT", GetWaypointX(12), GetWaypointY(12), 0.0, 0.0);
+    MoveObject(player[plr], LocationX(12), LocationY(12));
+    Effect("TELEPORT", LocationX(12), LocationY(12), 0.0, 0.0);
     DeleteObjectTimer(CreateObject("BlueRain", 12), 10);
     AudioEvent("BlindOff", 12);
 }
@@ -3016,7 +3037,7 @@ void PlayerCantJoin()
     Enchant(other, "ENCHANT_ANCHORED", 0.0);
     Enchant(other, "ENCHANT_ANTI_MAGIC", 0.0);
     Enchant(other, "ENCHANT_BLINDED", 0.0);
-    MoveObject(other, GetWaypointX(11), GetWaypointY(11));
+    MoveObject(other, LocationX(11), LocationY(11));
     UniPrintToAll("맵 입장에 실패했습니다");
 }
 
@@ -3149,10 +3170,10 @@ void PlayerFastJoin()
     if (CurrentHealth(other))
     {
         if (plr < 0)
-            MoveObject(other, GetWaypointX(90), GetWaypointY(90));
+            MoveObject(other, LocationX(90), LocationY(90));
         else
         {
-            MoveObject(other, GetWaypointX(89), GetWaypointY(89));
+            MoveObject(other, LocationX(89), LocationY(89));
             UniPrint(other, "패스트 조인되었습니다");
         }
     }
@@ -3369,6 +3390,7 @@ void MapInitialize()
     Enchant(CreateObject("InvisibleLightBlueHigh", 12), "ENCHANT_VAMPIRISM", 0.0);
     MathSine(1, 1.0 / 57.3);
     ImportLibrary();
+    MapWaypointInit();
     GetMaster();
     FrameTimer(10, UserMapSetting);
     FrameTimer(8, MapDecorations);
@@ -3419,7 +3441,7 @@ int SummonPowerPurpleGirl(int ptr)
 {
     int unit = CreateObjectAt("TalkingSkull", GetObjectX(ptr), GetObjectY(ptr));
 
-    UnitNoCollide(CreateObjectAt("MovableStatueVictory1W", GetObjectX(unit), GetObjectY(unit)));
+    UnitNoCollide(CreateObjectAt("MovableStatueVictory3NE", GetObjectX(unit), GetObjectY(unit)));
     SetUnitScanRange(unit, 400.0);
     BullDakSubProcess(unit);
     RegistUnitStrikeHook(unit);
@@ -4516,7 +4538,7 @@ void StrWarSkill()
 {
 	int arr[26], i, count = 0;
 	string name = "ManaBombOrb";
-	float pos_x = GetWaypointX(45), pos_y = GetWaypointY(45);
+	float pos_x = LocationX(45), pos_y = LocationY(45);
 
 	arr[0] = 1075905278; arr[1] = 133713856; arr[2] = 67649679; arr[3] = 18874881; arr[4] = 956449312; arr[5] = 2080900128; arr[6] = 151552009; arr[7] = 1343258900; 
 	arr[8] = 570434048; arr[9] = 1107595336; arr[10] = 8881216; arr[11] = 337714704; arr[12] = 6344232; arr[13] = 1073750020; arr[14] = 565376; arr[15] = 603922400; 
@@ -4524,7 +4546,7 @@ void StrWarSkill()
 	arr[24] = 1077919744; arr[25] = 32640; 
 	for (i = 0 ; i < 26 ; i ++)
 		count = DrawStrWarSkill(arr[i], name, count);
-	MoveWaypoint(45, pos_x, pos_y);
+	TeleportLocation(45, pos_x, pos_y);
 }
 
 int DrawStrWarSkill(int arg, string name, int count)
@@ -4536,9 +4558,9 @@ int DrawStrWarSkill(int arg, string name, int count)
 		if (i & arg)
 			CreateObject(name, 45);
 		if (count % 72 == 71)
-			MoveWaypoint(45, GetWaypointX(45) - 140.0, GetWaypointY(45) + 144.0);
+            TeleportLocationVector(45, -140.0, 144.0);
 		else
-			MoveWaypoint(45, GetWaypointX(45) + 2.0, GetWaypointY(45) - 2.0);
+            TeleportLocationVector(45, 2.0, -2.0);
 		count ++;
 	}
 	return count;
@@ -4557,7 +4579,7 @@ void StrSpecialWeapon()
 	
 	for (i = 0 ; i < 32 ; i ++)
 		count = DrawStrSpecialWeapon(arr[i], name, count);
-	MoveWaypoint(46, pos_x, pos_y);
+	TeleportLocation(46, pos_x, pos_y);
 }
 
 int DrawStrSpecialWeapon(int arg, string name, int count)
@@ -4569,9 +4591,9 @@ int DrawStrSpecialWeapon(int arg, string name, int count)
 		if (i & arg)
 			CreateObject(name, 46);
 		if (count % 88 == 87)
-			MoveWaypoint(46, GetWaypointX(46) - 172.0, GetWaypointY(46) + 176.0);
+            TeleportLocationVector(46, -172.0, 176.0);
 		else
-			MoveWaypoint(46, GetWaypointX(46) + 2.0, GetWaypointY(46) - 2.0);
+            TeleportLocationVector(46, 2.0, -2.0);
 		count ++;
 	}
 	return count;
@@ -4600,9 +4622,9 @@ int DrawStrMissionFail(int arg, string name, int count)
 		if (i & arg)
 			CreateObject(name, 47);
 		if (count % 48 == 47)
-			MoveWaypoint(47, GetWaypointX(47) - 92.0, GetWaypointY(47) + 96.0);
+			TeleportLocationVector(47, -92.0, 96.0);
 		else
-			MoveWaypoint(47, GetWaypointX(47) + 2.0, GetWaypointY(47) - 2.0);
+			TeleportLocationVector(47, 2.0, -2.0);
 		count ++;
 	}
 	return count;
@@ -4631,9 +4653,9 @@ int DrawStrMissionClear(int arg, string name, int count)
 		if (i & arg)
 			CreateObject(name, 48);
 		if (count % 64 == 63)
-			MoveWaypoint(48, GetWaypointX(48) - 124.0, GetWaypointY(48) + 128.0);
+			TeleportLocationVector(48, -124.0, 128.0);
 		else
-			MoveWaypoint(48, GetWaypointX(48) + 2.0, GetWaypointY(48) - 2.0);
+			TeleportLocationVector(48, 2.0, -2.0);
 		count ++;
 	}
 	return count;
@@ -4662,9 +4684,9 @@ int DrawStrDungeonBoss(int arg, string name, int count)
 		if (i & arg)
 			CreateObject(name, 50);
 		if (count % 52 == 51)
-			MoveWaypoint(50, GetWaypointX(50) - 104.0, GetWaypointY(50) - 100.0);
+			TeleportLocationVector(50, -104.0, -100.0);
 		else
-			MoveWaypoint(50, GetWaypointX(50) + 2.0, GetWaypointY(50) + 2.0);
+			TeleportLocationVector(50, 2.0, 2.0);
 		count ++;
 	}
 	return count;
@@ -4740,9 +4762,9 @@ int DrawStrDungeonNameRev(int arg, string name, int count)
 		if (i & arg)
 			CreateObject(name, 1);
 		if (count % 48 == 47)
-			MoveWaypoint(1, GetWaypointX(1) - 96.0, GetWaypointY(1) - 92.0);
+			TeleportLocationVector(1, -96.0, -92.0);
 		else
-			MoveWaypoint(1, GetWaypointX(1) + 2.0, GetWaypointY(1) + 2.0);
+			TeleportLocationVector(1, 2.0, 2.0);
 		count ++;
 	}
 	return count;
@@ -6233,7 +6255,7 @@ void ShopClassMagicStaffTrade()
 
 int ShopClassMagicalStaffCreate(int location)
 {
-    int shop = DummyUnitCreate("Horrendous", GetWaypointX(location), GetWaypointY(location));
+    int shop = DummyUnitCreate("Horrendous", LocationX(location), LocationY(location));
 
     LookWithAngle(CreateObjectAt("ImaginaryCaster", GetObjectX(shop), GetObjectY(shop)) - 1, 0);
     SetDialog(shop, "YESNO", ShopClassMagicStaffDescr, ShopClassMagicStaffTrade);
@@ -6565,7 +6587,7 @@ void NetClientSend(int plrUnit, int buffPtr, int buffSize)
 {
     //netClientSend,0x0040EBC0
     int plrPtr = UnitToPtr(plrUnit), plrIdx;
-    int temp = GetMemory(0x5c31ac);
+    int temp = GetMemory(0x5c315c);
 
     if (plrPtr)
     {
@@ -6573,9 +6595,9 @@ void NetClientSend(int plrUnit, int buffPtr, int buffSize)
         {
             plrIdx = GetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0x810);
             //5c31ac
-            SetMemory(0x5c31ac, ImportNetSendClient());
-            PushObject(plrIdx, ToFloat(1), ToFloat(buffPtr), ToFloat(buffSize));
-            SetMemory(0x5c31ac, temp);
+            SetMemory(0x5c315c, ImportNetSendClient());
+            GroupDamage(plrIdx, 1, buffPtr, buffSize);
+            SetMemory(0x5c315c, temp);
         }
     }
 }
@@ -6648,18 +6670,18 @@ void PlayerClassCommonWhenEntry()
 {
     int drawF = ImageResourceDrawFunctionFix(0x7510c4);
 
-    ApplyImageResourceFix(636, GetScrCodeField(RedPotionImage) + 4, drawF);
-    ApplyImageResourceFix(2682, GetScrCodeField(VampPotionImage) + 4, drawF);
-    ApplyImageResourceFix(631, GetScrCodeField(PoisonPotionImage) + 4, drawF);
-    ApplyImageResourceFix(2686, GetScrCodeField(MagicPotionImage) + 4, drawF);
-    ApplyImageResourceFix(639, GetScrCodeField(YellowPotionImage) + 4, drawF);
-    ApplyImageResourceFix(544, GetScrCodeField(DungeonPicketImage) + 4, drawF);
-    ApplyImageResourceFix(365, GetScrCodeField(ProtossNexusImage) + 4, drawF);
-    ApplyImageResourceFix(472, GetScrCodeField(DungeonNameLeft) + 4, drawF);
-    ApplyImageResourceFix(470, GetScrCodeField(DungeonNameRight) + 4, drawF);
-    ApplyImageResourceFix(471, GetScrCodeField(BossHereImage) + 4, drawF);
-    ApplyImageResourceFix(979, GetScrCodeField(MoneyImage) + 4, drawF);
-    ApplyImageResourceFix(476, GetScrCodeField(BuldakImage) + 4, drawF);
+    ApplyImageResourceFix(636, GetScrCodeField(RedPotionImage) + 4, drawF);         //RedPotion
+    ApplyImageResourceFix(2682, GetScrCodeField(VampPotionImage) + 4, drawF);       //VampirismPotion
+    ApplyImageResourceFix(631, GetScrCodeField(PoisonPotionImage) + 4, drawF);      //CurePoisonPotion
+    ApplyImageResourceFix(2686, GetScrCodeField(MagicPotionImage) + 4, drawF);      //InvulnerabilityPotion
+    ApplyImageResourceFix(639, GetScrCodeField(YellowPotionImage) + 4, drawF);      //YellowPotion
+    ApplyImageResourceFix(544, GetScrCodeField(DungeonPicketImage) + 4, drawF);     //MovableSign1
+    ApplyImageResourceFix(365, GetScrCodeField(ProtossNexusImage) + 4, drawF);      //MovableStatue2a
+    ApplyImageResourceFix(472, GetScrCodeField(DungeonNameLeft) + 4, drawF);        //MovableStatueVictory1E
+    ApplyImageResourceFix(470, GetScrCodeField(DungeonNameRight) + 4, drawF);       //MovableStatueVictory1N
+    ApplyImageResourceFix(471, GetScrCodeField(BossHereImage) + 4, drawF);          //MovableStatueVictory1NE
+    ApplyImageResourceFix(979, GetScrCodeField(MoneyImage) + 4, drawF);             //Gold
+    ApplyImageResourceFix(487, GetScrCodeField(BuldakImage) + 4, drawF);            //MovableStatueVictory3NE
 }
 
 void OpcodeLoadEffectiveAddr(int loadAddr, int codeAddr, int offset)
@@ -6850,4 +6872,54 @@ void SecretWallOpen()
     WallOpen(Wall(127, 199));
     WallOpen(Wall(128, 200));
 
+}
+
+int MapWaypointTable(int idx)
+{
+    int table[600];
+
+    return table[idx - 1];
+}
+
+float LocationX(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 8));
+}
+
+float LocationY(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 12));
+}
+
+void TeleportLocation(int location, float xProfile, float yProfile)
+{
+    int wTable = MapWaypointTable(location);
+
+    SetMemory(wTable + 8, ToInt(xProfile));
+    SetMemory(wTable + 12, ToInt(yProfile));
+}
+
+void TeleportLocationVector(int location, float xVect, float yVect)
+{
+    int wTable = MapWaypointTable(location);
+
+    SetMemory(wTable + 8, ToInt(ToFloat(GetMemory(wTable + 8)) + xVect));
+    SetMemory(wTable + 12, ToInt(ToFloat(GetMemory(wTable + 12)) + yVect));
+}
+
+void MapWaypointFill(int wAddr, int tPtr)
+{
+    int num;
+
+    if (wAddr)
+    {
+        num = GetMemory(wAddr);
+        SetMemory(tPtr + (num * 4), wAddr);
+        MapWaypointFill(GetMemory(wAddr + 484), tPtr);
+    }
+}
+
+void MapWaypointInit()
+{
+    MapWaypointFill(GetMemory(0x83c7fc), GetScrDataField(MapWaypointTable));
 }
