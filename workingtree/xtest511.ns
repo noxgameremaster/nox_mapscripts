@@ -58,29 +58,30 @@ void DelayLink(int pUnit)
 
 void ClientEntry(int cliUnit)
 {
-    int scrNumber = ClientMain & 0xff;
-
-    //6A 00 6A 00/ 6A 7F E8 05/ 63 DB FF 83/ C4 0C 68 B0/ 95 4B 00 C3
+    //6A 00 6A 00/ 68 7F 00 00/ 00 E8 02 63/ DB FF 83 C4/ 0C 68 B0 95/ 4B 00 C3 90: 24Byte
     ClientSetMemory(cliUnit, 0x751000, 0x6a);
     ClientSetMemory(cliUnit, 0x751001, 0x00);
     ClientSetMemory(cliUnit, 0x751002, 0x6a);
     ClientSetMemory(cliUnit, 0x751003, 0x00);
-    ClientSetMemory(cliUnit, 0x751004, 0x6a);
-    ClientSetMemory(cliUnit, 0x751005, scrNumber);
-    ClientSetMemory(cliUnit, 0x751006, 0xe8);
-    ClientSetMemory(cliUnit, 0x751007, 0x05);
-    ClientSetMemory(cliUnit, 0x751008, 0x63);
-    ClientSetMemory(cliUnit, 0x751009, 0xdb);
-    ClientSetMemory(cliUnit, 0x75100a, 0xff);
-    ClientSetMemory(cliUnit, 0x75100b, 0x83);
-    ClientSetMemory(cliUnit, 0x75100c, 0xc4);
-    ClientSetMemory(cliUnit, 0x75100d, 0x0c);
-    ClientSetMemory(cliUnit, 0x75100e, 0x68);
-    ClientSetMemory(cliUnit, 0x75100f, 0x10);
-    ClientSetMemory(cliUnit, 0x751010, 0xde);
-    ClientSetMemory(cliUnit, 0x751011, 0x43);
-    ClientSetMemory(cliUnit, 0x751012, 0x00);
-    ClientSetMemory(cliUnit, 0x751013, 0xc3);
+    ClientSetMemory(cliUnit, 0x751004, 0x68);
+    ClientSetMemory(cliUnit, 0x751005, ClientMain & 0xff);
+    ClientSetMemory(cliUnit, 0x751006, (ClientMain >> 8) & 0xff);
+    ClientSetMemory(cliUnit, 0x751007, 0);
+    ClientSetMemory(cliUnit, 0x751008, 0);
+    ClientSetMemory(cliUnit, 0x751009, 0xe8);
+    ClientSetMemory(cliUnit, 0x75100a, 0x02);
+    ClientSetMemory(cliUnit, 0x75100b, 0x63);
+    ClientSetMemory(cliUnit, 0x75100c, 0xdb);
+    ClientSetMemory(cliUnit, 0x75100d, 0xff);
+    ClientSetMemory(cliUnit, 0x75100e, 0x83);
+    ClientSetMemory(cliUnit, 0x75100f, 0xc4);
+    ClientSetMemory(cliUnit, 0x751010, 0x0c);
+    ClientSetMemory(cliUnit, 0x751011, 0x68);
+    ClientSetMemory(cliUnit, 0x751012, 0x10);
+    ClientSetMemory(cliUnit, 0x751013, 0xde);
+    ClientSetMemory(cliUnit, 0x751014, 0x43);
+    ClientSetMemory(cliUnit, 0x751015, 0x00);
+    ClientSetMemory(cliUnit, 0x751016, 0xc3);
     FrameTimerWithArg(1, cliUnit, DelayLink);
 }
 
@@ -1717,9 +1718,15 @@ int CallFunctionWithArgInt(int func, int arg)
     int link;
 
     if (!link)
-        link = GetScrCodeField(CalleeArgInt);
-    SetMemory(link + 0x10, func);
-    return CalleeArgInt(arg);
+    {
+        link = GetMemory(GetMemory(0x75ae28) + ((0x30 * CalleeArgInt) + 0x20));
+        return 0;
+    }
+    else
+    {
+        SetMemory(link + 0x10, func);
+        return CalleeArgInt(arg);
+    }
 }
 
 int CalleeArgInt(int arg)
@@ -2664,6 +2671,8 @@ int VoiceList(int num)
 
 void ImportLibrary()
 {
+    CallFunctionWithArg(0, 0);
+    CallFunctionWithArgInt(0, 0);
     UploadConsoleParse();
     ImportCreateAtFunc();
     ImportUnitToPtrFunc();
@@ -3364,25 +3373,28 @@ void CallFunctionWithArg(int func, int arg)
     int link;
 
     if (!link)
-        link = GetScrCodeField(CalleeArg);
-    SetMemory(link + 0x10, func);
-    CalleeArg(arg);
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * CalleeArg + 0x20));
+    else
+    {
+        SetMemory(link + 0x10, func);
+        CalleeArg(arg);
+    }
 }
 
 void UserMapSetting()
 {
     SetMemory(0x5d5330, 0x2000);
     SetMemory(0x5d5394, 1);
+    StartLocationWithPlayer();
+    PotionPickupCustomizing();
 }
 
 void MapInitialize()
 {
-    int var0 = EnableMemoryReadWriteFunction(0);
+    int enabler = EnableMemoryReadWriteFunction(0);
 
     LastUnit = CreateObject("RedPotion", 1);
     Delete(LastUnit);
-    PotionPickupCustomizing();
-    StartLocationWithPlayer();
     ImportStreamCopy();
     MusicEvent();
     SafeZone = CreateObject("InvisibleLightBlueHigh", 12);
@@ -3394,7 +3406,7 @@ void MapInitialize()
     GetMaster();
     FrameTimer(10, UserMapSetting);
     FrameTimer(8, MapDecorations);
-    FrameTimerWithArg(3, Object("FirstMonsterMarker"), StartMarkerScan);
+    FrameTimerWithArg(20, Object("FirstMonsterMarker"), StartMarkerScan);
     FrameTimer(10, PlayerPreserveHandler);
     FrameTimerWithArg(20, Object("UndergroundElev"), DisableObject);
 }
@@ -4013,10 +4025,10 @@ void OpenBossGate()
     {
         MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
         key = CreateObjectAt("RedOrbKeyOfTheLich", 200.0, 200.0);
+        Enchant(key, "ENCHANT_FREEZE", 0.0);
         MoveObject(key, GetObjectX(other), GetObjectY(other));
         Raise(key, 225.0);
         AudioEvent("KeyDrop", 1);
-        Enchant(key, "ENCHANT_FREEZE", 0.0);
     }
     else
     {
@@ -5958,7 +5970,7 @@ void TellStoryUnitName(string sAudio, string sDesc, string sUnitName)
 
 void CancelPlayerDialogWithPTR(int plrPtr)
 {
-    if (GetMemory(GetMemory(plrPtr + 0x2ec)) + 0x11c)
+    if (GetMemory(GetMemory(plrPtr + 0x2ec) + 0x11c))
     {
         SetMemory(GetMemory(plrPtr + 0x2ec) + 0x11c, 0);
         SetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0xe60, 0x10);
