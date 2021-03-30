@@ -1,0 +1,864 @@
+
+int EnableMemoryReadWriteFunction(int t)
+{ }
+
+int GetMemory(int addr)
+{
+    return Unknownb9(addr);
+}
+
+void SetMemory(int addr, int value)
+{
+    Unused59(addr, value);
+}
+
+int GetScrDataField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x1c));
+}
+
+int GetScrCodeField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x20));
+}
+
+int ImportUniChatCore()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0xC0685657; arr[1] = 0x6800528A; arr[2] = 0x00507250; arr[3] = 0x8B2414FF; arr[4] = 0x2414FFF8;
+        arr[5] = 0x14FFF08B; arr[6] = 0x56505724; arr[7] = 0x102454FF; arr[8] = 0x5E14C483; arr[9] = 0x9090C35F;
+        link = GetScrDataField(ImportUniChatCore);
+    }
+    return link;
+}
+
+void UniChatCore(int plrPtr, int sPtr, int sTime)
+{
+    int temp = GetMemory(0x5c3320);
+
+    SetMemory(0x5c3320, ImportUniChatCore());
+    GroupRunAway(sPtr, plrPtr, sTime);
+    SetMemory(0x5c3320, temp);
+}
+
+int ImportUniPrintCore()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x9EB06856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xF08B2414; arr[4] = 0x502414FF;
+        arr[5] = 0x2454FF56; arr[6] = 0x10C4830C; arr[7] = 0x9090C35E; 
+        link = GetScrDataField(ImportUniPrintCore);
+    }
+    return link;
+}
+
+void UniPrintCore(int plrPtr, int sPtr)
+{
+    int temp = GetMemory(0x5c31f4);
+
+    SetMemory(0x5c31f4, ImportUniPrintCore());
+    Unused5a(sPtr, plrPtr);
+    SetMemory(0x5c31f4, temp);
+}
+
+int GetByteValue(int ptr)
+{
+    return GetMemory(ptr) & 0xff;
+}
+
+void WriteAddressWordValue(int addr, int word)
+{
+    int temp = GetMemory(addr) & 0xffff0000;
+    SetMemory(addr, temp | word);
+}
+
+void NoxUtf8ToUnicode(int src, int dest)
+{
+    int i = 0, byt;
+
+    while (1)
+    {
+        byt = GetByteValue(src + i);
+        if (!byt) break;
+        if (!(byt & 0x80))
+        {
+            WriteAddressWordValue(dest, byt);
+            i ++;
+        }
+        else if ((byt & 0xe0) == 0xc0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0x1f) <<6) | (GetByteValue(src + i + 1) & 0x3f));
+            i += 2;
+        }
+        else if ((byt & 0xf0) == 0xe0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0xf) << 12) | ((GetByteValue(src + i + 1) & 0x3f) << 6) | (GetByteValue(src + i + 2) & 0x3f));
+            i += 3;
+        }
+        dest += 2;
+    }
+    WriteAddressWordValue(dest, 0);
+}
+
+void UniPrint(int sUnit, string sMsg)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link) link = GetScrDataField(UniPrint);
+        NoxUtf8ToUnicode(str, link + 8);
+        UniPrintCore(ptr, link + 8);
+    }
+}
+
+void UniChatMessage(int sUnit, string sMsg, int duration)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link) link = GetScrDataField(UniChatMessage);
+        NoxUtf8ToUnicode(str, link + 12);
+        UniChatCore(ptr, link + 12, duration);
+    }
+}
+
+void UniPrintToAll(string sMsg)
+{
+    int wDest[200];
+    int plrPtr = 0x62f9e0, link, str = SToInt(sMsg), i;
+
+    if (!link) link = GetScrDataField(UniPrint) + 4;
+    str = GetMemory(0x97bb40 + (str * 4));
+    NoxUtf8ToUnicode(str, link);
+    for (i = 0 ; i < 32 ; i ++)
+    {
+        if (GetMemory(plrPtr))
+            UniPrintCore(GetMemory(plrPtr), link);
+        plrPtr += 0x12dc;
+    }
+}
+
+int MathAbs(int num)
+{
+    if (num < 0)
+        num = -num;
+    return num;
+}
+
+int CheckSignDelay(int sPtr, int gap)
+{
+    int cFps = GetMemory(0x84ea04);
+
+    if (MathAbs(cFps - GetMemory(sPtr)) > gap)
+    {
+        SetMemory(sPtr, cFps);
+        return 1;
+    }
+    return 0;
+}
+
+void SignNotification()
+{
+    int otPtr = GetMemory(0x979720), sePtr = GetMemory(0x979724);
+
+    if (otPtr && sePtr)
+    {
+        if (CheckSignDelay(GetMemory(sePtr + 0x2e0) + 100, 60))
+            UniPrint(other, ToStr(GetMemory(sePtr + 0x2f0)));
+    }
+}
+
+void RegistSignMessage(int sUnit, string sMsg)
+{
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg);
+
+    if (ptr)
+    {
+        SetMemory(ptr + 0x2f0, str);
+        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
+        SetMemory(ptr + 0x2fc, SignNotification);
+    }
+}
+
+void NetEventCommon0()
+{
+    //@brief: initial process
+    int chksum;
+
+    if (!chksum)
+    {
+        chksum = true;
+        // PlayerClassCommonWhenEntry();
+    }
+}
+
+void NetEventCommon1()
+{
+    //@brief: custom bgm extract
+    int chksum;
+
+    if (!chksum)
+    {
+        chksum = true;
+        // MakeMusicDirectory();
+        // ExtractMapBgm(SToInt("hail666.mp3") << 0x10 | ResoureCommonBgmData);
+    }
+}
+
+void NetEventCommon2()
+{
+    //@brief: play dialog
+    // PlayNPC_Voice("W6GD203K");
+}
+
+int NetClassUserPtrTable()
+{
+    int userArr[32];
+
+    return GetScrDataField(NetClassUserPtrTable);
+}
+
+int GetPlayerCount()
+{
+    int ptr = GetMemory(0x97ec60);
+
+    if (ptr)
+        return GetMemory(ptr + 84) + 1;
+    return 0;
+}
+
+int NetClassUserCountCheck(int userTablePtr)
+{
+    int userCount, realCount = GetPlayerCount(), prevCount;
+
+    if ((realCount ^ userCount) && realCount)
+    {
+        prevCount = userCount;
+        userCount = realCount;
+        return MathAbs(prevCount - realCount);
+    }
+    return 0;
+}
+
+int NetClassFlags(int pIndex, int setValue)
+{
+    int flags[32];
+
+    if (setValue)
+    {
+        if (setValue & (1 << 0x1c))
+            flags[pIndex] = 0;
+        else
+            flags[pIndex] = setValue;
+    }
+    return flags[pIndex];
+}
+
+int NetClassObserverFlagCheck(int pIndex)
+{
+    return NetClassFlags(pIndex, 0) & 0x02;
+}
+
+void NetClassObserverFlagSet(int pIndex)
+{
+    NetClassFlags(pIndex, NetClassFlags(pIndex, 0) ^ 0x02);
+}
+
+int NetClassDuelFlagCheck(int pIndex)
+{
+    return NetClassFlags(pIndex, 0) & 0x04;
+}
+
+void NetClassDuelFlagSet(int pIndex)
+{
+    NetClassFlags(pIndex, NetClassFlags(pIndex, 0) ^ 0x04);
+}
+
+int NetClassCamUserFlagCheck(int pIndex)
+{
+    return NetClassFlags(pIndex, 0) & 0x08;
+}
+
+void NetClassCamUserFlagSet(int pIndex)
+{
+    NetClassFlags(pIndex, NetClassFlags(pIndex, 0) ^ 0x08);
+}
+
+int NetClassDeathFlagCheck(int pIndex)
+{
+    return NetClassFlags(pIndex, 0) & 0x80;
+}
+
+void NetClassDeathFlagSet(int pIndex)
+{
+    NetClassFlags(pIndex, NetClassFlags(pIndex, 0) ^ 0x80);
+}
+
+void NetClassExtractCustomMusic(int plrUnit)
+{
+    if (MaxHealth(plrUnit))
+        SendClientOrder(plrUnit, 1);
+}
+
+void NetCheckingGlowPosition(int glowPoint)
+{
+    int owner = GetOwner(glowPoint);
+
+    if (CurrentHealth(owner))
+    {
+        UniPrintToAll("OK!" + FloatToString(GetObjectX(glowPoint)) + ", " + FloatToString(GetObjectY(glowPoint)));
+        Delete(glowPoint);
+    }
+    else
+        UniPrintToAll("Failed!");
+}
+
+int GetOwner(int unit)
+{
+    int ptr = UnitToPtr(unit), res;
+
+    if (ptr)
+    {
+        res = GetMemory(ptr + 0x1fc);
+        if (res)
+            return GetMemory(res + 0x2c);
+    }
+    return 0;
+}
+
+void NetClassOnInit(int plrUnit, int pIndex)
+{
+    NetClassFlags(pIndex, 1);
+    UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 지도에 입장하셨어요!");
+}
+
+void NetClassOnExit(int pIndex)
+{
+    NetClassFlags(pIndex, 1 << 0x1c);
+    UniPrintToAll("나가셨네요..");
+}
+
+int NetClassInitializerCreate(int plrUnit, int pIndex)
+{
+    int glowPoint = CreateObjectAt("Moonglow", 0.0, 0.0);
+
+    SetOwner(plrUnit, glowPoint);
+    LookWithAngle(glowPoint, pIndex);
+    return glowPoint;
+}
+
+int NetWaitMapDownloading(int plrPtr)
+{
+    return GetMemory(plrPtr + 560);
+}
+
+int NetClassAssign(int destPtr, int plrPtr, int pIndex)
+{
+    int initializer[32];
+
+    if (plrPtr) //@brief: 유저 생존 중
+    {
+        int plrUnit = GetMemory(plrPtr + 0x2c);
+
+        if (!IsObjectOn(initializer[pIndex]))
+            initializer[pIndex] = NetClassInitializerCreate(plrUnit, pIndex);   //초기화를 여기에서 합니다
+        else if (ToInt(GetObjectX(initializer[pIndex])) && ToInt(GetObjectY(initializer[pIndex])))
+        {
+            NetClassOnInit(plrUnit, pIndex);    //@brief: 등록계정 초기화 진행
+            SetMemory(destPtr, plrPtr);    //@brief: 계정등록 완료!
+            UniPrintToAll("glowPos=" + FloatToString(GetObjectX(initializer[pIndex])) + ", " + FloatToString(GetObjectY(initializer[pIndex])));
+            UniPrintToAll("userPos=" + FloatToString(GetObjectX(plrUnit)) + ", " + FloatToString(GetObjectY(plrUnit)));
+            Delete(initializer[pIndex]);
+        }
+    }
+    else    //@brief: deinitialize part!!
+    {
+        NetClassOnExit(pIndex);
+        SetMemory(destPtr, 0);
+    }
+    return 0;
+}
+
+int NetClassMapDownloading(int pIndex, int plrPtr)
+{
+    if (pIndex ^ 31)
+    {
+        if ((GetMemory(plrPtr + 128) & 0xff) || (GetMemory(plrPtr + 0x648) == 0xdeadface))
+            return 1;
+        return (GetMemory(0x81b260 + (pIndex * 0x30)) >> 0x10);
+    }
+    return 0;
+}
+
+void NetClassMakeTable(int userTablePtr, int plrPtrOffset, int pIndex)
+{
+    if (pIndex < 32)
+    {
+        if (GetMemory(plrPtrOffset) ^ GetMemory(userTablePtr))          //@brief: 테이블과 실 input 이 다르면 들어옴
+        {
+            //@brief: 주의! input 이 제로 일 수도 있음!!, 제로 input 일 때에는 deinitialize 을 수행함!
+            NetClassAssign(userTablePtr, GetMemory(plrPtrOffset), pIndex);  //@brief: 계정 등록
+        }
+        NetClassMakeTable(userTablePtr + 4, plrPtrOffset + 0x12dc, pIndex + 1);
+    }
+}
+
+void NetClassOnDeath(int plrUnit, int pIndex)
+{
+    UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 적에게 격추되었습니다");
+}
+
+void NetClassOnRespawn(int plrUnit, int pIndex)
+{
+    return;
+}
+
+void NetClassOnGoObserver(int plrUnit, int pIndex)
+{
+    if (NetClassDeathFlagCheck(pIndex))
+    {
+        NetClassDeathFlagSet(pIndex);
+    }
+}
+
+void NetClassOnAlive(int plrUnit, int pIndex)
+{
+    if (MaxHealth(plrUnit))
+    {
+        if (GetUnitFlags(plrUnit) & 0x40)
+        {
+            if (!NetClassObserverFlagCheck(pIndex))
+            {
+                NetClassObserverFlagSet(pIndex);
+                NetClassOnGoObserver(plrUnit, pIndex);
+            }
+        }
+        else if (CurrentHealth(plrUnit))
+        {
+            if (NetClassDeathFlagCheck(pIndex))
+            {
+                NetClassDeathFlagSet(pIndex);
+                NetClassOnRespawn(plrUnit, pIndex);
+            }
+        }
+        else
+        {
+            if (NetClassDeathFlagCheck(pIndex)) 1;
+            else
+            {
+                NetClassDeathFlagSet(pIndex);
+                NetClassOnDeath(plrUnit, pIndex);
+            }
+        }
+    }
+}
+
+void NetClassUserHandler(int userTablePtr, int plrPtrOffset, int pIndex)
+{
+    if (pIndex < 32)
+    {
+        if (GetMemory(userTablePtr))
+        {
+            if (GetMemory(plrPtrOffset) == GetMemory(userTablePtr))
+                NetClassOnAlive(GetMemory(GetMemory(plrPtrOffset) + 0x2c), pIndex);
+        }
+        NetClassUserHandler(userTablePtr + 4, plrPtrOffset + 0x12dc, pIndex + 1);
+    }
+}
+
+void NetClassLoop(int userTablePtr)
+{
+    NetClassMakeTable(userTablePtr, 0x62f9e0, 0);
+    NetClassUserHandler(userTablePtr, 0x62f9e0, 0);
+
+    FrameTimerWithArg(1, userTablePtr, NetClassLoop);
+}
+
+void LoopRun()
+{
+    FrameTimerWithArg(1, NetClassUserPtrTable(), NetClassLoop);
+}
+
+string ToStr(int x)
+{
+    StopScript(x);
+}
+
+int SToInt(string x)
+{
+    StopScript(x);
+}
+
+int ImportCreateAtFunc()
+{
+    int arr[20], link;
+
+    if (!link)
+    {
+        arr[0] = 0xAA506856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xFF502414; arr[4] = 0x50042454;
+        arr[5] = 0x082454FF; arr[6] = 0x4085048B; arr[7] = 0x680097BB; arr[8] = 0x004E3810; arr[9] = 0x2454FF50;
+        arr[10] = 0x08C48304; arr[11] = 0xF685F08B; arr[12] = 0x006A0A74; arr[13] = 0x2454FF56; arr[14] = 0x08C48314;
+        arr[15] = 0x50723068; arr[16] = 0x54FF5600; arr[17] = 0xC4830424; arr[18] = 0x5EC03118; arr[19] = 0x909090C3;
+        link = GetScrDataField(ImportCreateAtFunc);
+    }
+    return link;
+}
+
+int CreateObjectAt(string name, float x, float y)
+{
+    int temp = GetMemory(0x5c3160), res;
+
+    SetMemory(0x5c3160, ImportCreateAtFunc());
+    res = CreateMover(SToInt(name), ToInt(x), y);
+    SetMemory(0x5c3160, temp);
+    if (res) return GetMemory(res + 0x2c);
+    else return 0;
+}
+
+int ImportUnitToPtrFunc()
+{
+    int arr[10], ptr, link;
+
+    if (!link)
+    {
+        arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
+        arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3;
+        link = GetScrDataField(ImportUnitToPtrFunc);
+    }
+    return link;
+}
+
+int UnitToPtr(int unit)
+{
+    int temp = GetMemory(0x5c336c), res;
+    SetMemory(0x5c336c, ImportUnitToPtrFunc());
+    res = Unknownb8(unit);
+    SetMemory(0x5c336c, temp);
+	return res;
+}
+
+int IsPlayerUnit(int sUnit)
+{
+    int ptr = UnitToPtr(sUnit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x08) & 0x04;
+    return 0;
+}
+
+int IsMonsterUnit(int sUnit)
+{
+    int ptr = UnitToPtr(sUnit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x08) & 0x02;
+    return 0;
+}
+
+int GetWordValue(int num)
+{
+	return num & 0xffff;
+}
+
+void WriteAddressByteValue(int addr, int byt)
+{
+	int temp = GetMemory(addr) & 0xffffff00;
+	SetMemory(addr, temp | byt);
+}
+
+int NoxUnicodeToUtf8(int src, int destPtr)
+{
+	int i, byt, dest = destPtr;
+
+	for (i = 0 ; i < 20 ; i ++)
+	{
+		byt = GetWordValue(GetMemory(src));
+        if (!byt) break;
+		if (byt < 0x80)
+		{
+			WriteAddressByteValue(dest, byt);
+			dest ++;
+		}
+		else if (byt < 0x800)
+		{
+			WriteAddressByteValue(dest, ((byt >> 6) & 0x1f) | 0xc0);
+			WriteAddressByteValue(dest + 1, (byt & 0x3f) | 0x80);
+			dest += 2;
+		}
+		else
+		{
+			WriteAddressByteValue(dest, ((byt >> 12) & 0x0f) | 0xe0);
+			WriteAddressByteValue(dest + 1, ((byt >> 6) & 0x3f) | 0x80);
+			WriteAddressByteValue(dest + 2, (byt & 0x3f) | 0x80);
+			dest += 3;
+		}
+        src += 2;
+	}
+    WriteAddressByteValue(dest, 0);
+	return dest - destPtr;
+}
+
+string PlayerIngameNick(int sUnit)
+{
+    string emptyName = {
+        "00:01234567890123456789abcd0123456789abxyz", "01:01234567890123456789abcd0123456789abxyz",
+        "02:01234567890123456789abcd0123456789abxyz", "03:01234567890123456789abcd0123456789abxyz",
+        "04:01234567890123456789abcd0123456789abxyz", "05:01234567890123456789abcd0123456789abxyz",
+        "06:01234567890123456789abcd0123456789abxyz", "07:01234567890123456789abcd0123456789abxyz",
+        "08:01234567890123456789abcd0123456789abxyz", "09:01234567890123456789abcd0123456789abxyz",
+        "10:01234567890123456789abcd0123456789abxyz", "11:01234567890123456789abcd0123456789abxyz",
+        "12:01234567890123456789abcd0123456789abxyz", "13:01234567890123456789abcd0123456789abxyz",
+        "14:01234567890123456789abcd0123456789abxyz", "15:01234567890123456789abcd0123456789abxyz",
+        "16:01234567890123456789abcd0123456789abxyz", "17:01234567890123456789abcd0123456789abxyz",
+        "18:01234567890123456789abcd0123456789abxyz", "19:01234567890123456789abcd0123456789abxyz",
+        "20:01234567890123456789abcd0123456789abxyz", "21:01234567890123456789abcd0123456789abxyz",
+        "22:01234567890123456789abcd0123456789abxyz", "23:01234567890123456789abcd0123456789abxyz",
+        "24:01234567890123456789abcd0123456789abxyz", "25:01234567890123456789abcd0123456789abxyz",
+        "26:01234567890123456789abcd0123456789abxyz", "27:01234567890123456789abcd0123456789abxyz",
+        "28:01234567890123456789abcd0123456789abxyz", "29:01234567890123456789abcd0123456789abxyz",
+        "30:01234567890123456789abcd0123456789abxyz", "31:01234567890123456789abcd0123456789abxyz"};
+    int ptr = UnitToPtr(sUnit), plrIndex, destPtr, srcPtr;
+    
+    if (ptr)
+    {
+        if (GetMemory(ptr + 0x08) & 4)
+        {
+            plrIndex = GetMemory(GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x810);
+            destPtr = GetMemory(0x97bb40 + ((SToInt(emptyName) + plrIndex) * 4));
+            srcPtr = GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x889;
+            NoxUnicodeToUtf8(srcPtr, destPtr);
+            return ToStr(SToInt(emptyName) + plrIndex);
+        }
+    }
+    return "NULL";
+}
+
+void SetUnitFlags(int unit, int flag)
+{
+	int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(ptr + 0x10, flag);
+}
+
+int GetUnitFlags(int unit)
+{
+	int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x10);
+    return 0;
+}
+
+void UnitNoCollide(int unit)
+{
+    SetUnitFlags(unit, GetUnitFlags(unit) ^ 0x40);
+}
+
+int ImportUseItemFunc()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x1424748B; arr[3] = 0x18246C8B;
+        arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
+        arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
+        link = GetScrDataField(ImportUseItemFunc);
+    }
+    return link;
+}
+
+void SendClientExec(int args)
+{
+    int pIndex = args & 0xff, byteOrder = (args >> 8) & 0xff;
+    int pUnit = GetMemory(GetScrDataField(NetArgumentTable) + (pIndex * 4));
+
+    if (!MaxHealth(pUnit))
+        return;
+    if (GetMemory(0x62f9e0 + (pIndex * 0x12dc)))
+    {
+        ClientDirectSetMemory(pIndex, 0x69ba98 + 0, 0);
+        ClientDirectSetMemory(pIndex, 0x69ba98 + 1, 0x10);
+        ClientDirectSetMemory(pIndex, 0x69ba98 + 2, 0x75);
+    }
+}
+
+int NetArgumentTable()  //@brief: declared local array
+{
+    int arr[32];    //@brief: safe method
+}
+
+void SendClientOrder(int pUnit, int orderId)
+{
+    int tablePtr = GetScrDataField(NetArgumentTable);
+    int pIndex = GetPlayerIndex(pUnit);
+
+    if (pIndex >= 0)
+    {
+        SetMemory(tablePtr + (4 * pIndex), pUnit);
+        ClientDirectSetMemory(pIndex, 0x75101c, orderId & 0xff);    //@brief: send orderId
+        FrameTimerWithArg(1, pIndex | ((orderId & 0xff) << 8), SendClientExec);
+    }
+}
+
+void ExportClientMain(int cliUnit)
+{
+    //6A 00 6A 00/ 68 7F 00 00/ 00 E8 02 63/ DB FF 83 C4/ 0C 68 B0 95/ 4B 00 C3 90: 24Byte
+    ClientSetMemory(cliUnit, 0x751000, 0x6a);
+    ClientSetMemory(cliUnit, 0x751001, 0x00);
+    ClientSetMemory(cliUnit, 0x751002, 0x6a);
+    ClientSetMemory(cliUnit, 0x751003, 0x00);
+    ClientSetMemory(cliUnit, 0x751004, 0x68);
+    ClientSetMemory(cliUnit, 0x751005, ClientMain & 0xff);
+    ClientSetMemory(cliUnit, 0x751006, (ClientMain >> 8) & 0xff);
+    ClientSetMemory(cliUnit, 0x751007, 0);
+    ClientSetMemory(cliUnit, 0x751008, 0);
+    ClientSetMemory(cliUnit, 0x751009, 0xe8);
+    ClientSetMemory(cliUnit, 0x75100a, 0x02);
+    ClientSetMemory(cliUnit, 0x75100b, 0x63);
+    ClientSetMemory(cliUnit, 0x75100c, 0xdb);
+    ClientSetMemory(cliUnit, 0x75100d, 0xff);
+    ClientSetMemory(cliUnit, 0x75100e, 0x83);
+    ClientSetMemory(cliUnit, 0x75100f, 0xc4);
+    ClientSetMemory(cliUnit, 0x751010, 0x0c);
+    ClientSetMemory(cliUnit, 0x751011, 0x68);
+    ClientSetMemory(cliUnit, 0x751012, 0x10);
+    ClientSetMemory(cliUnit, 0x751013, 0xde);
+    ClientSetMemory(cliUnit, 0x751014, 0x43);
+    ClientSetMemory(cliUnit, 0x751015, 0x00);
+    ClientSetMemory(cliUnit, 0x751016, 0xc3);
+}
+
+int ImportNetSendClient()
+{
+    int arr[15];
+
+    if (!arr[0])
+    {
+        arr[0] = 0x40EBC068; arr[1] = 0x72506800; arr[2] = 0x83500050; arr[3] = 0x54FF10EC; arr[4] = 0x44891424;
+        arr[5] = 0x54FF0C24; arr[6] = 0x44891424; arr[7] = 0x54FF0824; arr[8] = 0x44891424; arr[9] = 0x54FF0424;
+        arr[10] = 0x04891424; arr[11] = 0x2454FF24; arr[12] = 0x10C48318; arr[13] = 0x08C48358; arr[14] = 0x909090C3;
+    }
+    return GetScrDataField(ImportNetSendClient);
+}
+
+void NetClientSendDirect(int pIndex, int buffPtr, int buffSize)
+{
+    int temp = GetMemory(0x5c31ac);
+
+    //5c31ac
+    SetMemory(0x5c31ac, ImportNetSendClient());
+    PushObject(pIndex, ToFloat(1), ToFloat(buffPtr), ToFloat(buffSize));
+    SetMemory(0x5c31ac, temp);
+}
+
+void NetClientSend(int plrUnit, int buffPtr, int buffSize)
+{
+    //netClientSend,0x0040EBC0
+    int plrPtr = UnitToPtr(plrUnit), plrIdx;
+
+    if (plrPtr)
+    {
+        if (GetMemory(plrPtr + 0x08) & 0x04)
+        {
+            plrIdx = GetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0x810);
+            NetClientSendDirect(plrIdx, buffPtr, buffSize);
+        }
+    }
+}
+
+int ToInt(float x)
+{
+    StopScript(x);
+}
+
+float ToFloat(int x)
+{
+    StopScript(x);
+}
+
+void ClientMain()
+{
+    int chksum, availableMemlib;
+
+    if (!availableMemlib)
+        availableMemlib = EnableMemoryReadWriteFunction(0) + 1;
+    SetMemory(0x69ba98, 0x43de10);  //VeryVery important!
+
+    int orderId = GetMemory(0x75101c);
+    if (!orderId)   //@brief: Init order
+    {
+        NetEventCommon0();
+    }
+    else if (orderId == 1)   //@brief: Extract custom music
+    {
+        NetEventCommon1();
+    }
+    else if (orderId == 2)
+        NetEventCommon2();
+}
+
+int GetPlayerIndex(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+        return GetMemory(GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x810);
+    return -1;
+}
+
+void ClientSetMemory(int user, int targetAddr, int byte)
+{
+    int ptr = NetClientExec();
+
+    SetMemory(ptr + 1, targetAddr - 0x6d495c);
+    SetMemory(ptr + 5, byte);
+    NetClientSend(user, ptr, 6);
+}
+
+void ClientDirectSetMemory(int pIndex, int targetAddr, int byte)
+{
+    int ptr = NetClientExec();
+
+    SetMemory(ptr + 1, targetAddr - 0x6d495c);
+    SetMemory(ptr + 5, byte);
+    NetClientSendDirect(pIndex, ptr, 6);
+}
+
+int NetClientExec()
+{
+    int arr[2], buff; //must exist!!
+
+    arr[0] = 0xdf;
+    return GetScrDataField(NetClientExec);
+}
+
+void MapInitialize()
+{
+    int var0 = EnableMemoryReadWriteFunction(0);
+
+    ImportUnitToPtrFunc();
+    ImportCreateAtFunc();
+    ImportUniChatCore();
+    ImportUniPrintCore();
+    ImportUseItemFunc();
+    
+    FrameTimer(1, LoopRun);
+}
+
+void NetTesting()
+{
+    ChangeScore(other, 999);
+}

@@ -1,0 +1,33 @@
+
+
+void MapInitialize()
+{
+    string name = "MapIni", kakaru = "kaka";
+    // string name = {"Maiden", "InvisibleLightBlueHigh"};
+    int k;
+}
+
+void PlayerMoverSetting()
+{
+    string name = "Maiden", fallName = "InvisibleLightBlueHigh";
+    int k;
+
+    // for (k = 9 ; k >= 0 ; k --)
+    // {
+    //     plr_mover[k] = CreateObject(name, k + 4);
+    //     plr_fall[k] = CreateObject(fallName, 14);
+    //     plr_mover[k + 10] = CreateObject(name, k + 15);
+    //     LookWithAngle(plr_mover[k], k);
+    //     Frozen(plr_mover[k], 1);
+    //     Frozen(plr_mover[k + 10], 1);
+    //     Raise(plr_fall[k], INIT_HIGH);
+    //     MoveWaypoint(14, GetWaypointX(14) + 23.0, GetWaypointY(14));
+    // }
+
+    string kak = {"kaka", "behero"};
+}
+
+void StringTable()
+{
+    string banana = "Banana!!", apple = "AppleTree", orange = "Orange~~";
+}

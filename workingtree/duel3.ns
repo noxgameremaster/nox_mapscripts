@@ -1,0 +1,3242 @@
+
+
+///2020.12.03 00:10 작업내용///
+///아이템 소유자 설정 트리거 제외시킴///
+/// 크리스마스 트리 이미지 추가///
+
+int ArenaC1;
+int ArenaC2;
+int DispClass[4];
+int ArenaCstatus = 0;
+int ArenaCSwitch = 0;
+int winner;
+int DeathTrap = 0;
+int playing;
+int TimeOut = 1;
+
+int EnableMemoryReadWriteFunction(int t) {}
+
+int GetScrDataField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x1c));
+}
+
+int GetScrCodeField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x20));
+}
+
+void ClientMain()
+{
+    int chkSum;
+
+    if (!chkSum)
+    {
+        chkSum = EnableMemoryReadWriteFunction(0);
+        SetMemory(0x69ba98, 0x43de10);
+        SetMemory(0x69b974, 0x64);
+        PlayerClassCommonWhenEntry();
+        
+        chkSum ++;
+    }
+}
+
+void ImgResourceBlockGolem() {}
+void ImgResourcePokemon() {}
+void ImgResourceCar() {}
+void ImgResourceChristmasTree() {}
+void RedPotionImage() {}
+void PoisonPotionImage() {}
+void MagicPotionImage() {}
+
+void PlayerClassCommonWhenEntry()
+{
+    TextSigns();
+    int drawF = ImageResourceDrawFunctionFix(0x7510c4);
+
+    ApplyImageResourceFix(1920, GetScrCodeField(ImgResourceBlockGolem) + 4, drawF);
+    ApplyImageResourceFix(472, GetScrCodeField(ImgResourcePokemon) + 4, drawF);
+    ApplyImageResourceFix(470, GetScrCodeField(ImgResourceCar) + 4, drawF);
+    ApplyImageResourceFix(473, GetScrCodeField(ImgResourceChristmasTree) + 4, drawF);
+    ApplyImageResourceFix(636, GetScrCodeField(RedPotionImage) + 4, drawF);
+    ApplyImageResourceFix(631, GetScrCodeField(PoisonPotionImage) + 4, drawF);
+    ApplyImageResourceFix(638, GetScrCodeField(MagicPotionImage) + 4, drawF);
+}
+
+int ImportNetSendClient()
+{
+    int arr[15];
+
+    if (!arr[0])
+    {
+        arr[0] = 0x40EBC068; arr[1] = 0x72506800; arr[2] = 0x83500050; arr[3] = 0x54FF10EC; arr[4] = 0x44891424;
+        arr[5] = 0x54FF0C24; arr[6] = 0x44891424; arr[7] = 0x54FF0824; arr[8] = 0x44891424; arr[9] = 0x54FF0424;
+        arr[10] = 0x04891424; arr[11] = 0x2454FF24; arr[12] = 0x10C48318; arr[13] = 0x08C48358; arr[14] = 0x909090C3;
+    }
+    return GetScrDataField(ImportNetSendClient);
+}
+
+void ClientDirectSetMemory(int pIndex, int targetAddr, int byte)
+{
+    int ptr = NetClientExec();
+
+    SetMemory(ptr + 1, targetAddr - 0x6d495c);
+    SetMemory(ptr + 5, byte);
+    NetClientSendDirect(pIndex, ptr, 6);
+}
+
+void NetClientSendDirect(int pIndex, int buffPtr, int buffSize)
+{
+    int temp = GetMemory(0x5c31ac);
+
+    //5c31ac
+    SetMemory(0x5c31ac, ImportNetSendClient());
+    PushObject(pIndex, ToFloat(1), ToFloat(buffPtr), ToFloat(buffSize));
+    SetMemory(0x5c31ac, temp);
+}
+
+void NetClientSend(int plrUnit, int buffPtr, int buffSize)
+{
+    //netClientSend,0x0040EBC0
+    int plrPtr = UnitToPtr(plrUnit), plrIdx;
+    int temp = GetMemory(0x5c31ac);
+
+    if (plrPtr)
+    {
+        if (GetMemory(plrPtr + 0x08) & 0x04)
+        {
+            // plrIdx = GetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0x810);
+            // //5c31ac
+            // SetMemory(0x5c31ac, ImportNetSendClient());
+            // PushObject(plrIdx, ToFloat(1), ToFloat(buffPtr), ToFloat(buffSize));
+            // SetMemory(0x5c31ac, temp);
+
+            plrIdx = GetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0x810);
+            NetClientSendDirect(plrIdx, buffPtr, buffSize);
+        }
+    }
+}
+
+int NetClassMapDownloading(int pIndex, int plrPtr)
+{
+    if (pIndex ^ 31)
+    {
+        if ((GetMemory(plrPtr + 128) & 0xff) || (GetMemory(plrPtr + 0x648) == 0xdeadface))
+            return 1;
+        return (GetMemory(0x81b260 + (pIndex * 0x30)) >> 0x10);
+    }
+    return 0;
+}
+
+int NetClientExec()
+{
+    int arr[2], buff; //must exist!!
+
+    arr[0] = 0xdf;
+    return GetScrDataField(NetClientExec);
+}
+
+void ClientSetMemory(int user, int targetAddr, int byte)
+{
+    int ptr = NetClientExec();
+
+    SetMemory(ptr + 1, targetAddr - 0x6d495c);
+    SetMemory(ptr + 5, byte);
+    NetClientSend(user, ptr, 6);
+}
+
+void DelayLink(int pUnit)
+{
+    ClientSetMemory(pUnit, 0x69ba98 + 0, 0);
+    ClientSetMemory(pUnit, 0x69ba98 + 1, 0x10);
+    ClientSetMemory(pUnit, 0x69ba98 + 2, 0x75);
+}
+
+void ClientEntry(int cliUnit)
+{
+    //6A 00 6A 00/ 68 7F 00 00/ 00 E8 02 63/ DB FF 83 C4/ 0C 68 B0 95/ 4B 00 C3 90: 24Byte
+    ClientSetMemory(cliUnit, 0x751000, 0x6a);
+    ClientSetMemory(cliUnit, 0x751001, 0x00);
+    ClientSetMemory(cliUnit, 0x751002, 0x6a);
+    ClientSetMemory(cliUnit, 0x751003, 0x00);
+    ClientSetMemory(cliUnit, 0x751004, 0x68);
+    ClientSetMemory(cliUnit, 0x751005, ClientMain & 0xff);
+    ClientSetMemory(cliUnit, 0x751006, (ClientMain >> 8) & 0xff);
+    ClientSetMemory(cliUnit, 0x751007, 0);
+    ClientSetMemory(cliUnit, 0x751008, 0);
+    ClientSetMemory(cliUnit, 0x751009, 0xe8);
+    ClientSetMemory(cliUnit, 0x75100a, 0x02);
+    ClientSetMemory(cliUnit, 0x75100b, 0x63);
+    ClientSetMemory(cliUnit, 0x75100c, 0xdb);
+    ClientSetMemory(cliUnit, 0x75100d, 0xff);
+    ClientSetMemory(cliUnit, 0x75100e, 0x83);
+    ClientSetMemory(cliUnit, 0x75100f, 0xc4);
+    ClientSetMemory(cliUnit, 0x751010, 0x0c);
+    ClientSetMemory(cliUnit, 0x751011, 0x68);
+    ClientSetMemory(cliUnit, 0x751012, 0x10);
+    ClientSetMemory(cliUnit, 0x751013, 0xde);
+    ClientSetMemory(cliUnit, 0x751014, 0x43);
+    ClientSetMemory(cliUnit, 0x751015, 0x00);
+    ClientSetMemory(cliUnit, 0x751016, 0xc3);
+    FrameTimerWithArg(1, cliUnit, DelayLink);
+}
+
+int FloatToInt(float x)
+{
+    int i, result = 0;
+    float pos = x;
+
+    if (pos < 0.0) pos = -pos;
+    pos = pos / 2147483648.0;
+    if (pos < 2.0)
+    { 
+        for (i = 0 ; i < 32 ; i ++)
+        {
+            if (pos >= 1.0)
+            {
+                result ++;
+                pos -= 1.0;
+            }
+            if (i != 31) result = result << 1;
+            pos *= 2.0;
+        }
+    }
+    else result = 0x7fffffff;
+    if (x < 0.0) return -result;
+    else return result;
+}
+
+void EmptyAll(int unit)
+{
+    while (GetLastItem(unit))
+        Delete(GetLastItem(unit));
+}
+
+void RepairAll(int inv)
+{
+    if (inv)
+    {
+        RestoreHealth(inv, MaxHealth(inv) - CurrentHealth(inv));
+        RepairAll(GetPreviousItem(inv));
+    }
+}
+
+void RemoveEquipments(int unit)
+{
+	int inven = unit + 2;
+	
+	while (HasClass(inven, "WEAPON") || HasClass(inven, "ARMOR") || HasClass(inven, "WAND"))
+    {
+		Delete(inven);
+		inven += 2;
+	}
+}
+
+int IsPlayerUnit(int sUnit)
+{
+    int ptr = UnitToPtr(sUnit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x08) & 0x04;
+    return 0;
+}
+
+int GetOwner(int unit)
+{
+    int ptr = UnitToPtr(unit), res;
+
+    if (ptr)
+    {
+        res = GetMemory(ptr + 0x1fc);
+        if (res)
+            return GetMemory(res + 0x2c);
+    }
+    return 0;
+}
+
+int GetMemory(int addr)
+{
+    return Unknownb9(addr);
+}
+
+void SetMemory(int addr, int value)
+{
+    Unused59(addr, value);
+}
+
+void SetUnitMaxHealth(int unit, int amount)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+    {
+        SetMemory(GetMemory(ptr + 0x22c), amount);
+        SetMemory(GetMemory(ptr + 0x22c) + 0x4, amount);
+    }
+}
+
+int GetUnitFlags(int unit)
+{
+	int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x10);
+    return 0;
+}
+
+void SetUnitFlags(int unit, int flag)
+{
+	int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(ptr + 0x10, flag);
+}
+
+void ProtectItemTryPick()
+{
+    int cFps, ptr;
+
+    if (IsPlayerUnit(other))
+    {
+        ptr = UnitToPtr(self);
+        while (1)
+        {
+            if (GetOwner(self) ^ GetCaller())
+            {
+                cFps = GetMemory(0x84ea04);
+                if (!GetMemory(ptr + 0x2f4))
+                    SetMemory(ptr + 0x2f4, cFps);
+                if (MathAbs(cFps - GetMemory(ptr + 0x2f4)) >= 90)
+                    1;
+                else
+                {
+                    if (CheckGameKorLanguage()) UniPrint(other, "아직 이 아이템을 획득하실 수 없습니다. 소유자가 있는 아이템 입니다.");
+                    else UniPrint(other, "You are not allowed to pick up the item, it's aready owned by somebody else.");
+                    break;
+                }
+            }
+            SetMemory(ptr + 0x2c4, GetMemory(ptr + 0x1c));
+            SetMemory(ptr + 0x1c, 0);
+            SetMemory(ptr + 0x228, 0);
+            SetMemory(ptr + 0x2f4, 0);
+            Pickup(other, self);
+            break;
+        }
+    }
+}
+
+int ProtectPickFunction()
+{
+    StopScript(ProtectItemTryPick);
+}
+
+void UserDropAll(int userUnit)
+{
+    int inv = GetLastItem(userUnit), dropItem;
+    //int ptr;
+
+    while (inv)
+    {
+        /*ptr = UnitToPtr(inv);
+        if (ptr)
+        {
+            if (GetMemory(ptr + 0x1c))
+            {
+                SetMemory(ptr + 0x2c4, GetMemory(ptr + 0x1c));
+                SetMemory(ptr + 0x1c, 0);
+            }
+        }*/
+        dropItem = inv;
+        inv = GetPreviousItem(inv);
+        Drop(userUnit, dropItem);
+    }
+}
+
+int ImportUnitToPtrFunc()
+{
+    int arr[10], link;
+    if (!link)
+    {
+        arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
+        arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3; 
+        CancelTimer(FrameTimerWithArg(10, ImportUnitToPtrFunc, ImportUnitToPtrFunc));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+int UnitToPtr(int unit)
+{
+    int temp = GetMemory(0x5c336c), res;
+    SetMemory(0x5c336c, ImportUnitToPtrFunc());
+    res = Unknownb8(unit);
+    SetMemory(0x5c336c, temp);
+    return res;
+}
+
+int VoiceList(int num)
+{
+    int list[75], addr, k;
+
+    if (!list[0])
+    {
+        addr = GetMemory(0x663eec);
+        for (k = 0 ; k < 75 ; k ++)
+        {
+            list[k] = addr;
+            addr = GetMemory(addr + 0x4c);
+        }
+    }
+    return list[num];
+}
+
+void UnitActionGuard(int sUnit)
+{
+    int ptr = UnitToPtr(sUnit);
+
+    if (ptr)
+    {
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x228, 4);
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x22c, ToInt(GetObjectX(sUnit)));
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x230, ToInt(GetObjectY(sUnit)));
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x234, 160);
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x238, 0);
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x23c, 1);
+    }
+}
+
+int ImportUseItemFunc()
+{
+    int arr[10], link;
+    if (!link)
+    {
+        arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x1424748B; arr[3] = 0x18246C8B;
+        arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
+        arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
+        link = GetScrDataField(ImportUseItemFunc);
+    }
+    return link;
+}
+
+int ImportPlayerLookFunc()
+{
+    int arr[17], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50725068; arr[1] = 0x1B606800; arr[2] = 0x80680051; arr[3] = 0xFF004DDE; arr[4] = 0x50082454; arr[5] = 0x082454FF; arr[6] = 0x8B04C483; arr[7] = 0x74FF85F8;
+        arr[8] = 0x2454FF19; arr[9] = 0x54FF5008; arr[10] = 0xC4830824; arr[11] = 0x74C08504; arr[12] = 0xFF505709; arr[13] = 0x83082454; arr[14] = 0xC48308C4;
+        arr[15] = 0x31FF310C; arr[16] = 0x0000C3C0;
+        CancelTimer(FrameTimerWithArg(10, ImportPlayerLookFunc, ImportPlayerLookFunc));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void PlayerLook(int plr_unit, int unit)
+{
+    if (IsPlayerUnit(plr_unit))
+    {
+        SetMemory(0x5c31f4, ImportPlayerLookFunc());
+        Unused5a(plr_unit, unit);
+        SetMemory(0x5c31f4, 0x513f30);
+    }
+}
+
+int ImportCreateAtFunc()
+{
+    int arr[20], link;
+
+    if (!link)
+    {
+        arr[0] = 0xAA506856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xFF502414; arr[4] = 0x50042454;
+        arr[5] = 0x082454FF; arr[6] = 0x4085048B; arr[7] = 0x680097BB; arr[8] = 0x004E3810; arr[9] = 0x2454FF50;
+        arr[10] = 0x08C48304; arr[11] = 0xF685F08B; arr[12] = 0x006A0A74; arr[13] = 0x2454FF56; arr[14] = 0x08C48314;
+        arr[15] = 0x50723068; arr[16] = 0x54FF5600; arr[17] = 0xC4830424; arr[18] = 0x5EC03118; arr[19] = 0x909090C3; 
+        link = GetScrDataField(ImportCreateAtFunc);
+    }
+    return link;
+}
+int CreateObjectAt(string name, float x, float y)
+{
+    int temp = GetMemory(0x5c3160), res;
+
+    SetMemory(0x5c3160, ImportCreateAtFunc());
+    res = CreateMover(SToInt(name), ToInt(x), y);
+    SetMemory(0x5c3160, temp);
+    if (res) return GetMemory(res + 0x2c);
+    else return 0;
+}
+
+int CheckWatchFocus(int unit)
+{
+    int ptr = UnitToPtr(unit), buff;
+
+    if (ptr)
+    {
+        buff = GetMemory(ptr + 0x2ec);
+        if (buff)
+        {
+            buff = GetMemory(buff + 0x114);
+            if (buff)
+                return GetMemory(buff + 0xe60) ^ 0x12;
+        }
+    }
+    return 0;
+}
+
+int CheckPlayerInput(int plr_unit)
+{
+    int ptr = UnitToPtr(plr_unit), temp;
+
+    if (ptr)
+    {
+        temp = GetMemory(GetMemory(ptr + 0x2ec) + 0x114);
+        if (temp)
+            return GetMemory(0x81b960 + (GetMemory(temp + 0x810) * 3072));
+    }
+    return 0;
+}
+
+int ToInt(float x)
+{
+    StopScript(x);
+}
+
+int SToInt(string x)
+{
+    StopScript(x);
+}
+
+float ToFloat(int x)
+{
+    StopScript(x);
+}
+
+int GetByteValue(int ptr)
+{
+    return GetMemory(ptr) & 0xff;
+}
+
+void WriteAddressWordValue(int addr, int word)
+{
+    int temp = GetMemory(addr) & 0xffff0000;
+    SetMemory(addr, temp | word);
+}
+
+void NoxUtf8ToUnicode(int src, int dest)
+{
+    int i = 0, byt;
+
+    while (1)
+    {
+        byt = GetByteValue(src + i);
+        if (!byt) break;
+        if (!(byt & 0x80))
+        {
+            WriteAddressWordValue(dest, byt);
+            i ++;
+        }
+        else if ((byt & 0xe0) == 0xc0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0x1f) <<6) | (GetByteValue(src + i + 1) & 0x3f));
+            i += 2;
+        }
+        else if ((byt & 0xf0) == 0xe0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0xf) << 12) | ((GetByteValue(src + i + 1) & 0x3f) << 6) | (GetByteValue(src + i + 2) & 0x3f));
+            i += 3;
+        }
+        dest += 2;
+    }
+    WriteAddressWordValue(dest, 0);
+}
+
+int MathAbs(int num)
+{
+    return ((num >> 30) | 1) * num;
+}
+
+int CheckSignDelay(int sPtr, int gap)
+{
+    int cFps = GetMemory(0x84ea04);
+
+    if (MathAbs(cFps - GetMemory(sPtr)) > gap)
+    {
+        SetMemory(sPtr, cFps);
+        return 1;
+    }
+    return 0;
+}
+
+void SignNotification()
+{
+    int otPtr = GetMemory(0x979720), sePtr = GetMemory(0x979724);
+
+    if (otPtr && sePtr)
+    {
+        if (CheckSignDelay(GetMemory(sePtr + 0x2e0) + 100, 60))
+        {
+            UniPrint(other, ToStr(GetMemory(sePtr + 0x2f0)));
+            //UniPrintCore(otPtr, GetMemory(sePtr + 0x2e0));
+        }
+    }
+}
+
+void RegistSignMessage(int sUnit, string sMsg)
+{
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg);
+
+    if (ptr)
+    {
+        SetMemory(ptr + 0x2f0, str);
+        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
+        CancelTimer(FrameTimerWithArg(10, SignNotification, SignNotification));
+        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+    }
+}
+
+int ImportUnitPickupFunc()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50731068; arr[1] = 0x55565300; arr[2] = 0x14245C8B; arr[3] = 0x1824748B;
+        arr[4] = 0x0228AE8B; arr[5] = 0x53560000; arr[6] = 0x2454FF55; arr[7] = 0x0CC48318;
+        arr[8] = 0x835B5E5D; arr[9] = 0x90C304C4;
+        link = GetScrDataField(ImportUnitPickupFunc);
+    }
+    return link;
+}
+
+int ImportRemoveSneakDelay()
+{
+    int arr[7];
+
+    arr[0] = 0x72506850; arr[1] = 0x14FF0050; arr[2] = 0xC3006824; arr[3] = 0x046A004F; arr[4] = 0x2454FF50; arr[5] = 0x10C48308; arr[6] = 0x9090C358;
+    return GetScrDataField(ImportRemoveSneakDelay);
+}
+
+void RemoveTreadLightly(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit), temp = GetMemory(0x5c336c);
+
+    if (ptr)
+    {
+        if (GetMemory(ptr + 0x08) & 0x04)
+        {
+            SetMemory(0x5c336c, ImportRemoveSneakDelay());
+            Unknownb8(ptr);
+            SetMemory(0x5c336c, temp);
+        }
+    }
+}
+
+int ImportUniPrintCore()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x9EB06856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xF08B2414; arr[4] = 0x502414FF;
+        arr[5] = 0x2454FF56; arr[6] = 0x10C4830C; arr[7] = 0x9090C35E;
+    }
+    return GetScrDataField(ImportUniPrintCore);
+}
+
+void UniPrintCore(int plrPtr, int sPtr)
+{
+    int temp = GetMemory(0x5c31f4);
+
+    SetMemory(0x5c31f4, ImportUniPrintCore());
+    Unused5a(sPtr, plrPtr);
+    SetMemory(0x5c31f4, temp);
+}
+
+void UniPrint(int sUnit, string sMsg)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link) link = GetScrDataField(UniPrint);
+        NoxUtf8ToUnicode(str, link + 8);
+        UniPrintCore(ptr, link + 8);
+    }
+}
+
+void UniPrintToAll(string sMsg)
+{
+    int wDest[200];
+    int plrPtr = 0x62f9e0, link, str = SToInt(sMsg), i;
+
+    if (!link) link = GetScrDataField(UniPrint);
+    str = GetMemory(0x97bb40 + (str * 4));
+    NoxUtf8ToUnicode(str, link);
+    for (i = 0 ; i < 32 ; i ++)
+    {
+        if (GetMemory(plrPtr))
+            UniPrintCore(GetMemory(plrPtr), link);
+        plrPtr += 0x12dc;
+    }
+}
+
+int PlayerClassUserPtrTable()
+{
+    int userArr[32];
+
+    return GetScrDataField(PlayerClassUserPtrTable);
+}
+
+int PlayerClassFlags(int pIndex, int setValue)
+{
+    int flags[32];
+
+    if (setValue)
+    {
+        if (setValue & (1 << 0x1c))
+            flags[pIndex] = 0;
+        else
+            flags[pIndex] = setValue;
+    }
+    return flags[pIndex];
+}
+
+int PlayerClassObserverFlagCheck(int pIndex)
+{
+    return PlayerClassFlags(pIndex, 0) & 0x02;
+}
+
+void PlayerClassObserverFlagSet(int pIndex)
+{
+    PlayerClassFlags(pIndex, PlayerClassFlags(pIndex, 0) ^ 0x02);
+}
+
+int PlayerClassDuelFlagCheck(int pIndex)
+{
+    return PlayerClassFlags(pIndex, 0) & 0x04;
+}
+
+void PlayerClassDuelFlagSet(int pIndex)
+{
+    PlayerClassFlags(pIndex, PlayerClassFlags(pIndex, 0) ^ 0x04);
+}
+
+int PlayerClassCamUserFlagCheck(int pIndex)
+{
+    return PlayerClassFlags(pIndex, 0) & 0x08;
+}
+
+void PlayerClassCamUserFlagSet(int pIndex)
+{
+    PlayerClassFlags(pIndex, PlayerClassFlags(pIndex, 0) ^ 0x08);
+}
+
+int PlayerClassDeathFlagCheck(int pIndex)
+{
+    return PlayerClassFlags(pIndex, 0) & 0x80;
+}
+
+void PlayerClassDeathFlagSet(int pIndex)
+{
+    PlayerClassFlags(pIndex, PlayerClassFlags(pIndex, 0) ^ 0x80);
+}
+
+int ImportUniChatCore()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0xC0685657; arr[1] = 0x6800528A; arr[2] = 0x00507250; arr[3] = 0x8B2414FF; arr[4] = 0x2414FFF8;
+        arr[5] = 0x14FFF08B; arr[6] = 0x56505724; arr[7] = 0x102454FF; arr[8] = 0x5E14C483; arr[9] = 0x9090C35F;
+        link = GetScrDataField(ImportUniChatCore);
+    }
+    return link;
+}
+
+void UniChatCore(int plrPtr, int sPtr, int sTime)
+{
+    int temp = GetMemory(0x5c3320);
+
+    SetMemory(0x5c3320, ImportUniChatCore());
+    GroupRunAway(sPtr, plrPtr, sTime);
+    SetMemory(0x5c3320, temp);
+}
+
+void UniChatMessage(int sUnit, string sMsg, int duration)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link) link = GetScrDataField(UniChatMessage);
+        NoxUtf8ToUnicode(str, link + 12);
+        UniChatCore(ptr, link + 12, duration);
+    }
+}
+
+int CheckGameKorLanguage()
+{
+    if (GetMemory(0x611c04))
+        return GetMemory(GetMemory(GetMemory(0x611c04))) == 0xc774d300;
+    return 0;
+}
+
+int ImportPlaySoundAround()
+{
+	int arr[17], link;
+
+	if (!link)
+	{
+		arr[0] = 0x50196068; arr[1] = 0x72506800; arr[2] = 0x50560050; arr[3] = 0x082454FF;
+		arr[4] = 0x54FFF08B; arr[5] = 0x006A0824; arr[6] = 0x5650006A; arr[7] = 0x1C2454FF;
+		arr[8] = 0x5810C483; arr[9] = 0x08C4835E; arr[10] = 0x909090C3;
+        link = GetScrDataField(ImportPlaySoundAround);
+	}
+	return link;
+}
+
+void PlaySoundAround(int sUnit, int sNumber)
+{
+	int unitPtr = UnitToPtr(sUnit), temp = GetMemory(0x5c325c);
+
+	if (unitPtr)
+	{
+		SetMemory(0x5c325c, ImportPlaySoundAround());
+		Unused74(unitPtr, sNumber);
+		SetMemory(0x5c325c, temp);
+	}
+}
+
+int ImportAllowAllDrop()
+{
+	int arr[19], link;
+
+	if (!link)
+	{
+		arr[0] = 0x550CEC83; arr[1] = 0x14246C8B; arr[2] = 0x24748B56; arr[3] = 0xECAE391C; arr[4] = 0x74000001; arr[5] = 0xC0315E08; arr[6] = 0x0CC4835D;
+		arr[7] = 0x0845F6C3; arr[8] = 0x68207404; arr[9] = 0x0053EBF0; arr[10] = 0x2454FF56; arr[11] = 0x08C48304; arr[12] = 0x0F74C085; arr[13] = 0x53EC8068;
+		arr[14] = 0x56016A00; arr[15] = 0x082454FF; arr[16] = 0x680CC483; arr[17] = 0x004ED301; arr[18] = 0x909090C3;
+        link = GetScrDataField(ImportAllowAllDrop);
+	}
+	return link;
+}
+
+void GreenSparkFx(float x, float y)
+{
+    int ptr = CreateObjectAt("MonsterGenerator", x, y);
+
+    Damage(ptr, 0, 10, 100);
+    Delete(ptr);
+}
+
+void HalberdRespawnLoop(int sUnit)
+{
+    int durate = GetDirection(sUnit), halberd;
+
+    while (IsObjectOn(sUnit))
+    {
+        if (durate)
+        {
+            LookWithAngle(sUnit, durate - 1);
+            FrameTimerWithArg(10, sUnit, HalberdRespawnLoop);
+            break;
+        }
+        halberd = HalberdCreate(sUnit);
+        PlaySoundAround(halberd, 912);
+        GreenSparkFx(GetObjectX(halberd), GetObjectY(halberd));
+        Delete(sUnit);
+        break;
+    }
+}
+
+void HalberdRespawn()
+{
+    int unit = CreateObjectAt("ImaginaryCaster", GetObjectX(self), GetObjectY(self));
+
+    LookWithAngle(unit, 50);
+    FrameTimerWithArg(1, unit, HalberdRespawnLoop);
+}
+
+int HalberdRespawnFunction()
+{
+    StopScript(HalberdRespawn);
+}
+
+int HalberdCreate(int sUnit)
+{
+    int berd = CreateObjectAt("OblivionHeart", GetObjectX(sUnit), GetObjectY(sUnit));
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 0x2c4, 0x53a720);
+    SetMemory(ptr + 0x2c8, ImportAllowAllDrop());
+    SetMemory(ptr + 0x300, HalberdRespawnFunction());
+    return berd;
+}
+int OblivionCreate(int sWP)
+{
+    int berd = CreateObjectAt("OblivionOrb", GetWaypointX(sWP), GetWaypointY(sWP));
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 0x2c4, 0x53a720);
+    SetMemory(ptr + 0x2c8, ImportAllowAllDrop());
+    return berd;
+}
+void PlaceRespawnedHalberd()
+{
+    int i;
+
+    for (i = 3 ; i <= 6 ; i ++)
+        HalberdCreate(CreateObject("ImaginaryCaster", i));
+}
+
+int GetUnit1C(int sUnit)
+{
+    int ptr = UnitToPtr(sUnit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x1c);
+    return 0;
+}
+
+void SetUnit1C(int sUnit, int sData)
+{
+    int ptr = UnitToPtr(sUnit);
+
+    if (ptr)
+        SetMemory(ptr + 0x1c, sData);
+}
+
+int GetUnitThingID(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 4);
+    return 0;
+}
+
+int GetWordValue(int num)
+{
+	return num & 0xffff;
+}
+
+void WriteAddressByteValue(int addr, int byt)
+{
+	int temp = GetMemory(addr) & 0xffffff00;
+	SetMemory(addr, temp | byt);
+}
+
+int NoxUnicodeToUtf8(int src, int destPtr)
+{
+	int i, byt, dest = destPtr;
+
+	for (i = 0 ; i < 20 ; i ++)
+	{
+		byt = GetWordValue(GetMemory(src));
+        if (!byt) break;
+		if (byt < 0x80)
+		{
+			WriteAddressByteValue(dest, byt);
+			dest ++;
+		}
+		else if (byt < 0x800)
+		{
+			WriteAddressByteValue(dest, ((byt >> 6) & 0x1f) | 0xc0);
+			WriteAddressByteValue(dest + 1, (byt & 0x3f) | 0x80);
+			dest += 2;
+		}
+		else
+		{
+			WriteAddressByteValue(dest, ((byt >> 12) & 0x0f) | 0xe0);
+			WriteAddressByteValue(dest + 1, ((byt >> 6) & 0x3f) | 0x80);
+			WriteAddressByteValue(dest + 2, (byt & 0x3f) | 0x80);
+			dest += 3;
+		}
+        src += 2;
+	}
+    WriteAddressByteValue(dest, 0);
+	return dest - destPtr;
+}
+
+string PlayerIngameNick(int sUnit)
+{
+    string emptyName = {
+        "00:01234567890123456789abcd0123456789abxyz", "01:01234567890123456789abcd0123456789abxyz",
+        "02:01234567890123456789abcd0123456789abxyz", "03:01234567890123456789abcd0123456789abxyz",
+        "04:01234567890123456789abcd0123456789abxyz", "05:01234567890123456789abcd0123456789abxyz",
+        "06:01234567890123456789abcd0123456789abxyz", "07:01234567890123456789abcd0123456789abxyz",
+        "08:01234567890123456789abcd0123456789abxyz", "09:01234567890123456789abcd0123456789abxyz",
+        "10:01234567890123456789abcd0123456789abxyz", "11:01234567890123456789abcd0123456789abxyz",
+        "12:01234567890123456789abcd0123456789abxyz", "13:01234567890123456789abcd0123456789abxyz",
+        "14:01234567890123456789abcd0123456789abxyz", "15:01234567890123456789abcd0123456789abxyz",
+        "16:01234567890123456789abcd0123456789abxyz", "17:01234567890123456789abcd0123456789abxyz",
+        "18:01234567890123456789abcd0123456789abxyz", "19:01234567890123456789abcd0123456789abxyz",
+        "20:01234567890123456789abcd0123456789abxyz", "21:01234567890123456789abcd0123456789abxyz",
+        "22:01234567890123456789abcd0123456789abxyz", "23:01234567890123456789abcd0123456789abxyz",
+        "24:01234567890123456789abcd0123456789abxyz", "25:01234567890123456789abcd0123456789abxyz",
+        "26:01234567890123456789abcd0123456789abxyz", "27:01234567890123456789abcd0123456789abxyz",
+        "28:01234567890123456789abcd0123456789abxyz", "29:01234567890123456789abcd0123456789abxyz",
+        "30:01234567890123456789abcd0123456789abxyz", "31:01234567890123456789abcd0123456789abxyz"};
+    int ptr = UnitToPtr(sUnit), plrIndex, destPtr, srcPtr;
+    
+    if (ptr)
+    {
+        if (GetMemory(ptr + 0x08) & 4)
+        {
+            plrIndex = GetMemory(GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x810);
+            destPtr = GetMemory(0x97bb40 + ((SToInt(emptyName) + plrIndex) * 4));
+            srcPtr = GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x889;
+            NoxUnicodeToUtf8(srcPtr, destPtr);
+            return ToStr(SToInt(emptyName) + plrIndex);
+        }
+    }
+    return "NULL";
+}
+
+int PlayerClassItemTable()
+{
+    int itemTable[8000];
+}
+
+int PlayerClassItemIndexTable(int arg0)
+{
+    int pIndex = arg0 & 0xff, table[32];
+
+    if (arg0 >> 0x10)
+        table[pIndex] = arg0 >> 0x10;
+    return table[pIndex];
+}
+
+int PlayerClassPickAll(int pUnit, int tablePtr4, int count)
+{
+    if (count > 0)
+    {
+        Pickup(pUnit, GetMemory(tablePtr4));
+        PlayerClassPickAll(pUnit, tablePtr4 + 4, count - 1);
+    }
+    return count;
+}
+
+void ItemResetPickHandlerAndPickup(int holder, int inv)
+{
+    int ptr = UnitToPtr(inv);
+
+    if (ptr)
+    {
+        if (GetMemory(ptr + 0x1c))
+        {
+            SetMemory(ptr + 0x2c4, GetMemory(ptr + 0x1c));
+            SetMemory(ptr + 0x1c, 0);
+        }
+        Pickup(holder, inv);
+    }
+}
+
+void ItemSetDontPick(int inv)
+{
+    int ptr = UnitToPtr(inv);
+
+    if (ptr)
+    {
+        SetMemory(ptr + 0x1c, GetMemory(ptr + 0x2c4));
+        SetMemory(ptr + 0x228, ProtectPickFunction());
+        SetMemory(ptr + 0x2c4, ImportUnitPickupFunc());
+        SetMemory(ptr + 0x2f4, 0);
+    }
+}
+
+void UseMapSetting()
+{
+    SetMemory(0x5d5330, 0x2000);
+    SetMemory(0x5d5394, 1);
+}
+
+int PlayerClassAdvanceDropAll(int pUnit, int tablePtr, int inv, int count)
+{
+    if (inv)
+    {
+        SetMemory(tablePtr, inv);
+        Drop(pUnit, inv);
+        ItemSetDontPick(inv);        //2020.12.03 00:07  Comment처리됨
+        SetOwner(pUnit, inv);
+        PlayerClassAdvanceDropAll(pUnit, tablePtr + 4, GetPreviousItem(inv), count + 1);
+    }
+    return count;
+}
+
+void MapEntry()
+{
+    FrameTimer(1, PlayOgreMusic);
+}
+
+void ChangePlayerDeathSound(int handle, int soundNumber)
+{
+    SetMemory(handle + 0x258, soundNumber);
+}
+
+int OpcodeGetTargetAddr(int curAddr)
+{
+    return GetMemory(curAddr + 1) + curAddr + 5;
+}
+
+void OpcodeLoadEffectiveAddr(int loadAddr, int codeAddr, int offset)
+{
+    int targetAddr = OpcodeGetTargetAddr(codeAddr + offset);
+
+    SetMemory(loadAddr + offset + 1, targetAddr - (loadAddr + offset) - 5);
+}
+
+void OpcodeCopies(int destPtr, int callNodePtr, int startAddr, int endAddr)
+{
+    int destBase = destPtr;
+    int curAddr = startAddr;
+
+    while (curAddr <= endAddr)
+    {
+        SetMemory(destPtr, GetMemory(curAddr));
+        if (GetMemory(callNodePtr))
+        {
+            if (GetMemory(callNodePtr) + 1 <= curAddr)
+            {
+                OpcodeLoadEffectiveAddr(destBase, startAddr, GetMemory(callNodePtr) - startAddr);
+                callNodePtr += 4;
+            }
+        }
+        curAddr += 4;
+        destPtr += 4;
+    }
+}
+
+int DiePlayerHandlerCopiedCode()
+{
+    int arr[314], link;
+
+    if (!link)
+    {
+        CallNode54d2b0();
+        link = GetScrDataField(DiePlayerHandlerCopiedCode);
+        OpcodeCopies(link, GetScrDataField(CallNode54d2b0), 0x54d2b0, 0x54d794);
+    }
+    return link;
+}
+
+void DiePlayerHandlerEntry(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+        SetMemory(ptr + 0x2d4, DiePlayerHandlerCopiedCode());
+}
+
+void CallNode54d2b0()
+{
+    int arr[40];
+
+    if (!arr[0])
+    {
+        arr[0] = 0x54d2d1;
+        arr[1] = 0x54d2e3;
+        arr[2] = 0x54d2f3;
+        arr[3] = 0x54d30a;
+        arr[4] = 0x54d348;
+        arr[5] = 0x54d375;
+        arr[6] = 0x54d3aa;
+        arr[7] = 0x54d45c;
+        arr[8] = 0x54d47b;
+        arr[9] = 0x54d513;
+        arr[10] = 0x54d527;
+        arr[11] = 0x54d566;
+        arr[12] = 0x54d574;
+        arr[13] = 0x54d588;
+        arr[14] = 0x54d594;
+        arr[15] = 0x54d5a6;
+        arr[16] = 0x54d5b2;
+        arr[17] = 0x54d5c4;
+        arr[18] = 0x54d5d1;
+        arr[19] = 0x54d5e2;
+        arr[20] = 0x54d5f4;
+        arr[21] = 0x54d610;
+        arr[22] = 0x54d622;
+        arr[23] = 0x54d62c;
+        arr[24] = 0x54d639;
+        arr[25] = 0x54d642;
+        arr[26] = 0x54d65b;
+        arr[27] = 0x54d662;
+        arr[28] = 0x54d668;
+        arr[29] = 0x54d67a;
+        arr[30] = 0x54d680;
+        arr[31] = 0x54d693;
+        arr[32] = 0x54d6a6;
+        arr[33] = 0x54d727;
+        arr[34] = 0x54d72d;
+        arr[35] = 0x54d733;
+        arr[36] = 0x54d73d;
+        arr[37] = 0x54d749;
+        arr[38] = 0x54d782;
+    }
+}
+
+int GetPlayerIndex(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+        return GetMemory(GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x810);
+    return -1;
+}
+
+void PlayerClassDieHandlerInit(int dieSound)
+{
+    int ptr = DiePlayerHandlerCopiedCode();
+
+    ChangePlayerDeathSound(ptr, dieSound);
+    SetMemory(ptr + 0x386, (GetMemory(ptr + 0x386) & 0xffff0000) | 0x9eb);
+}
+
+void CancelPlayerDialogWithPTR(int plrPtr)
+{
+    if (GetMemory(GetMemory(plrPtr + 0x2ec)) + 0x11c)
+    {
+        SetMemory(GetMemory(plrPtr + 0x2ec) + 0x11c, 0);
+        SetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0xe60, 0x10);
+    }
+}
+
+void CancelPlayerDialog(int plrUnit)
+{
+    int temp = UnitToPtr(plrUnit);
+
+    if (temp)
+        CancelPlayerDialogWithPTR(temp);
+}
+
+int ImportCheckSelfDamage()
+{
+    int arr[14], link;
+
+    if (!link)
+    {
+        arr[0] = 0x4C8B5651; arr[1] = 0xC9850C24; arr[2] = 0x748B2374; arr[3] = 0xF6851024; arr[4] = 0xF1391B74; arr[5] = 0x8B501374; arr[6] = 0x0001FC86;
+        arr[7] = 0x74C08500; arr[8] = 0x58F08B05; arr[9] = 0xEB58ECEB; arr[10] = 0xC3595E04; arr[11] = 0x68595E90; arr[12] = 0x004E17B0; arr[13] = 0x909090C3;
+        link = GetScrDataField(ImportCheckSelfDamage);
+    }
+    return link;
+}
+
+void SelfDamageClassEntry(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+        SetMemory(ptr + 0x2cc, ImportCheckSelfDamage());
+}
+
+void SelfDamageClassDisable(int plrPtr)
+{
+    if (GetMemory(plrPtr + 0x2cc) ^ 0x4e17b0)
+        SetMemory(plrPtr + 0x2cc, 0x4e17b0);
+    if (GetMemory(plrPtr + 0x2d4) ^ 0x54d2b0)
+        SetMemory(plrPtr + 0x2d4, 0x54d2b0);
+    CancelPlayerDialogWithPTR(plrPtr);
+}
+
+void ServerOnMapExit(int pTableOffset, int pIndex)  //Downscale
+{
+    //0x62f9e0
+    if (pIndex >= 0)
+    {
+        if (GetMemory(pTableOffset))
+        {
+            //TODO
+            SelfDamageClassDisable(GetMemory(pTableOffset));
+        }
+        ServerOnMapExit(pTableOffset - 0x12dc, pIndex - 1);
+    }
+}
+
+void ResetRemappingDecReq(int plrOffset, int pIndex)
+{
+    if (pIndex < 0) return;
+    if (GetMemory(plrOffset))
+    {
+        if (!NetClassMapDownloading(pIndex, plrOffset))
+        {
+            ClientDirectSetMemory(pIndex, 0x85b7d0, 0x1f);
+            ClientDirectSetMemory(pIndex, 0x85b7d1, 0x05);
+        }
+    }
+    ResetRemappingDecReq(plrOffset - 0x12dc, pIndex - 1);
+}
+
+void MapExit()
+{
+    MusicEvent();
+    SetMemory(0x5d53a4, 0x10032107);
+    ServerOnMapExit(0x654284, 31);
+    ClientDirectSetMemory(0, 0x85b7d0, 0x1f);
+    ClientDirectSetMemory(0, 0x85b7d0, 0x05);
+    ResetRemappingDecReq(0x652fa8, 30);
+}
+
+void CalleeArg(int arg)
+{
+    CalleeArg(arg);
+}
+
+void CallFunctionWithArg(int func, int arg)
+{
+    SetMemory(GetScrCodeField(CalleeArg) + 0x10, func);
+    CalleeArg(arg);
+}
+
+void MapSignInit()
+{
+    if (CheckGameKorLanguage())
+    {
+        RegistSignMessage(Object("ArenaSign"), "표지판에는 \"아레나 경기장\" (이)라고 쓰여있습니다.");
+    }
+    else
+    {
+        RegistSignMessage(Object("ArenaSign"), "The sign reads: Arena");
+    }
+}
+
+string ToStr(int arg0)
+{
+    StopScript(arg0);
+}
+
+int MapWaypointTable(int idx)
+{
+    int table[255];
+
+    return table[idx - 1];
+}
+
+float LocationX(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 8));
+}
+
+float LocationY(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 12));
+}
+
+void TeleportLocation(int location, float xProfile, float yProfile)
+{
+    int wTable = MapWaypointTable(location);
+
+    SetMemory(wTable + 8, ToInt(xProfile));
+    SetMemory(wTable + 12, ToInt(yProfile));
+}
+
+void TeleportLocationVector(int location, float xVect, float yVect)
+{
+    int wTable = MapWaypointTable(location);
+
+    SetMemory(wTable + 8, ToInt(ToFloat(GetMemory(wTable + 8)) + xVect));
+    SetMemory(wTable + 12, ToInt(ToFloat(GetMemory(wTable + 12)) + yVect));
+}
+
+void MapWaypointFill(int wAddr, int tPtr)
+{
+    int num;
+
+    if (wAddr)
+    {
+        num = GetMemory(wAddr);
+        SetMemory(tPtr + (num * 4), wAddr);
+        MapWaypointFill(GetMemory(wAddr + 484), tPtr);
+    }
+}
+
+void MapWaypointInit()
+{
+    MapWaypointFill(GetMemory(0x83c7fc), GetScrDataField(MapWaypointTable));
+}
+
+string StringOverflow(int t)
+{
+	return ToStr((t - 0x97bb40) / 4);
+}
+
+string EnchantList(int sNumber)
+{
+	return StringOverflow(0x596f24 + (sNumber * 4));
+}
+
+int UnitCheckEnchant(int sUnit, int sMagicFlag)
+{
+    int ptr = UnitToPtr(sUnit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x154) & sMagicFlag;
+    return 0;
+}
+
+int GetLShift(int sCount)
+{
+    return (1 << sCount);
+}
+
+void SetUnitEnchantCopy(int sUnit, int sMagicFlag)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		Enchant(sUnit, EnchantList(6), 0.0);
+		SetMemory(ptr + 0x154, GetMemory(ptr + 0x154) | sMagicFlag);
+	}
+}
+
+void UnitSetEnchantTime(int unit, int enchantNumber, int durateTime)
+{
+	int ptr = UnitToPtr(unit), temp, tempPtr;
+
+	if (ptr)
+	{
+		SetUnitEnchantCopy(unit, GetLShift(enchantNumber));
+		tempPtr = ptr + 0x158 + ((enchantNumber / 2) * 4);
+		temp = GetMemory(tempPtr);
+		if (enchantNumber % 2)
+		{
+			SetMemory(tempPtr, (GetMemory(tempPtr) & 0xffff) | (durateTime << 0x10));
+		}
+		else
+			SetMemory(tempPtr, ((GetMemory(tempPtr) >> 0x10) << 0x10) | durateTime);
+	}
+}
+
+int PlaceMob(string monName, int location, int angle)
+{
+    int mon = CreateObjectAt(monName, LocationX(location), LocationY(location));
+
+    Frozen(mon, 1);
+    LookWithAngle(mon, angle);
+    return mon;
+}
+
+void MapDecorations()
+{
+    FrameTimer(1, NumberClassInit);
+    PlaceMob("OgreBrute", 70, 32);
+    PlaceMob("OgreBrute", 71, 32);
+    PlaceMob("OgreBrute", 72, 160);
+    PlaceMob("GruntAxe", 73, 64);
+    PlaceMob("GruntAxe", 74, 96);
+    PlaceMob("GruntAxe", 75, 96);
+    PlaceMob("GruntAxe", 76, 160);
+    PlaceMob("GruntAxe", 77, 160);
+    PlaceMob("GruntAxe", 78, 192);
+    PlaceMob("GruntAxe", 79, 225);
+    PlaceMob("OgreWarlord", 80, 160);
+}
+
+void MapInitialize()
+{
+    int t = EnableMemoryReadWriteFunction(0);
+    ImportUnitToPtrFunc();
+    ImportCreateAtFunc();
+    MapWaypointInit();
+    ImportPlayerLookFunc();
+    ImportPlaySoundAround();
+    ImportUniChatCore();
+    ImportUniPrintCore();
+    ImportUseItemFunc();
+    ImportUnitCollideFunc();
+    ImportUnitPickupFunc();
+    ImportMemAlloc();
+    ImportMemFree();
+    FrameTimer(1, LoopRun);      //코멘트 처리해봤는데 2020.12.06 17:39 여전히 팅김 예외주소 0x4...bad
+    FrameTimer(2, MapSignInit);
+    FrameTimer(100, DrawArenaSigns);
+    FrameTimer(50, PlaceRespawnedHalberd);
+    UseMapSetting();
+    FrameTimerWithArg(100, 0, PlacePart1ReadyInit);      //2020 12 06 17:42 코멘트 처리해봄  여전히 팅김 예외주소 0x4...bad
+    FrameTimer(30, MapDecorations);
+    //ImageManipulation();
+    FrameTimer(30, Credits);
+}
+void Credits()
+{
+    UniPrintToAll("Duel revision 1.1 FIX64 by Klnmhjvb");
+}
+
+
+void PlayArenaMusic()
+{
+    Music(28, 100);
+}
+void PlayOgreMusic()
+{
+    Music(7, 100);
+}
+void MusicOff()
+{
+    MusicEvent();
+    if (CheckGameKorLanguage()) UniPrintToAll("맵의 음악이 꺼졌습니다.");
+    else UniPrintToAll("Background music has been turned off.");
+}
+void TimerSound(int count)
+{
+    if (count < 6)
+    {
+        int k;
+        for (k = 0; k < 6; k ++)
+        {
+            AudioEvent("DepletedWand", Waypoint("Arena1" + "Sound" + IntToString(k + 1)));
+        }
+        SecondTimerWithArg(1, count + 1, TimerSound);
+    }
+    else
+    {
+        GongSound(1);
+        FrameTimer(1, PlayArenaMusic);
+    }
+}
+void GongSound(int Arenanum)
+{
+    int var0;
+    for (var0 = 0; var0 < 6; var0 ++)
+    {
+        AudioEvent("BigGong", Waypoint("Arena" + IntToString(Arenanum) + "Sound" + IntToString(var0 + 1)));
+    }
+}
+void ResetSwitch1()
+{
+    NumberClassDoResetAll();
+}
+int PlayerClassAssign(int destPtr, int plrPtr, int pIndex)
+{
+    int unitId;
+
+    if (plrPtr)
+    {
+        unitId = GetMemory(plrPtr + 0x2c);
+        if (GetMemory(destPtr) ^ unitId)
+        {
+            UniPrintToAll(IntToString(pIndex));
+            PlayerClassOnInit(unitId, pIndex);
+            SetMemory(destPtr, unitId);
+            return 1;
+        }
+    }
+    else if (GetMemory(destPtr))
+    {
+        PlayerClassOnExit(pIndex);
+        SetMemory(destPtr, 0);
+        return 1;
+    }
+    return 0;
+}
+
+void PlayerClassMakeTable(int userTablePtr, int pTableOffset, int pIndex)
+{
+    if (pIndex < 32)
+    {
+        if (GetMemory(pTableOffset))
+        {
+            if (!NetClassMapDownloading(pIndex, pTableOffset))
+                PlayerClassAssign(userTablePtr + (4 * pIndex), GetMemory(pTableOffset), pIndex);
+        }
+        PlayerClassMakeTable(userTablePtr, pTableOffset + 0x12dc, pIndex + 1);
+    }
+}
+
+void PlayerClassOnAlive(int plrUnit, int pIndex)
+{
+    if (MaxHealth(plrUnit))
+    {
+        if (GetUnitFlags(plrUnit) & 0x40)
+        {
+            if (!PlayerClassObserverFlagCheck(pIndex))
+            {
+                PlayerClassObserverFlagSet(pIndex);
+                PlayerClassOnGoObserver(plrUnit, pIndex);
+            }
+        }
+        else if (CurrentHealth(plrUnit))
+        {
+            if (PlayerClassDeathFlagCheck(pIndex))
+            {
+                PlayerClassDeathFlagSet(pIndex);
+                PlayerClassOnRespawn(plrUnit, pIndex);
+            }
+        }
+        else
+        {
+            if (PlayerClassDeathFlagCheck(pIndex)) 1;
+            else
+            {
+                PlayerClassDeathFlagSet(pIndex);
+                PlayerClassOnDeath(plrUnit, pIndex);
+            }
+        }
+    }
+}
+
+void PlayerClassUserHandle(int userTablePtr, int pIndex)
+{
+    if (pIndex >= 0)
+    {
+        if (GetMemory(userTablePtr + (4 * pIndex)))
+            PlayerClassOnAlive(GetMemory(userTablePtr + (4 * pIndex)), pIndex);
+        PlayerClassUserHandle(userTablePtr, pIndex - 1);
+    }
+}
+
+void PlayerClassLoop(int userTablePtr)
+{
+    PlayerClassMakeTable(userTablePtr, 0x62f9e0, 0);    //Upscale
+    PlayerClassUserHandle(userTablePtr, 31);        //Downscale
+
+    FrameTimerWithArg(1, userTablePtr, PlayerClassLoop);
+}
+
+void LoopRun()
+{
+    ImportRemoveSneakDelay();
+    PlayerClassDieHandlerInit(913);
+    FrameTimerWithArg(1, PlayerClassUserPtrTable(), PlayerClassLoop);
+}
+
+int ImportUnitCollideFunc()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x14246C8B; arr[3] = 0x1824748B;
+        arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
+        arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
+        link = GetScrDataField(ImportUnitCollideFunc);
+    }
+    return link;
+}
+
+void TeleportPlayerToLocation(int pArg)
+{
+    int pIndex = pArg & 0xff, location = pArg >> 0x10;
+    int ptr = GetMemory(0x62f9e0 + (pIndex * 0x12dc));
+
+    if (ptr)
+        MoveObject(GetMemory(ptr + 0x2c), LocationX(location), LocationY(location));
+}
+
+void PlayerClassOnExit(int pIndex)
+{
+    PlayerClassFlags(pIndex, 1 << 0x1c);
+}
+
+void PlayerClassOnInit(int plrUnit, int pIndex)
+{
+    PlayerClassFlags(pIndex, 1);
+    DiePlayerHandlerEntry(plrUnit);
+    EmptyAll(plrUnit);
+    if (plrUnit ^ GetHost())
+        ClientEntry(plrUnit);
+    else
+        PlayerClassCommonWhenEntry();
+    Enchant(plrUnit, EnchantList(2), 0.5);
+    MoveObject(plrUnit, LocationX(82), LocationY(82));
+    FrameTimerWithArg(10, pIndex | (83 << 0x10), TeleportPlayerToLocation);
+    UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 지도에 입장하셨어요!");
+}
+
+void PlayerClassOnGoObserver(int plrUnit, int pIndex)
+{
+    if (PlayerClassDeathFlagCheck(pIndex))
+    {
+        PlayerClassDeathFlagSet(pIndex);
+    }
+}
+
+void PlayerClassOnCancelObserver(int plrUnit, int pIndex)
+{
+    EmptyAll(plrUnit);
+}
+
+void PlayerClassOnRespawn(int plrUnit, int pIndex)
+{
+    EmptyAll(plrUnit);
+    PlayerClassPickAll(plrUnit, GetScrDataField(PlayerClassItemTable) + (pIndex * 250 * 4), PlayerClassItemIndexTable(pIndex));
+    RepairAll(GetLastItem(plrUnit));
+    UniPrintToAll(PlayerIngameNick(plrUnit) + " 이 되살아남!");
+}
+
+void PlayerClassOnDeath(int plrUnit, int pIndex)
+{
+    int ptr = GetScrDataField(PlayerClassItemTable) + (pIndex * 250 * 4);
+    
+    PlayerClassItemIndexTable((PlayerClassAdvanceDropAll(plrUnit, ptr, GetLastItem(plrUnit), 0) << 0x10) | pIndex);
+    if (CheckGameKorLanguage()) UniPrintToAll(PlayerIngameNick(plrUnit) + " 님이 쓰러졌습니다.");
+    else UniPrintToAll(PlayerIngameNick(plrUnit) + " has been knocked out.");
+}
+
+void UnitNoCollide(int unit)
+{
+    SetUnitFlags(unit, GetUnitFlags(unit) ^ 0x40);
+}
+
+int DummyUnitCreate(string name, float locX, float locY)
+{
+    int unit = CreateObjectAt(name, locX, locY);
+
+    Damage(unit, 0, MaxHealth(unit) + 1, -1);
+    ObjectOff(unit);
+    Frozen(unit, 1);
+    return unit;
+}
+
+void StrBattleReady()
+{
+    int wp = Waypoint("BattleStartDisplay");
+	int arr[16], i, count = 0;
+	string name = "DrainManaOrb";
+	float pos_x = LocationX(wp), pos_y = LocationY(wp);
+
+	arr[0] = 504397374; arr[1] = 37894404; arr[2] = 1157907488; arr[3] = 72352900; arr[4] = 75794705; arr[5] = 17893536; arr[6] = 152172793; arr[7] = 151552322; 
+	arr[8] = 1094849056; arr[9] = 333451792; arr[10] = 303071492; arr[11] = 17049632; arr[12] = 673195040; arr[13] = 1679884804; arr[14] = 33804367; arr[15] = 2; 
+	
+	for (i = 0 ; i < 16 ; i ++)
+		count = DrawStrBattleReady(arr[i], name, count);
+	TeleportLocation(wp, pos_x, pos_y);
+}
+
+int DrawStrBattleReady(int arg, string name, int count)
+{
+	int i;
+    int wp = Waypoint("BattleStartDisplay");
+
+	for (i = 1 ; i > 0 && count < 496 ; i <<= 1)
+	{
+		if (i & arg)
+			CreateObject(name, wp);
+		if (count % 47 == 46)
+            TeleportLocationVector(wp, -92.0, 2.0);
+		else
+            TeleportLocationVector(wp, 2.0, 0.0);
+		count ++;
+	}
+	return count;
+}
+
+void StrBattleFight()
+{
+    int wp = Waypoint("BattleStartDisplay");
+	int arr[14], i, count = 0;
+	string name = "HealOrb";
+	float pos_x = LocationX(wp), pos_y = LocationY(wp);
+
+	arr[0] = 1913774462; arr[1] = 554705455; arr[2] = 35786818; arr[3] = 553918482; arr[4] = 1107370052; arr[5] = 310133792; arr[6] = 1145180111; arr[7] = 545555008; 
+	arr[8] = 1210321032; arr[9] = 1082688528; arr[10] = 4262148; arr[11] = 278431760; arr[12] = 1887506696; arr[13] = 17859090; 
+	for (i = 0 ; i < 14 ; i ++)
+		count = DrawStrBattleFight(arr[i], name, count);
+	TeleportLocation(wp, pos_x, pos_y);
+}
+
+int DrawStrBattleFight(int arg, string name, int count)
+{
+	int i;
+    int wp = Waypoint("BattleStartDisplay");
+
+	for (i = 1 ; i > 0 && count < 434 ; i <<= 1)
+	{
+		if (i & arg)
+			CreateObject(name, wp);
+		if (count % 43 == 42)
+            TeleportLocationVector(wp, -84.0, 2.0);
+		else
+            TeleportLocationVector(wp, 2.0, 0.0);
+		count ++;
+	}
+	return count;
+}
+
+void RemoveDotText(int sUnit)
+{
+    int exit = 0;
+
+    if (IsObjectOn(sUnit))
+    {
+        exit = GetDirection(sUnit);
+        Delete(sUnit);
+        if (exit)
+            return;
+        RemoveDotText(sUnit + 1);
+    }
+}
+
+void DisplayReady(int markUnit)
+{
+    int time = GetDirection(markUnit);
+    int sUnit = CreateObjectAt("ImaginaryCaster", GetObjectX(markUnit), GetObjectY(markUnit));
+
+    TeleportLocation(53, GetObjectX(sUnit), GetObjectY(sUnit));
+    StrBattleReady();
+    LookWithAngle(CreateObjectAt("ImaginaryCaster", GetObjectX(sUnit), GetObjectY(sUnit)), 1);
+    FrameTimerWithArg(time, sUnit, RemoveDotText);
+    UniPrintToAll(":::R.E.A.D.Y.:::");
+}
+
+void DisplayFight(int markUnit)
+{
+    int time = GetDirection(markUnit);
+    int sUnit = CreateObjectAt("ImaginaryCaster", GetObjectX(markUnit), GetObjectY(markUnit));
+
+    TeleportLocation(53, GetObjectX(sUnit), GetObjectY(sUnit));
+    StrBattleFight();
+    LookWithAngle(CreateObjectAt("ImaginaryCaster", GetObjectX(sUnit), GetObjectY(sUnit)), 1);
+    FrameTimerWithArg(time, sUnit, RemoveDotText);
+    UniPrintToAll(":::F.I.G.H.T.:::");
+}
+
+void SetWallAtLocation(int location, int stat)
+{
+    int xPos = FloatToInt(LocationX(location)), yPos = FloatToInt(LocationY(location));
+    int spX, spY, tx, ty, rx;
+
+    if (xPos > yPos) xPos += 23;
+    else             yPos += 23;
+    spX = (xPos + yPos - 22) / 46;
+    spY = (xPos - yPos) / 46;
+    tx = spX * 46;
+    ty = spY * 46;
+    rx = (tx + ty) / 2;
+    if (stat)
+        WallClose(Wall(rx / 23, (rx - ty) / 23));
+    else
+        WallOpen(Wall(rx / 23, (rx - ty) / 23));
+}
+
+void Part1GateSetLock(int stat)
+{
+    int i;
+
+    NoWallSound(1);
+    SetWallAtLocation(25, stat);
+    SetWallAtLocation(26, stat);
+    NoWallSound(0);
+    if (stat)
+    {
+        for (i = 0 ; i < 4 ; i ++)
+        {
+            TimerSound(1);
+            ObjectOff(Object("ChitChatting1"));
+            ObjectOff(Object("ChitChatting2"));
+            ObjectOff(Object("ChitChatting3"));
+            ObjectOff(Object("ChitChatting4"));
+            NoWallSound(1);
+            WallGroupClose(0);
+            NoWallSound(0);
+            LockDoor(Object("ArenaGate" + IntToString(i + 1)));
+            if (i < 2)
+                LockDoor(Object("ServiceDoor" + IntToString(i + 1)));
+        }
+    }
+    else
+    {
+        FrameTimer(1, PlayOgreMusic);
+        for (i = 0 ; i < 4 ; i ++)
+        {
+            ObjectOn(Object("ChitChatting1"));
+            ObjectOn(Object("ChitChatting2"));
+            ObjectOn(Object("ChitChatting3"));
+            ObjectOn(Object("ChitChatting4"));
+            NoWallSound(1);
+            WallGroupOpen(0);
+            NoWallSound(0);
+            UnlockDoor(Object("ArenaGate" + IntToString(i + 1)));
+            if (i < 2)
+                UnlockDoor(Object("ServiceDoor" + IntToString(i + 1)));
+        }
+    }
+}
+
+int WatchClassCamCreate(int pUnit, int sUnit, int exitPosUnit)
+{
+    int watch = DummyUnitCreate("Bomber", GetObjectX(sUnit), GetObjectY(sUnit));
+
+    UnitNoCollide(CreateObjectAt("ImaginaryCaster", GetObjectX(watch), GetObjectY(watch)) - 1);
+    CreateObjectAt("ImaginaryCaster", GetObjectX(exitPosUnit), GetObjectY(exitPosUnit));
+    LookWithAngle(watch + 1, GetPlayerIndex(pUnit));
+    SetOwner(pUnit, watch);
+    return watch;
+}
+
+void WatchClassCamDelete(int cam)
+{
+    Delete(cam);
+    Delete(cam + 1);
+    Delete(cam + 2);
+}
+
+void WatchClassUserBeffOn(int user, int location)
+{
+    UnitSetEnchantTime(user, 23, 0);
+    UnitSetEnchantTime(user, 25, 0);
+    UnitSetEnchantTime(user, 29, 0);
+    if (location)
+        MoveObject(user, LocationX(location), LocationY(location));
+}
+
+void WatchClassUserBuffOff(int user, int outPosUnit)
+{
+    if (CurrentHealth(user))
+    {
+        EnchantOff(user, EnchantList(23));
+        EnchantOff(user, EnchantList(25));
+        EnchantOff(user, EnchantList(29));
+        if (outPosUnit)
+            MoveObject(user, GetObjectX(outPosUnit), GetObjectY(outPosUnit));
+    }
+}
+
+int WatchClassCheckFps(int cam)
+{
+    int cFps = GetMemory(0x84ea04);
+
+    if (MathAbs(cFps - ToInt(GetObjectZ(cam + 1))) < 27)
+        return 1;
+    else
+    {
+        Raise(cam + 1, cFps);
+        return 0;
+    }
+}
+
+void WatchClassAliveLoop(int cam)
+{
+    int owner = GetOwner(cam), pIndex = GetDirection(cam + 1);
+    int alive = 1;
+
+    while (MaxHealth(owner))
+    {
+        if (GetUnitFlags(owner) & 0x40)
+            1;
+        else if (CurrentHealth(owner))
+        {
+            if (CheckWatchFocus(owner))
+                PlayerLook(owner, cam);
+            if (CheckPlayerInput(owner) == 6)
+            {
+                if (WatchClassCheckFps(cam))
+                    alive = 0;
+                else
+                {
+                    PlayerLook(owner, cam);
+                    UniPrint(owner, "관중상태에서 나오려면 마우스 왼쪽을 두번 클릭 하세요");
+                }
+            }
+            if (alive)
+            {
+                FrameTimerWithArg(1, cam, WatchClassAliveLoop);
+                break;
+            }
+        }
+        if (PlayerClassCamUserFlagCheck(pIndex))
+        {
+            PlayerClassCamUserFlagSet(pIndex);
+            WatchClassUserBuffOff(owner, cam + 2);
+        }
+        WatchClassCamDelete(cam);
+        break;
+    }
+}
+
+void WatchClassStart(int pUnit, int pIndex, int baseLocation, int calc)
+{
+    int watch;
+
+    if (CurrentHealth(pUnit))
+    {
+        if (PlayerClassCamUserFlagCheck(pIndex))
+            return;
+        watch = WatchClassCamCreate(pUnit, calc, calc + 9);
+        PlayerClassCamUserFlagSet(pIndex);
+        WatchClassUserBeffOn(pUnit, baseLocation + (pIndex % 8));
+        FrameTimerWithArg(1, watch, WatchClassAliveLoop);
+    }
+}
+
+int ReadyUserCheck(int subCalc)
+{
+    int user = ToInt(GetObjectZ(subCalc));
+
+    if (user)
+    {
+        if (GetUnitFlags(user) & 0x40)
+            return -1;
+        if (CurrentHealth(user))
+            return 1;
+        return -1;
+    }
+    return 0;
+}
+
+void DuelUserPreProcess(int user, int calc, int index)
+{
+    int pIndex = GetPlayerIndex(user);
+
+    if (CurrentHealth(user))
+    {
+        if (!PlayerClassDuelFlagCheck(pIndex))
+        {
+            PlayerClassDuelFlagSet(pIndex);
+            MoveObject(user, GetObjectX(calc + index), GetObjectY(calc + index));
+            Enchant(user, EnchantList(25), 5.0);
+            Enchant(user, EnchantList(23), 5.0);
+            Enchant(user, EnchantList(21), 5.0);
+            LookAtObject(user, calc);
+        }
+    }
+}
+
+void SingleUserOutToRing(int plrUnit, int calc, int location)
+{
+    int pIndex;
+
+    if (!plrUnit) return;
+    if (CurrentHealth(plrUnit))
+    {
+        pIndex = GetPlayerIndex(plrUnit);
+        if (PlayerClassDuelFlagCheck(pIndex))
+            return;
+        if (Distance(GetObjectX(calc), GetObjectY(calc), GetObjectX(plrUnit), GetObjectY(plrUnit)) < 480.0)
+            WatchClassStart(plrUnit, pIndex, location, calc);
+            //MoveObject(plrUnit, LocationX(location), LocationY(location));
+    }
+}
+
+void AnotherUserOutToRing(int userTablePtr, int calc)
+{
+    int i, location = GetDirection(calc + 9);
+
+    for (i = 31 ; i >= 0 ; i --)
+        SingleUserOutToRing(GetMemory(userTablePtr + (i * 4)), calc, location);
+}
+
+void BuffResetFlag(int user)
+{
+    int pIndex;
+
+    if (MaxHealth(user))
+    {
+        pIndex = GetPlayerIndex(user);
+        if (PlayerClassDuelFlagCheck(pIndex))
+            PlayerClassDuelFlagSet(pIndex);
+    }
+}
+
+int BattleUserCheck(int subCalc)
+{
+    int user = ToInt(GetObjectZ(subCalc));
+
+    while (user)
+    {
+        if (GetUnitFlags(user) & 0x40)
+            1;
+        else if (CurrentHealth(user))
+            return 1;
+        BuffResetFlag(user);
+        break;
+    }
+    Raise(subCalc, 0);
+    return 0;
+}
+
+void BattleEnd(int calc)
+{
+    int resetFc = ToInt(GetObjectZ(calc + 10));
+
+    BattleClassUserRest(calc + 1, calc); //added 16 june 2020 17:09
+    BattleClassUserRest(calc + 2, calc); //added 16 june 2020
+    RemoveBattleReadyObj(calc);
+    FrameTimerWithArg(150, calc, resetFc);
+    if (CheckGameKorLanguage()) UniPrintToAll("경기가 종료되었습니다.");
+    else UniPrintToAll("The game has been finished.");
+    UniPrintToAll("Debug::EndBattle");
+}
+
+void BattleResultShowWinner(int subCalc)
+{
+    playing = 0;
+    int plrUnit = ToInt(GetObjectZ(subCalc));
+
+    if (plrUnit)
+    {
+        if (CurrentHealth(plrUnit))
+        {
+            MoveObject(plrUnit, GetObjectX(subCalc), GetObjectY(subCalc));
+            RepairAll(GetLastItem(plrUnit));
+            if (CheckGameKorLanguage())
+            {
+                UniChatMessage(plrUnit, "내가 이겼소!", 180);
+                UniPrint(plrUnit, PlayerIngameNick(plrUnit) + ", 당신이 승리자입니다!");
+            }
+            else
+            {
+                UniChatMessage(plrUnit, "I won this battle!", 180);
+                UniPrint(plrUnit, PlayerIngameNick(plrUnit) + ", you are the winner of this game!");
+            }
+        }
+        else
+        {
+            if (CheckGameKorLanguage())
+            {
+                UniPrintToAll("이번 경기의 우승자는 게임을 나간 플레이어 입니다!!");
+            }
+            else
+            {
+                UniPrintToAll("The winner of the game is the player who left the server.");
+            }
+        }
+        PlaySoundAround(subCalc, 902);
+        DeleteObjectTimer(CreateObjectAt("LevelUp", GetObjectX(subCalc), GetObjectY(subCalc)), 90);
+        Effect("WHITE_FLASH", GetObjectX(subCalc), GetObjectY(subCalc), 0.0, 0.0);
+        UniPrintToAll("Debug::ShowGameResult");
+    }
+}
+
+void BattleResult(int calc)
+{
+    int res = GetDirection(calc);
+
+    UniPrintToAll("DebugPrint::BattleResult(int calc)::At::" + IntToString(GetUnit1C(calc + 9)));
+    CallFunctionWithArg(GetUnit1C(calc + 9), 0);
+    while (1)
+    {
+        if (res == 0)
+        {
+            if (CheckGameKorLanguage()) UniPrintToAll("무승부! 동점입니다.");
+            else UniPrintToAll("Tied!");
+        }
+        else if (res == 1)
+        {
+            BattleClassDispUpdate(calc); //added
+            FrameTimerWithArg(3, calc + 1, BattleResultShowWinner);
+            FrameTimerWithArg(3, calc + 2, BattleResultShowWinner);
+            break;
+        }
+        else if (res == 2)
+        {
+            if (CheckGameKorLanguage()) UniPrintToAll("대전 시간 초과! 무승부 처리됩니다.");
+            else UniPrintToAll("Dueling time over, tied.");
+        }
+        break;
+    }
+    FrameTimerWithArg(60, calc, BattleEnd);
+}
+
+void BattleUserFreez(int subCalc)
+{
+    int pIndex, user = ToInt(GetObjectZ(subCalc));
+
+    if (MaxHealth(user))
+    {
+        pIndex = GetPlayerIndex(user);
+        if (PlayerClassDuelFlagCheck(pIndex))
+            PlayerClassDuelFlagSet(pIndex);
+        if (CurrentHealth(user))
+        {
+            Enchant(user, EnchantList(25), 5.0);
+            Enchant(user, EnchantList(23), 5.0);
+        }
+    }
+}
+
+void BattleMainLoop(int calc)
+{
+    int elpTime = ToInt(GetObjectZ(calc)), res = 0;
+
+    while (IsObjectOn(calc))
+    {
+        playing = 1;
+        res += BattleUserCheck(calc + 1);
+        res += BattleUserCheck(calc + 2);
+        if (res)
+        {
+            if (res == 2)
+            {
+                if (elpTime)
+                {
+                    FrameTimerWithArg(1, calc, BattleMainLoop);
+                    Raise(calc, elpTime - 1);
+                    break;
+                }
+            }
+        }
+        LookWithAngle(calc, res);
+        BattleUserFreez(calc + 1);
+        BattleUserFreez(calc + 2);
+        FrameTimerWithArg(35, calc, BattleResult);
+        if (CheckGameKorLanguage()) UniPrintToAll("1 대 1 아레나에서 경기가 종료되었습니다. 점수가 카운트 됩니다.");
+        else UniPrintToAll("The game has just been over on one of the Arena. The score would be counted");
+        break;
+    }
+}
+
+void StartDuel(int calc)
+{
+    int unit = CreateObjectAt("InvisibleLightBlueLow", GetObjectX(calc) -30.0, GetObjectY(calc) - 30.0);
+
+    LookWithAngle(unit, 30);
+    DeleteObjectTimer(unit, 200);
+    DuelUserPreProcess(ToInt(GetObjectZ(calc + 1)), calc, 1);
+    DuelUserPreProcess(ToInt(GetObjectZ(calc + 2)), calc, 2);
+    CallFunctionWithArg(GetUnit1C(calc + 9), 1);    //Pass
+
+    PlaySoundAround(calc, 777);
+    Raise(calc, 30 * 60);
+    AnotherUserOutToRing(PlayerClassUserPtrTable(), calc);
+    FrameTimerWithArg(150, calc, BattleMainLoop);
+    FrameTimerWithArg(30, unit, DisplayReady);
+    FrameTimerWithArg(150, unit, DisplayFight);
+    FrameTimerWithArg(1, calc, ToInt(GetObjectZ(calc + 9)));
+    if (CheckGameKorLanguage()) UniPrintToAll("플레이어 매칭이 완료되었습니다. 곧 경기를 시작합니다.");
+    else UniPrintToAll("Players matched, soon the game would start.");
+    UniPrintToAll("Debug::MatchInfo>> " + PlayerIngameNick(ToInt(GetObjectZ(calc + 1))) + " vs " + PlayerIngameNick(ToInt(GetObjectZ(calc + 2))));
+}
+
+void BattleReadyLoop(int calc)
+{
+    int durate = GetDirection(calc), res = 0, temp, i;
+    int resetFc;
+
+    while (IsObjectOn(calc))
+    {
+        for (i = 0 ; i < 2 ; i ++)
+        {
+            temp = ReadyUserCheck(calc + i + 1);
+            if (temp < 0) durate = 0;
+            else if (temp) res ++;
+        }
+        if (durate)
+        {
+            if (res == 2)
+            {
+                FrameTimerWithArg(1, calc, StartDuel);
+                break;
+            }
+            else
+            {
+                FrameTimerWithArg(1, calc, BattleReadyLoop);
+                LookWithAngle(calc, durate - 1);
+            }
+            break;
+        }
+        resetFc = ToInt(GetObjectZ(calc + 10));
+        RemoveBattleReadyObj(calc);
+        FrameTimerWithArg(150, calc, resetFc);
+        break;
+    }
+}
+
+int BattleClassSameUserCheck(int calc, int index, int pUnit)
+{
+    if (index) index -= 1;
+    index = ((index + 1) % 2) + 1;
+    return pUnit ^ ToInt(GetObjectZ(calc + index));
+}
+
+void StartBeaconPush()
+{
+    int index = GetDirection(self), calc;
+
+    if (MaxHealth(self))
+    {
+        calc = ToInt(GetObjectZ(GetTrigger() + 1));
+        if (CurrentHealth(other) && IsPlayerUnit(other))
+        {
+            if (BattleClassSameUserCheck(calc, index, GetCaller()))
+            {
+                Raise(calc + index, GetCaller());
+                GreenSparkFx(GetObjectX(self), GetObjectY(self));
+                Delete(self);
+                Delete(GetTrigger() + 1);
+                Delete(GetTrigger() + 2);
+                if (!IsObjectOn(calc + 1))
+                {
+                    ObjectOn(calc + 1);
+                    ObjectOn(calc + 2);
+                    FrameTimerWithArg(1, calc, BattleReadyLoop);
+                }
+            }
+        }
+    }
+}
+
+int BattleStartBeacon(int location, int arg0)
+{
+    int index = arg0 >> 0x10, cSub = arg0 & 0xff;
+    int beacon = DummyUnitCreate("Bomber", LocationX(location), LocationY(location));
+
+    Raise(CreateObjectAt("ImaginaryCaster", GetObjectX(beacon), GetObjectY(beacon)), beacon - cSub);
+    UnitNoCollide(CreateObjectAt("TeleportWake", GetObjectX(beacon), GetObjectY(beacon)));
+    Frozen(beacon + 2, 1);
+    LookWithAngle(beacon, index);
+    SetCallback(beacon, 9, StartBeaconPush);
+    return beacon;
+}
+
+void RemoveBattleReadyObj(int calc)
+{
+    int i;
+
+    for (i = 0 ; i < 11 ; i ++)
+        Delete(calc + i);
+}
+
+void PlacePart1ReadyInit(int prevCalc)
+{
+    int calc;
+
+    if (IsObjectOn(prevCalc)) return;
+    calc = CreateObjectAt("ImaginaryCaster", LocationX(12), LocationY(12));
+
+    ObjectOff(CreateObjectAt("ImaginaryCaster", LocationX(13), LocationY(13)));
+    ObjectOff(CreateObjectAt("ImaginaryCaster", LocationX(15), LocationY(15)));
+    BattleStartBeacon(13, (1 << 0x10) | 3);
+    BattleStartBeacon(15, (2 << 0x10) | 6);
+    LookWithAngle(calc, 240);
+    LookWithAngle(CreateObjectAt("ImaginaryCaster", LocationX(2), LocationY(2)), 35); //+9: watcher base location, watcher exit pos
+    Raise(calc + 9, BattleClassUpdatePickets);
+    SetUnit1C(calc + 9, Part1GateSetLock);
+    Raise(CreateObjectAt("ImaginaryCaster", GetObjectX(calc + 9), GetObjectY(calc + 9)), PlacePart1ReadyInit);
+    SetUnit1C(calc + 1, DispClass[0]);
+    SetUnit1C(calc + 2, DispClass[1]);
+    FrameTimer(1, ResetPicketName);
+}
+
+void ResetPicketName()
+{
+    if (CheckGameKorLanguage())
+    {
+        RegistSignMessage(Object("Board1"), "아레나 A: 전투 상대 등록되지 않음");
+        RegistSignMessage(Object("Board2"), "아레나 A: 전투 상대 등록되지 않음");
+    }
+    else
+    {
+        RegistSignMessage(Object("Board1"), "Arena A: Player hasn't registered yet");
+        RegistSignMessage(Object("Board2"), "Arena A: Player hasn't registered yet");  
+    }
+}
+
+void SetPicketName(int subCalc, int picObj)
+{
+    int plrUnit = ToInt(GetObjectZ(subCalc));
+
+    if (CurrentHealth(plrUnit))
+    {
+        if (CheckGameKorLanguage()) RegistSignMessage(picObj, "참가자: " + PlayerIngameNick(plrUnit));
+        else RegistSignMessage(picObj, "Player: " + PlayerIngameNick(plrUnit));
+    }
+}
+
+void BattleClassUpdatePickets(int calc)
+{
+    SetPicketName(calc + 1, Object("Board1"));
+    SetPicketName(calc + 2, Object("Board2"));
+}
+
+int NumberData(int num)
+{
+    int data[10];
+
+    if (!data[0])
+    {
+        data[0] = 110729622; data[1] = 239354980; data[2] = 252799126; data[3] = 110643350; data[4] = 143194521;
+        data[5] = 126382367; data[6] = 110719382; data[7] = 71583903; data[8] = 110717334; data[9] = 110684566;
+        return 0;
+    }
+    return data[num];
+}
+
+void DisplayNumber(int orb, int loc, int bytes)
+{
+	float xPos = LocationX(loc), yPos = LocationY(loc);
+	int idx = 0, k, wp = ToInt(GetObjectZ(orb - 1));
+
+	for (k = 1 ; !(k & 0x10000000) ; k <<= 1)
+	{
+		if (bytes & k)
+			MoveObject(orb + idx, xPos, yPos);
+		else
+			MoveObject(orb + idx, LocationX(wp) + FloatTable(idx), LocationY(wp));
+		if (idx % 4 == 3)
+		{
+            xPos -= 8.0;
+            yPos -= 4.0;
+		}
+		else
+        {
+			xPos += 2.0;
+            yPos += 2.0;
+        }
+		idx ++;
+	}
+}
+
+int NumberOrb(int wp)
+{
+	int ptr, k;
+
+	if (wp)
+	{
+		ptr = CreateObject("InvisibleLightBlueHigh", wp) + 1;
+		for (k = 0 ; k < 28 ; k ++)
+		{
+			ObjectOff(CreateObject("ManaBombOrb", wp));
+			MoveWaypoint(wp, LocationX(wp) + 1.0, LocationY(wp));
+		}
+		Raise(ptr - 1, wp);
+	}
+	return ptr;
+}
+
+float FloatTable(int num)
+{
+	float arr[28], count;
+	int k;
+
+	if (num < 0)
+	{
+		count = 27.0;
+		for (k = 27 ; k >= 0 ; k --)
+		{
+			arr[k] = count;
+			count -= 1.0;
+		}
+		StopScript(0);
+	}
+	return arr[num];
+}
+
+int NumberClassCreate(int location, int dispHighLoc, int dispLowLoc)
+{
+    int nData;
+
+    if (location)
+    {
+        nData = NumberOrb(location);
+        NumberOrb(location);
+        LookWithAngle(nData, dispHighLoc);
+        LookWithAngle(nData + 1, dispLowLoc);
+        LookWithAngle(nData + 2, 0);
+    }
+    return nData;
+}
+
+void NumberClassDisplay(int nData)
+{
+    int lowLoc = GetDirection(nData), highLoc = GetDirection(nData + 1);
+    int number = GetDirection(nData + 2) % 100;
+
+    DisplayNumber(nData, lowLoc, NumberData(number % 10));
+    DisplayNumber(nData + 29, highLoc, NumberData((number / 10) % 10));
+}
+
+void NumberClassIncrease(int nData)
+{
+    LookWithAngle(nData + 2, GetDirection(nData + 2) + 1);
+}
+
+void NumberClassReset(int nData)
+{
+    LookWithAngle(nData + 2, 0);
+}
+
+void BattleClassDispUpdate(int calc)
+{
+    int pos = 0;
+
+    if (ToInt(GetObjectZ(calc + 1)))
+        pos = pos | 1;
+    else if (ToInt(GetObjectZ(calc + 2)))
+        pos = pos | 2;
+    if (pos)
+    {
+        NumberClassIncrease(GetUnit1C(calc + pos));
+        NumberClassDisplay(GetUnit1C(calc + pos));
+    }
+}
+
+void NumberClassDoResetAll()
+{
+    int left = DispClass[0], right = DispClass[1];
+
+    NumberClassReset(left);
+    NumberClassReset(right);
+    NumberClassDisplay(left);
+    NumberClassDisplay(right);
+}
+void NumberClassDoResetAll2()
+{
+    int left = DispClass[2], right = DispClass[3];
+
+    NumberClassReset(left);
+    NumberClassReset(right);
+    NumberClassDisplay(left);
+    NumberClassDisplay(right);
+}
+
+void NumberClassInit()
+{
+    int num1 = Waypoint("LeftNum1");
+    int num2 = Waypoint("LeftNum2");
+    int num3 = Waypoint("RightNum1");
+    int num4 = Waypoint("RightNum2");
+
+    NumberData(-1);
+    FloatTable(-1);
+    DispClass[0] = NumberClassCreate(19, num2, num1);
+    DispClass[1] = NumberClassCreate(20, num4, num3);
+    NumberClassDisplay(DispClass[0]);
+    NumberClassDisplay(DispClass[1]);
+}
+void ApplyPotionToPlayer(int items)
+{
+    int owner = GetOwner(items), exit = 0;
+
+    owner *= (CurrentHealth(owner) > 0);
+    while (IsObjectOn(items))
+    {
+        exit = GetDirection(items);
+        if (owner)
+            Pickup(owner, items);
+        else
+            Delete(items);
+        if (exit)
+            break;
+        items ++;
+    }
+}
+int BattleClassUserPotionCount(int user)
+{
+    int inv = GetLastItem(user), count = 0;
+
+    while (inv)
+    {
+        if (GetUnitThingID(inv) == 636)
+            count ++;
+        inv = GetPreviousItem(inv);
+    }
+    return count;
+}
+int BattleClassUserBluePotionCount(int user)
+{
+    int inv = GetLastItem(user), count = 0;
+
+    while (inv)
+    {
+        if (GetUnitThingID(inv) == 638)
+            count ++;
+        inv = GetPreviousItem(inv);
+    }
+    return count;
+}
+int BattleClassUserCurePotionCount(int user)
+{
+    int inv = GetLastItem(user), count = 0;
+
+    while (inv)
+    {
+        if (GetUnitThingID(inv) == 631)
+            count ++;
+        inv = GetPreviousItem(inv);
+    }
+    return count;
+}
+void BattleClassApplyPotion(int user, int pCount)
+{
+    int needPotion = 3 - pCount, pdct, i;
+
+    if (needPotion > 0)
+    {
+        pdct = CreateObjectAt("RedPotion", GetObjectX(user), GetObjectY(user));
+        for (i = 0 ; i < needPotion - 1 ; i ++)
+            CreateObjectAt("RedPotion", GetObjectX(pdct), GetObjectY(pdct));
+        SetOwner(user, pdct);
+        LookWithAngle(pdct + i, 1);
+        FrameTimerWithArg(1, pdct, ApplyPotionToPlayer);
+    }
+}
+void BattleClassApplyBluePotion(int user, int pCount)
+{
+    int needPotion = 3 - pCount, pdct, i;
+
+    if (needPotion > 0)
+    {
+        pdct = CreateObjectAt("BluePotion", GetObjectX(user), GetObjectY(user));
+        for (i = 0 ; i < needPotion - 1 ; i ++)
+            CreateObjectAt("BluePotion", GetObjectX(pdct), GetObjectY(pdct));
+        SetOwner(user, pdct);
+        LookWithAngle(pdct + i, 1);
+        FrameTimerWithArg(1, pdct, ApplyPotionToPlayer);
+    }
+}
+void BattleClassApplyCurePotion(int user, int pCount)
+{
+    int needPotion = 3 - pCount, pdct, i;
+
+    if (needPotion > 0)
+    {
+        pdct = CreateObjectAt("CurePoisonPotion", GetObjectX(user), GetObjectY(user));
+        for (i = 0 ; i < needPotion - 1 ; i ++)
+            CreateObjectAt("CurePoisonPotion", GetObjectX(pdct), GetObjectY(pdct));
+        SetOwner(user, pdct);
+        LookWithAngle(pdct + i, 1);
+        FrameTimerWithArg(1, pdct, ApplyPotionToPlayer);
+    }
+}
+
+int IsPoisonedUnit(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x21c) & 0xff;
+    return 0;
+}
+
+void UnitPoisonOff(int unit)
+{
+    while (IsPoisonedUnit(unit))
+        CastSpellObjectObject("SPELL_CURE_POISON", unit, unit);
+}
+
+void BattleClassUserRest(int subCalc, int calc)
+{
+    int plrUnit = ToInt(GetObjectZ(subCalc)), pCount;
+
+    if (CurrentHealth(plrUnit) && IsVisibleTo(calc, plrUnit))
+    {
+        UnitPoisonOff(plrUnit);
+        RestoreHealth(plrUnit, 255);
+        BattleClassApplyPotion(plrUnit, BattleClassUserPotionCount(plrUnit));
+        if (MaxHealth(plrUnit) != 150) BattleClassApplyBluePotion(plrUnit, BattleClassUserBluePotionCount(plrUnit));
+        BattleClassApplyCurePotion(plrUnit, BattleClassUserCurePotionCount(plrUnit));
+    }
+}
+
+void UnlockBanquetDoor()
+{
+    if (IsCaller(GetHost()))
+    {
+        ObjectOff(self);
+        UnlockDoor(Object("BanquetDoor"));
+        if (CheckGameKorLanguage()) UniPrintToAll("시상식장 문이 열렸습니다.");
+        else UniPrintToAll("The banquet room has been opened.");
+    }
+    else
+    {
+        PlaySoundAround(other, 925);
+        if (CheckGameKorLanguage()) UniPrint(other, "호스트 플레이어만 시상식장 문을 열 수 있습니다.");
+        else UniPrint(other, "Only the host player can open the door.");
+    }
+}
+
+void UnlockExtedDuel()
+{
+    if (IsCaller(GetHost()))
+    {
+        ObjectOff(self);
+        UnlockDoor(Object("MapDoor"));
+        if (CheckGameKorLanguage()) UniPrintToAll("맵을 이동합니다.");
+        else UniPrintToAll("This action would change the current map.");
+        NoWallSound(true);
+        WallOpen(Wall(141, 151));
+        NoWallSound(false);
+    }
+    else
+    {
+        PlaySoundAround(other, 925);
+        if (CheckGameKorLanguage()) UniPrint(other, "호스트 플레이어만 맵을 바꿀 권한이 있습니다.");
+        else UniPrint(other, "Only the host player can change the map.");
+    }
+}
+
+void CongratsWord(int plrUnit)
+{    
+    Enchant(plrUnit, EnchantList(25), 5.0);
+    int var0;
+    for (var0 = 0; var0 < 6; var0 ++)
+    {
+        AudioEvent("ArcheryContestBegins", Waypoint("BanquetRoomSound" + IntToString(var0 + 1)));
+    }
+    PlaySoundAround(plrUnit, 917);
+    HorGivesTrophy();
+    if (CheckGameKorLanguage()) UniPrintToAll("축하합니다! " + PlayerIngameNick(plrUnit) + " 님이 토너먼트 최종 우승자가 되었습니다!");
+    else UniPrintToAll("Congratualations! " + PlayerIngameNick(plrUnit) + " has become a final winner of the tournament!");
+    FrameTimer(150, WidescreenOff);
+}
+
+void StartAwardCeremony()
+{
+    ObjectOff(Object("AwardTrigger"));
+    winner = GetCaller();
+    WideScreen(true);
+    LookAtObject(Object("Horrendous"), winner);
+    int var0;
+    for (var0 = 0; var0 < 6; var0 ++)
+    {
+        AudioEvent("NullifyOn", Waypoint("BanquetRoomSound" + IntToString(var0 + 1)));
+    }
+    if (CheckGameKorLanguage()) UniPrintToAll("곧 시상식이 시작됩니다. 우승자는 단상에 서 남쪽을 바라보십시오.");
+    else UniPrintToAll("Soon the award ceremony would start. The winner, please stand on the platform and look south.");
+    FrameTimerWithArg(150, winner, CongratsWord);
+}
+
+void HorGivesTrophy()
+{
+    if (CheckGameKorLanguage()) UniChatMessage(Object("Horrendous"), "토너먼트 우승을 축하하오! 젊은 후보생. 이 트로피를 받으시오!", 150);
+    else UniChatMessage(self, "Congratulations, young candidate. Take this trophy!", 150);
+}
+
+void WidescreenOff()
+{
+    WideScreen(false);
+}
+
+void ResetAwardTrigger()
+{
+    ObjectOn(Object("AwardTrigger"));
+    if (CheckGameKorLanguage()) UniPrint(other, "시상식 이벤트를 초기화합니다.");
+    else UniPrint(other, "The lever initialize award events.");
+}
+
+void HorNullEnd()
+{
+    return;
+}
+
+int HorrendousBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1920102216; arr[1] = 1868852837; arr[2] = 29557; arr[16] = 100000; arr[17] = 1000; 
+		arr[18] = 1000; arr[19] = 120; arr[20] = 1035489772; arr[21] = 1049918177; arr[24] = 1069547520; 
+		arr[25] = 1; arr[26] = 9; arr[27] = 5; arr[28] = 1109393408; arr[29] = 99; 
+		arr[54] = 4; arr[59] = 5542784; arr[60] = 1386; arr[61] = 46907648; 
+        link = GetScrDataField(HorrendousBinTable);
+	}
+	return link;
+}
+
+void HorrendousSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1080452710);
+		SetMemory(ptr + 0x224, 1080452710);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 0);
+		SetMemory(GetMemory(ptr + 0x22c), 5000);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 5000);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, HorrendousBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 1035489772);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1049918177);
+	}
+}
+
+void OblivionOrbGet()
+{
+    PlaySoundAround(other, 66);
+    Effect("SMOKE_BLAST", LocationX(Waypoint("OblivionWP")), LocationY(Waypoint("OblivionWP")), 0.0, 0.0);
+    OblivionCreate(170);
+    ObjectOff(self);
+}
+
+void NPCImmortal()
+{
+    RestoreHealth(self, 300);
+}
+
+void NPCMortal()
+{
+    return;
+}
+
+int FixCallOpcode(int curAddr, int targetAddr)
+{
+    SetMemory(curAddr + 1, targetAddr - curAddr - 5);
+}
+
+int ImagePtrFromID(int imgId)
+{
+    return GetMemory(0x694864) + (12 * imgId);
+}
+
+int ImportStreamCopy()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50515756; arr[1] = 0xDB6247E8; arr[2] = 0xE8C88BFF; arr[3] = 0xFFDB6240; arr[4] = 0x39E8F88B; arr[5] = 0x8BFFDB62; arr[6] = 0x58A5F3F0; arr[7] = 0xC35E5F59;
+        link = GetScrDataField(ImportStreamCopy);
+        FixCallOpcode(link + 4, 0x507250);
+        FixCallOpcode(link + 0xb, 0x507250);
+        FixCallOpcode(link + 0x12, 0x507250);
+    }
+    return link;
+}
+
+void StreamCopy(int src, int dst, int len)
+{
+    int temp = GetMemory(0x5c3320);
+
+    SetMemory(0x5c3320, ImportStreamCopy());
+    GroupRunAway(src, dst, len);
+    SetMemory(0x5c3320, temp);
+}
+
+int ImageResourceDrawFunctionFix(int bptr)
+{
+    int arr[58];
+
+    arr[0] = 0x83EC8B55; arr[1] = 0x8B5608EC; arr[2] = 0x358B0845; arr[3] = 0x0069F224; arr[4] = 0x8BFC4589; arr[5] = 0x348B6C40; arr[6] = 0xF8758986;
+    arr[7] = 0x5D5350A1; arr[8] = 0x60768B00; arr[9] = 0x1374F039; arr[10] = 0xB8F8758B; arr[11] = 0x004BCC20; arr[12] = 0x8B584689; arr[13] = 0x4689FC75;
+    arr[14] = 0x5EC03158; arr[15] = 0x5D08C483; arr[16] = 0x909090C3; arr[17] = 0x83EC8B55; arr[18] = 0x8B5620EC; arr[19] = 0xE8560C75; arr[20] = 0xFFFFFFAC;
+    arr[21] = 0x8504C483; arr[22] = 0x8B2274C0; arr[23] = 0xC0850846; arr[24] = 0x31561B74; arr[25] = 0x708B66F6; arr[26] = 0x4860A108; arr[27] = 0x348D0069;
+    arr[28] = 0xB0048DF6; arr[29] = 0x8BF04589; arr[30] = 0xEC458900; arr[31] = 0xE445895E; arr[32] = 0x3474C085; arr[33] = 0x896C468B; arr[34] = 0xB68BF445;
+    arr[35] = 0x00000130; arr[36] = 0x8904768B; arr[37] = 0x068BFC75; arr[38] = 0x8BF84589; arr[39] = 0x69F22435; arr[40] = 0xF4458B00; arr[41] = 0x8B86348D;
+    arr[42] = 0x74468B36; arr[43] = 0x89F0758B; arr[44] = 0xFC458B06; arr[45] = 0x3089F631; arr[46] = 0x8B08758D; arr[47] = 0xFF500446; arr[48] = 0xBA96E836;
+    arr[49] = 0xC483FFD6; arr[50] = 0x458B5008; arr[51] = 0x74C085E4; arr[52] = 0xFC458B10; arr[53] = 0x89F8758B; arr[54] = 0xF0458B30; arr[55] = 0x89EC758B;
+    arr[56] = 0x835E5830; arr[57] = 0xC35D20C4;
+    StreamCopy(GetScrDataField(ImageResourceDrawFunctionFix) + 4, bptr, 58);
+    return bptr + 0x44;
+}
+
+void ApplyImageResourceFix(int thingId, int rscPtr, int drawF)
+{
+    int chandle = GetMemory(0x5d5350);
+    int tPtr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
+
+    //SetMemory(tPtr + 0x54, chandle);
+    SetMemory(tPtr + 0x60, chandle);
+    SetMemory(tPtr + 0x58, drawF);
+    SetMemory(tPtr + 0x74, rscPtr);
+}
+
+void InnerImageSwap(int offset, int subOffset, int imgId)
+{
+    int ptr = GetMemory(GetMemory(offset) + subOffset);
+    int imgPtr = GetMemory(ptr + 92);
+    SetMemory(ptr + 116, imgId);
+
+    if (GetMemory(imgPtr) == 0x10)
+    {
+        SetMemory(imgPtr, 0x08);
+        SetMemory(ptr + 88, 0x4bcc20);
+        MemFree(GetMemory(imgPtr + 4));
+    }
+    SetMemory(imgPtr + 4, ImagePtrFromID(imgId));
+}
+
+int ImportMemAlloc()
+{
+    int arr[7], link;
+
+    if (!link)
+    {
+        arr[0] = 0x49E85055; arr[1] = 0x50FFDB62; arr[2] = 0xCB2553E8; arr[3] = 0x1DE850FF; arr[4] = 0x83FFDB62; arr[5] = 0x5D5808C4; arr[6] = 0x909090C3;
+        link = GetScrDataField(ImportMemAlloc);
+        FixCallOpcode(link + 2, 0x507250);
+        FixCallOpcode(link + 8, 0x403560);
+        FixCallOpcode(link + 0x0e, 0x507230);
+    }
+    return link;
+}
+
+int MemAlloc(int size)
+{
+    int temp = GetMemory(0x5c3208), ptr;
+
+    SetMemory(0x5c3208, ImportMemAlloc());
+    ptr = GetCharacterData(size);
+    SetMemory(0x5c3208, temp);
+    return ptr;
+}
+
+int ImportMemFree()
+{
+    int arr[5], link;
+
+    if (!link)
+    {
+        arr[0] = 0x624AE850; arr[1] = 0xE850FFDB; arr[2] = 0xFFCB3251; arr[3] = 0x5804C483; arr[4] = 0x909090C3;
+        link = GetScrDataField(ImportMemFree);
+        FixCallOpcode(link + 1, 0x507250);
+        FixCallOpcode(link + 7, 0x40425d);
+    }
+    return link;
+}
+
+void MemFree(int ptr)
+{
+    int temp = GetMemory(0x5c3108);
+
+    SetMemory(0x5c3108, ImportMemFree());
+    Unused1f(ptr);
+    SetMemory(0x5c3108, temp);
+}
+
+int AnimateRealloc(int ptr, int imgCount)
+{
+    int alloc = MemAlloc(24);
+    int iLinkTable = MemAlloc((imgCount + 1) * 4);
+
+    SetMemory(alloc, 0x10);
+    SetMemory(alloc + 4, iLinkTable);
+    SetMemory(alloc + 8, imgCount);
+    SetMemory(alloc + 12, 2);
+    SetMemory(alloc + 16, 0);
+    SetMemory(alloc + 20, 0);
+    SetMemory(ptr + 92, alloc);
+    return iLinkTable;
+}
+
+void ImageTableMapping(int dest, int src, int count)
+{
+    int i;
+
+    for (i = 0 ; i < count ; i ++)
+        SetMemory(dest + (i * 4), GetMemory(src + (i * 4)));
+    SetMemory(dest + (i * 4), 0);
+}
+
+int MakeAnimateImage(int offset, int subOffset, int imgTable)
+{
+    int ptr = GetMemory(GetMemory(offset) + subOffset);
+    int imgPtr = GetMemory(ptr + 92), mapped, freePtr = 0;
+    int imgCount = GetMemory(imgTable);
+
+    while (1)
+    {
+        if (GetMemory(imgPtr) == 0x08)
+            1;
+        else if (GetMemory(imgPtr + 0x8) ^ imgCount)
+            freePtr = GetMemory(imgPtr + 4);
+        else
+        {
+            mapped = GetMemory(imgPtr + 4);
+            break;
+        }
+        mapped = AnimateRealloc(ptr, imgCount);
+        if (freePtr)
+            MemFree(freePtr);
+        break;
+    }
+    ImageTableMapping(mapped, imgTable + 4, imgCount);
+    SetMemory(ptr + 88, 0x4bbd60);
+}
+
+int PortcullisAOpeningImageTable()
+{
+    int imgCount = 14;
+    int arr[14];
+
+    arr[0] = ImagePtrFromID(15157); arr[1] = ImagePtrFromID(15158); arr[2] = ImagePtrFromID(15159); 
+    arr[3] = ImagePtrFromID(15160); arr[4] = ImagePtrFromID(15161); arr[5] = ImagePtrFromID(15162); 
+    arr[6] = ImagePtrFromID(15163); arr[7] = ImagePtrFromID(15164); arr[8] = ImagePtrFromID(15165);
+    arr[9] = ImagePtrFromID(15166); arr[10] = ImagePtrFromID(15167); arr[11] = ImagePtrFromID(15168);
+    arr[12] = ImagePtrFromID(15169); arr[13] = ImagePtrFromID(15170);
+    return GetScrDataField(PortcullisAOpeningImageTable);
+}
+
+int PortcullisAClosingImageTable()
+{
+    int imgCount = 14;
+    int arr[14];
+
+    arr[0] = ImagePtrFromID(15170); arr[1] = ImagePtrFromID(15169); arr[2] = ImagePtrFromID(15168);
+    arr[3] = ImagePtrFromID(15167); arr[4] = ImagePtrFromID(15166); arr[5] = ImagePtrFromID(15165);
+    arr[6] = ImagePtrFromID(15164); arr[7] = ImagePtrFromID(15163); arr[8] = ImagePtrFromID(15162); 
+    arr[9] = ImagePtrFromID(15161); arr[10] = ImagePtrFromID(15160); arr[11] = ImagePtrFromID(15159);
+    arr[12] = ImagePtrFromID(15158); arr[13] = ImagePtrFromID(15157);
+    return GetScrDataField(PortcullisAClosingImageTable);
+}
+
+int PortcullisBOpeningImageTable()
+{
+    int imgCount = 14;
+    int arr[14];
+
+    arr[0] = ImagePtrFromID(15170); arr[1] = ImagePtrFromID(15169); arr[2] = ImagePtrFromID(15168);
+    arr[3] = ImagePtrFromID(15167); arr[4] = ImagePtrFromID(15166); arr[5] = ImagePtrFromID(15165);
+    arr[6] = ImagePtrFromID(15164); arr[7] = ImagePtrFromID(15163); arr[8] = ImagePtrFromID(15162); 
+    arr[9] = ImagePtrFromID(15161); arr[10] = ImagePtrFromID(15160); arr[11] = ImagePtrFromID(15159);
+    arr[12] = ImagePtrFromID(15158); arr[13] = ImagePtrFromID(15157);
+    return GetScrDataField(PortcullisBOpeningImageTable);
+}
+
+int PortcullisBClosingImageTable()
+{
+    int imgCount = 14;
+    int arr[14];
+
+    arr[0] = ImagePtrFromID(15170); arr[1] = ImagePtrFromID(15169); arr[2] = ImagePtrFromID(15168);
+    arr[3] = ImagePtrFromID(15167); arr[4] = ImagePtrFromID(15166); arr[5] = ImagePtrFromID(15165);
+    arr[6] = ImagePtrFromID(15164); arr[7] = ImagePtrFromID(15163); arr[8] = ImagePtrFromID(15162); 
+    arr[9] = ImagePtrFromID(15161); arr[10] = ImagePtrFromID(15160); arr[11] = ImagePtrFromID(15159);
+    arr[12] = ImagePtrFromID(15158); arr[13] = ImagePtrFromID(15157);
+    return GetScrDataField(PortcullisBClosingImageTable);
+}
+
+void ImageManipulation()
+{
+    int AOpeningImgTable = PortcullisAOpeningImageTable();
+    //int AClosingImgTable = PortcullisAClosingImageTable();
+    //int BOpeningImgTable = PortcullisBOpeningImageTable();
+    //int BClosingImgTable = PortcullisBClosingImageTable();
+    MakeAnimateImage(0x69f128, 0x178, AOpeningImgTable);
+    //MakeAnimateImage(0x69f138, 0x190, AClosingImgTable);
+    //MakeAnimateImage(0x69f138, 0x198, BOpeningImgTable);
+    //MakeAnimateImage(0x69f138, 0x1a0, BClosingImgTable);
+}
+
+void TestSwitch()
+{
+    ObjectOff(Object("Test1"));
+}
+
+void MappingTextDrawCode(int ptr)
+{
+    SetMemory(ptr + 0, 0x8B20EC83); SetMemory(ptr + 4, 0x84EA040D);
+    SetMemory(ptr + 8, 0x56555300); SetMemory(ptr + 12, 0x3424748B); 
+    SetMemory(ptr + 16, 0xAC3D8B57); SetMemory(ptr + 20, 0x8B00853B);
+    SetMemory(ptr + 24, 0x00012086); SetMemory(ptr + 28, 0x72C83900); 
+    SetMemory(ptr + 32, 0xE03D8B06); SetMemory(ptr + 36, 0x570084C9);
+    SetMemory(ptr + 40, 0xCE336FE8); SetMemory(ptr + 44, 0x988e8bff); //SetMemory(ptr + 44, 0xC00D8BFF); 
+    SetMemory(ptr + 48, 0x51000000); //SetMemory(ptr + 48, 0x510083C8);
+    SetMemory(ptr + 52, 0xCE3293E8);
+    SetMemory(ptr + 56, 0x244C8BFF); SetMemory(ptr + 60, 0x0C468B3C); 
+    SetMemory(ptr + 64, 0x8B08C483); SetMemory(ptr + 68, 0x118B1059);
+    SetMemory(ptr + 72, 0x2914698B); SetMemory(ptr + 76, 0x105E8BD8); 
+    SetMemory(ptr + 80, 0x518BD001); SetMemory(ptr + 84, 0x704E8B04);
+    SetMemory(ptr + 88, 0x4489EA29); SetMemory(ptr + 92, 0xDA011024); 
+    SetMemory(ptr + 96, 0x14245489); SetMemory(ptr + 100, 0xA16C4E8B);
+    SetMemory(ptr + 104, 0x0069F224); SetMemory(ptr + 108, 0x8B88048B); 
+    SetMemory(ptr + 112, 0xD2850450); SetMemory(ptr + 116, 0x00BA0575);
+    SetMemory(ptr + 120, 0x8B0058D7); SetMemory(ptr + 124, 0x8B142444); 
+    SetMemory(ptr + 128, 0x5010244C); SetMemory(ptr + 132, 0x006A5251);
+    SetMemory(ptr + 136, 0xCEE58FE8); SetMemory(ptr + 140, 0x10C483FF); 
+    SetMemory(ptr + 144, 0x000001B8); SetMemory(ptr + 148, 0x5D5E5F00);
+    SetMemory(ptr + 152, 0x20C4835B); SetMemory(ptr + 156, 0x909090C3);
+    FixCallOpcode(ptr + 40, 0x434460);
+    FixCallOpcode(ptr + 52, 0x434390);
+    FixCallOpcode(ptr + 136, 0x43f6e0);
+}
+
+int BuildTextDrawFunction()
+{
+    int offset = 0x5cebdc;
+    
+    MappingTextDrawCode(offset);
+    return offset;
+}
+
+int ImportRemoveSpriteFromThingId()
+{
+    int arr[16], link;
+
+    if (!link)
+    {
+        arr[0] = 0x5008EC83; arr[1] = 0x6D3DC0A1; arr[2] = 0x24448900; arr[3] = 0x623EE808; arr[4] = 0x4489FFDB; arr[5] = 0x8B560424;
+        arr[6] = 0x850C2474; arr[7] = 0x8B1B74F6; arr[8] = 0xFF082444; arr[9] = 0x000170B6; arr[10] = 0x768B5600; arr[11] = 0x75F0396C;
+        arr[12] = 0x94AAE805; arr[13] = 0x5E58FFD0; arr[14] = 0x585EE1EB; arr[15] = 0xC308C483;
+        link = GetScrDataField(ImportRemoveSpriteFromThingId);
+        FixCallOpcode(link + 0x0d, 0x507250);
+        FixCallOpcode(link + 0x31, 0x45a4e0);
+    }
+    return link;
+}
+
+void RemoveSpriteFromThingId(int thingId)
+{
+    int temp = GetMemory(0x5c3108);
+
+    SetMemory(0x5c3108, ImportRemoveSpriteFromThingId());
+    Unused1f(thingId);
+    SetMemory(0x5c3108, temp);
+}
+
+void ModifyThingClassDescription(int thingId, string desc, int textColor)
+{
+    int tPtr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
+    int dest = MemAlloc(48), prevPtr = GetMemory(tPtr + 4);
+    int src = GetMemory(0x97bb40 + (SToInt(desc) * 4));
+
+    NoxUtf8ToUnicode(src, dest);
+    if (textColor)
+        SetMemory(tPtr + 48, textColor);
+    SetMemory(tPtr + 4, dest);
+    if (prevPtr)
+        MemFree(prevPtr);
+}
+
+void ModifyThingClassDrawFunction(int thingId, int fPtr)
+{
+    int tPtr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
+
+    SetMemory(tPtr + 88, fPtr);
+}
+
+void InnerImageZeroHeight(int thingId)
+{
+    int ptr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
+
+    if (GetMemory(ptr + 20) >> 0x10)
+        SetMemory(ptr + 20, GetMemory(ptr + 20) & 0xffff);
+    if (GetMemory(ptr + 32) & 0x400000)
+        SetMemory(ptr + 32, GetMemory(ptr + 32) ^ 0x400000);
+}
+
+void SetupBottmText(int thingId, int ptr, string desc, int colorSet)
+{
+    ModifyThingClassDescription(thingId, desc, colorSet);
+    ModifyThingClassDrawFunction(thingId, ptr);
+    InnerImageZeroHeight(thingId);
+    RemoveSpriteFromThingId(thingId);
+}
+
+void TextSigns()
+{
+    int drawFunction = BuildTextDrawFunction();
+
+    if (CheckGameKorLanguage()) SetupBottmText(2461, drawFunction, "점수 초기화 스위치", 0x7e1);
+    else SetupBottmText(2461, drawFunction, "Score reset switch", 0x7e1);
+
+    if (CheckGameKorLanguage()) SetupBottmText(2462, drawFunction, "마법사", 0x7e1);
+    else SetupBottmText(2462, drawFunction, "The Wizard", 0x7e1);
+
+    if (CheckGameKorLanguage()) SetupBottmText(2458, drawFunction, "전사", 0x7e1);
+    else SetupBottmText(2458, drawFunction, "The Warrior", 0x7e1);
+
+    if (CheckGameKorLanguage()) SetupBottmText(2459, drawFunction, "소환술사", 0x7e1);
+    else SetupBottmText(2459, drawFunction, "The Conjurer", 0x7e1);
+
+    if (CheckGameKorLanguage()) SetupBottmText(2460, drawFunction, "< 맵 바꾸는 곳 >", 0x7e1);
+    else SetupBottmText(2460, drawFunction, "< Change Maps >", 0x7e1);
+
+    if (CheckGameKorLanguage()) SetupBottmText(2463, drawFunction, "1 대 1 경기장 방향 ->", 0x7e1);
+    else SetupBottmText(2463, drawFunction, "One to one arena ->", 0x7e1);
+
+    if (CheckGameKorLanguage()) SetupBottmText(2464, drawFunction, "업이스테이트 맵으로 가기", 0x7e1);
+    else SetupBottmText(2464, drawFunction, "Go to EXTED2 map", 0x7e1);
+
+    if (CheckGameKorLanguage()) SetupBottmText(2465, drawFunction, "신 듀얼 맵으로 가기", 0x7e1);
+    else SetupBottmText(2465, drawFunction, "Go to new duel map", 0x7e1);
+
+    if (CheckGameKorLanguage()) SetupBottmText(2466, drawFunction, "A 팀 / 준비가 완료되면 버튼을 눌러주세요.", 0x7e1);
+    else SetupBottmText(2466, drawFunction, "A Team / Push the button once it's ready.", 0x7e1);
+
+    if (CheckGameKorLanguage()) SetupBottmText(2467, drawFunction, "B 팀/ 준비가 완료되면 버튼을 눌러주세요.", 0x7e1);
+    else SetupBottmText(2467, drawFunction, "B Team / Push the button once it's ready.", 0x7e1);
+}
+
+int DrawImageAt(float x, float y, int thingId)
+{
+    int unit = CreateObjectAt("AirshipBasketShadow", x, y);
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 0x04, thingId);
+    return unit;
+}
+
+void DrawArenaSigns()
+{
+    DrawImageAt(2505.0, 2527.0, 2462);
+    DrawImageAt(2322.0, 2714.0, 2458);
+    DrawImageAt(2414.0, 2621.0, 2459);
+    DrawImageAt(3758.0, 2192.0, 2461);
+    DrawImageAt(3301.0, 3689.0, 2464);
+    DrawImageAt(3509.0, 3483.0, 2465);
+    DrawImageAt(3319.0, 3543.0, 2460);
+}
+
+void EffectLibrary()
+{
+    Effect("SMOKE_BLAST", GetObjectX(self), GetObjectY(self), GetObjectX(self), GetObjectY(self));
+    Effect("TELEPORT", GetObjectX(self), GetObjectY(self), GetObjectX(self), GetObjectY(self));
+    PlaySoundAround(self, 148);
+}
+void EffectLibrary2()
+{
+    Effect("SMOKE_BLAST", GetObjectX(other), GetObjectY(other), GetObjectX(other), GetObjectY(other));
+    Effect("TELEPORT", GetObjectX(other), GetObjectY(other), GetObjectX(other), GetObjectY(other));
+    PlaySoundAround(other, 148);
+}
+void MoveToArmorRoom()
+{
+    EffectLibrary();
+    if (MaxHealth(other) == 150)
+    {
+        MoveObject(other, 1597.0, 2744.0);
+    }
+    else if (MaxHealth(other) == 100)
+    {
+        MoveObject(other, 2059.0, 2289.0);
+    }
+    else if (MaxHealth(other) == 75)
+    {
+        MoveObject(other, 2521.0, 1827.0);
+    }
+    EffectLibrary2();
+}
+void MoveToHall()
+{
+    MoveObject(other, 2961.0, 2988.0);
+    EffectLibrary2();
+}
+void TimeOutSetSwitch()
+{
+    if (!playing)
+    {
+        if (TimeOut == 0)
+        {
+            TimeOut = 1;
+            if (CheckGameKorLanguage()) UniPrintToAll("타임 아웃 모드가 설정되었습니다.");
+            else UniPrintToAll("Timeout mode has been set.");
+        }
+        else
+        {
+            TimeOut = 0;
+            if (CheckGameKorLanguage()) UniPrintToAll("타임 아웃 모드가 해제되었습니다.");
+            else UniPrintToAll("Timeout mode has been unset.");
+        }
+    }
+    else
+    {
+        if (CheckGameKorLanguage()) UniPrintToAll("게임이 진행중일때는 타임아웃 설정을 바꿀 수 없습니다.");
+        else UniPrintToAll("While game is going on you can't change timeout option.");
+    }
+}
+void OgreWarlordTalks()
+{
+    if (CheckGameKorLanguage()) UniChatMessage(Object("OgreWarlord"), "내 왼쪽은 업이스테이트, 오른족은 신 듀얼맵으로 가는 길입니다.", 150);
+    else UniChatMessage(Object("OgreWarlord"), "EXTED2 map on my left, new duel map on my right.", 150);
+    return;
+}
+
+
+void DebugFunction()
+{
+    int unit = CreateObjectAt("ImaginaryCaster", GetObjectX(other), GetObjectY(other));
+
+    LookWithAngle(unit, 120);
+    FrameTimerWithArg(30, unit, DisplayReady);
+}
