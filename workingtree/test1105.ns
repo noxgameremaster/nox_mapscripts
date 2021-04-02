@@ -348,23 +348,43 @@ void EquipFix(int plrUnit)
     }
 }
 
+void PickupAndEquip(int item)
+{
+    int owner = GetOwner(item);
+
+    if (CurrentHealth(owner))
+    {
+        Pickup(owner, item);
+        ItemEquip(owner, item, true);
+    }
+}
+
 void TestFunction()
 {
-    int ptr = UnitToPtr(other), t;
+    // int ptr = UnitToPtr(other), t;
 
-    if (!t)
-    {
-        t = PlayerUpdate4f8100();
-        if (GetMemory(ptr + 8) & 4)
-        {
-            SetMemory(ptr + 0x2e8, t);
-            DiePlayerHandlerEntry(other);
-            Print(IntToString(t));
-            // Print(IntToString(RedrawOnRespawn()));
-        }
-    }
-    else
-        EquipFix(other);
+    // if (!t)
+    // {
+    //     t = PlayerUpdate4f8100();
+    //     if (GetMemory(ptr + 8) & 4)
+    //     {
+    //         SetMemory(ptr + 0x2e8, t);
+    //         DiePlayerHandlerEntry(other);
+    //         Print(IntToString(t));
+    //         // Print(IntToString(RedrawOnRespawn()));
+    //     }
+    // }
+    // else
+    //     EquipFix(other);
+    int item = CreateObject("WarHammer", 1);
+    int armor = CreateObject("Breastplate", 1);
+    int testNpc = Object("TestNpc");
+
+    SetOwner(testNpc, item);
+    FrameTimerWithArg(1, item, PickupAndEquip);
+
+    SetOwner(testNpc, armor);
+    FrameTimerWithArg(1, armor, PickupAndEquip);
 }
 
 void MapExit()
@@ -377,10 +397,46 @@ int OpcodeGetTargetAddr(int curAddr)
     return GetMemory(curAddr + 1) + curAddr + 5;
 }
 
+int ImportItemEquip()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50EC8B55; arr[1] = 0xE804EC83; arr[2] = 0xFFDB6244; arr[3] = 0xE8240489; arr[4] = 0xFFDB623C;
+        arr[5] = 0x502434FF; arr[6] = 0xDA1F53E8; arr[7] = 0x0CC483FF; arr[8] = 0x90C35D58;
+        link = GetScrDataField(ImportItemEquip);
+        FixCallOpcode(link + 0x7, 0x507250);
+        FixCallOpcode(link + 0xf, 0x507250);
+        FixCallOpcode(link + 0x18, 0x4f2f70);
+    }
+    return link;
+}
+
+void ItemEquip(int humanUnit, int item, int equipMode)
+{
+    int unitPtr = UnitToPtr(humanUnit);
+    int itemPtr = UnitToPtr(item), temp;
+
+    if (unitPtr && itemPtr)
+    {
+        temp = GetMemory(0x5c31f4);
+        int link = ImportItemEquip();
+        if (equipMode)
+            FixCallOpcode(link + 0x18, 0x4f2f70);
+        else
+            FixCallOpcode(link + 0x18, 0x4f2fb0);
+        SetMemory(0x5c31f4, ImportItemEquip());
+        Unused5a(unitPtr, itemPtr);
+        SetMemory(0x5c31f4, temp);
+    }
+}
+
 void MapInitialize()
 {
     int v0 = EnableMemoryReadWriteFunction(0);
 
     PlayerUpdate4f8100();
     PlayerClassDieHandlerInit(913);
+    ImportItemEquip();
 }

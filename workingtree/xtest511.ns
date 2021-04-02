@@ -1815,7 +1815,7 @@ string PotionList()
         "RedPotion", "CurePoisonPotion", "YellowPotion", "BlackPotion",
         "VampirismPotion", "Mushroom", "PoisonProtectPotion", "ShockProtectPotion",
         "FireProtectPotion", "HastePotion", "ShieldPotion", "InfravisionPotion",
-        "InvisibilityPotion", "InvulnerabilityPotion", "AmuletofManipulation", "AmuletofNature",
+        "InvisibilityPotion", "AmuletofManipulation", "AmuletofManipulation", "AmuletofNature",
         "Fear", "WhitePotion", "BluePotion", "AnkhTradable"
     };
     return name;
@@ -2813,6 +2813,7 @@ void ImportLibrary()
     ImportUniPrintCore();
     ImportGreenExplosionFunc();
     ImportGreenLightningFunc();
+    ImportItemEquip();
     VoiceList(0);
 }
 
@@ -3136,12 +3137,6 @@ void EmptyAll(int unit)
         Delete(GetLastItem(unit));
 }
 
-void DelayPickup(int inv)
-{
-    if (CurrentHealth(GetOwner(inv)))
-        Pickup(GetOwner(inv), inv);
-}
-
 void EquipFix(int plrUnit)
 {
     int invPtr;
@@ -3155,11 +3150,45 @@ void EquipFix(int plrUnit)
     {
         if (GetMemory(invPtr + 0x10) & 0x100)
         {
-            Drop(plrUnit, GetMemory(invPtr + 0x2c));
-            SetOwner(plrUnit, GetMemory(invPtr + 0x2c));
-            FrameTimerWithArg(1, GetMemory(invPtr + 0x2c), DelayPickup);
+            ItemEquip(plrUnit, GetMemory(invPtr + 0x2c), false);
+            ItemEquip(plrUnit, GetMemory(invPtr + 0x2c), true);
         }
         SetMemory(vptr, GetMemory(invPtr + 0x1f0));
+    }
+}
+
+int ImportItemEquip()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50EC8B55; arr[1] = 0xE804EC83; arr[2] = 0xFFDB6244; arr[3] = 0xE8240489; arr[4] = 0xFFDB623C;
+        arr[5] = 0x502434FF; arr[6] = 0xDA1F53E8; arr[7] = 0x0CC483FF; arr[8] = 0x90C35D58;
+        link = GetScrDataField(ImportItemEquip);
+        FixCallOpcode(link + 0x7, 0x507250);
+        FixCallOpcode(link + 0xf, 0x507250);
+        FixCallOpcode(link + 0x18, 0x4f2f70);
+    }
+    return link;
+}
+
+void ItemEquip(int humanUnit, int item, int equipMode)
+{
+    int unitPtr = UnitToPtr(humanUnit);
+    int itemPtr = UnitToPtr(item), temp;
+
+    if (unitPtr && itemPtr)
+    {
+        temp = GetMemory(0x5c31f4);
+        int link = ImportItemEquip();
+        if (equipMode)
+            FixCallOpcode(link + 0x18, 0x4f2f70);
+        else
+            FixCallOpcode(link + 0x18, 0x4f2fb0);
+        SetMemory(0x5c31f4, ImportItemEquip());
+        Unused5a(unitPtr, itemPtr);
+        SetMemory(0x5c31f4, temp);
     }
 }
 
@@ -3599,6 +3628,7 @@ int SummonGWizard(int ptr)
 	SetCallback(unit, 13, GWizResetSight);
     SetUnitScanRange(unit, 400.0);
     SetUnitMaxHealth(unit, 420);
+    UnitZeroFleeRange(unit);
     SetUnitStatus(unit, GetUnitStatus(unit) ^ 0x8020); //ALWAYS_RUN
 
     return unit;
