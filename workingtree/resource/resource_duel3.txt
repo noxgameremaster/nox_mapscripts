@@ -1,0 +1,10 @@
+TARGET= "C:\Program Files (x86)\Nox\maps\Duel3\Duel3out.obj"
+
+ImgResourceBlockGolem "블록골렘bit.grp"
+ImgResourcePokemon "Pokmon.grp"
+ImgResourceCar	"람보르기니.grp"
+ImgResourceChristmasTree 		"크리스마스.grp"
+RedPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\newRedpotion.grp"
+PoisonPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\poisonPotion.grp"
+MagicPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\magicPotion2.grp"
+

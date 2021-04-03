@@ -1,0 +1,3 @@
+
+TARGET = "C:\Program Files (x86)\Nox\maps\imgTest\imgTestout.obj"
+PoliceCarImageData "C:\Users\패닉\Desktop\자주사용\리소스\policeCarResize.grp"

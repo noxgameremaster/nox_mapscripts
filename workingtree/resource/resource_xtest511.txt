@@ -1,0 +1,17 @@
+
+TARGET = "C:\Program Files (x86)\Nox\maps\xtest511\xtest511out.obj"
+
+RedPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\xtest511\newRedpotion.grp"
+PoisonPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\xtest511\poisonPotion.grp"
+VampPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\xtest511\vampPotion2.grp"
+YellowPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\xtest511\yellowPotion.grp"
+MagicPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\xtest511\magicPotion2.grp"
+
+MoneyImage "C:\Users\패닉\Desktop\자주사용\리소스\xtest511\money.grp"
+DungeonPicketImage "C:\Users\패닉\Desktop\자주사용\리소스\xtest511\표지판npc.grp"
+ProtossNexusImage "C:\Users\패닉\Desktop\자주사용\리소스\xtest511\스1넥서스.grp"
+DungeonNameLeft "C:\Users\패닉\Desktop\자주사용\리소스\xtest511\던전입구left.grp"
+DungeonNameRight "C:\Users\패닉\Desktop\자주사용\리소스\xtest511\던전입구right.grp"
+BossHereImage "C:\Users\패닉\Desktop\자주사용\리소스\xtest511\보스구역re.grp"
+
+BuldakImage "불닭 볶음면75_72.grp"

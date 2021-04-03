@@ -1,0 +1,4 @@
+
+TARGET = "C:\Program Files (x86)\Nox\maps\demono\demonoout.obj"
+MyImageResource1 "C:\Users\패닉\Desktop\자주사용\리소스\표지판npc.grp"
+MyImageResourceDanger "C:\Users\패닉\Desktop\자주사용\리소스\danger.grp"

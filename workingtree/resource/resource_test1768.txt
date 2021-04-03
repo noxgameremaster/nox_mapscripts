@@ -1,0 +1,7 @@
+
+
+TARGET = "C:\Program Files (x86)\Nox\maps\test1768\test1768out.obj"
+PepeImage1 "C:\Users\패닉\Desktop\자주사용\리소스\pepe_theFrog_98.grp"
+PepeImage2 "C:\Users\패닉\Desktop\자주사용\리소스\pepe_theFrog2_98.grp"
+PepeImage3 "C:\Users\패닉\Desktop\자주사용\리소스\pepe_theFrog3_84.grp"
+

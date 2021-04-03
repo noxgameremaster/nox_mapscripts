@@ -1,0 +1,3 @@
+
+TARGET = "C:\Program Files (x86)\Nox\maps\sokoban\sokobanout.obj"
+ResourceBGMdata "C:\Users\패닉\Desktop\자주사용\맵브금삽입\puzzle뿌요.mp3"

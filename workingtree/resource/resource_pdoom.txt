@@ -1,0 +1,3 @@
+
+TARGET = "C:\Program Files (x86)\Nox\maps\pdoom\pdoomout.obj"
+ResoureCommonBgmData "C:\Users\패닉\Desktop\자주사용\맵브금삽입\tetris_no_item160000hz24mono.mp3"

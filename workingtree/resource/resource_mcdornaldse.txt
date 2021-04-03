@@ -1,0 +1,12 @@
+
+TARGET = "C:\Program Files (x86)\Nox\maps\mcdornaldse\mcdornaldseout.obj"
+ResourceImage1 "C:\Users\패닉\Desktop\자주사용\리소스\mcdor\irin3.grp"
+ResourceImage2 "C:\Users\패닉\Desktop\자주사용\리소스\mcdor\mcd.grp"
+ResourceImage3 "C:\Users\패닉\Desktop\자주사용\리소스\mcdor\ranranru.grp"
+ResourceImage4 "C:\Users\패닉\Desktop\자주사용\리소스\mcdor\iu333.grp"
+
+RedPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\mcdor\newRedpotion.grp"
+PoisonPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\mcdor\poisonPotion.grp"
+VampPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\mcdor\vampPotion2.grp"
+YellowPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\mcdor\yellowPotion.grp"
+MagicPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\mcdor\magicPotion2.grp"

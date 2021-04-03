@@ -1,0 +1,5 @@
+
+TARGET = "C:\Program Files (x86)\Nox\maps\fkjapan\fkjapanout.obj"
+ResourceImageData1 "C:\Users\패닉\Desktop\자주사용\리소스\주발2.grp"
+ResourceImageBuilding "C:\Users\패닉\Desktop\자주사용\리소스\ground.grp"
+ResourceImageData2 "C:\Users\패닉\Desktop\자주사용\리소스\policeCarResize.grp"

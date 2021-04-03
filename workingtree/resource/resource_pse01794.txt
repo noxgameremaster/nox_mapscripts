@@ -1,0 +1,17 @@
+
+TARGET = "C:\Program Files (x86)\Nox\maps\pse01794\pse01794out.obj"
+ImageResourceField1 "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\시즈탱크3.grp"
+ResourceBGMdata "C:\Users\패닉\Desktop\자주사용\맵브금삽입\던파용인의탑.mp3"
+
+
+RedPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\newRedpotion.grp"
+PoisonPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\poisonPotion.grp"
+VampPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\vampPotion2.grp"
+YellowPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\yellowPotion.grp"
+MagicPotionImage "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\magicPotion2.grp"
+
+ResourceBucherImage "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\bucher.grp"
+ImageResourceChin "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\china.grp"
+ImageResourceKor "C:\Users\패닉\Desktop\자주사용\리소스\pse01794\korea.grp"
+
+ResourceDollar	"money.grp"

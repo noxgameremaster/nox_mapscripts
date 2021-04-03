@@ -1,0 +1,3 @@
+TARGET= "C:\Program Files (x86)\Nox\maps\a\aout.obj"
+
+ResoureCommonBgmData "catchmindbgm.mp3"
