@@ -1719,6 +1719,9 @@ void SetGameTypeCoopMode()
 {
     MakeCoopTeam();
     PlayerAutoTeamSign();
+    
+    SetMemory(0x5d5330, 0x2000);
+    SetMemory(0x5d5394, 1);
 }
 
 void CancelPlayerDialogWithPTR(int plrPtr)
