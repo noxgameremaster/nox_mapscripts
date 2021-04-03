@@ -2951,11 +2951,11 @@ int ImportPlayerAutoTeamSign()
 
 void PlayerAutoTeamSign()
 {
-    int temp = GetMemory(0x5c3178);
+    int temp = GetMemory(0x5c31cc);
 
-    SetMemory(0x5c3178, ImportPlayerAutoTeamSign());
-    GetHost();
-    SetMemory(0x5c3178, temp);
+    SetMemory(0x5c31cc, ImportPlayerAutoTeamSign());
+    Unused50();
+    SetMemory(0x5c31cc, temp);
 }
 
 void MakeCoopTeam()
@@ -2966,11 +2966,11 @@ void MakeCoopTeam()
     if (!teamCount && !link)
     {
         arr[0] = 0x417E1068; arr[1] = 0x2414FF00; arr[2] = 0xC304C483;
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * MakeCoopTeam) + 0x1c);
-        temp = GetMemory(0x5c3178);
-        SetMemory(0x5c3178, link);
-        GetHost();
-        SetMemory(0x5c3178, temp);
+        link = GetScrDataField(MakeCoopTeam);
+        temp = GetMemory(0x5c31cc);
+        SetMemory(0x5c31cc, link);
+        Unused50();
+        SetMemory(0x5c31cc, temp);
         SetMemory(0x5d53a4, 268640519);
     }
 }
@@ -2982,11 +2982,11 @@ void RemoveCoopTeamMode()
     if (!link && GetMemory(0x654d5c) == 1)
     {
         arr[0] = 0x4DB8BE56; arr[1] = 0x20680065; arr[2] = 0x6A00418F; arr[3] = 0x54FF5600; arr[4] = 0xC4830824; arr[5] = 0x90C35E0C;
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * RemoveCoopTeamMode) + 0x1c);
-        temp = GetMemory(0x5c3178);
-        SetMemory(0x5c3178, link);
-        GetHost();
-        SetMemory(0x5c3178, temp);
+        link = GetScrDataField(RemoveCoopTeamMode);
+        temp = GetMemory(0x5c31cc);
+        SetMemory(0x5c31cc, link);
+        Unused50();
+        SetMemory(0x5c31cc, temp);
     }
 }
 
@@ -3583,18 +3583,21 @@ void SelfDamageClassEntry(int plrUnit)
 
 void SelfDamageClassMapExit()
 {
-    int pTable = 0x62f9e0, i;
+    int i, pTable = 0x62f9e0, ptr;
+    int link = GetScrDataField(SelfDamageClassMapExit);
 
-    for (i = 31 ; i >= 0 ; i --)
+    for (i = 31 ; i >= 0 ; Unused59(link, Unknownb9(link) - 1))
     {
-        if (GetMemory(pTable))
+        SetMemory(link + 8, GetMemory(pTable));
+        if (ptr)
         {
-            SetMemory(GetMemory(pTable) + 0x2cc, 0x4e17b0);
-            SetMemory(GetMemory(pTable) + 0x2d4, 0x54d2b0);
-            SetMemory(GetMemory(pTable) + 0x2e8, 0x4f8100);     //@brief. 플레이어 업데이트 메서드를 원복한다
+            SetMemory(ptr + 0x2cc, 0x4e17b0);
+            SetMemory(ptr + 0x2d4, 0x54d2b0);
+            if (GetMemory(ptr + 0x2e8) ^ 0x4E62F0)      //@brief. 관객모드가 아닐 경우에만 되돌립니다//
+                SetMemory(GetMemory(pTable) + 0x2e8, 0x4f8100);     //@brief. 업데이트 되돌리기//
             CancelPlayerDialogWithPTR(GetMemory(pTable));
         }
-        pTable += 0x12dc;
+        Unused59(link + 4, Unknownb9(link + 4) + 0x12dc);
     }
 }
 
@@ -3890,19 +3893,20 @@ int PlayerRespawn004f7ef0()     //@brief. 유저 리스폰 복사본
 
 int PlayerUpdate4f8460()
 {
-    int arr[60], link;
+    int arr[67], link;
 
     if (!link)
     {
         arr[0] = 0x530CEC83; arr[1] = 0x748B5655; arr[2] = 0x31571C24; arr[3] = 0xECBE8BC0; arr[4] = 0x89000002; arr[5] = 0x89202444; arr[6] = 0x8A142444;
         arr[7] = 0xF8835847; arr[8] = 0x83427721; arr[9] = 0x077404F8; arr[10] = 0x8C8524FF; arr[11] = 0x8B004F99; arr[12] = 0x84EA0415; arr[13] = 0x88AE8B00;
-        arr[14] = 0xA1000000; arr[15] = 0x0085B3FC; arr[16] = 0xE8D1EA29; arr[17] = 0x1776C239; arr[18] = 0x00040068; arr[19] = 0x956EE800; arr[20] = 0xC483FFCB;
+        arr[14] = 0xA1000000; arr[15] = 0x0085B3FC; arr[16] = 0xE8D1EA29; arr[17] = 0x1776C239; arr[18] = 0x00040068; arr[19] = 0x4CDEE800; arr[20] = 0xC483F28D;
         arr[21] = 0x74C08504; arr[22] = 0x90806812; arr[23] = 0x68C3004F; arr[24] = 0x004F9983; arr[25] = 0x850B68C3; arr[26] = 0x68C3004F; arr[27] = 0x00002000;
-        arr[28] = 0xCB954BE8; arr[29] = 0x04C483FF; arr[30] = 0x4A74C085; arr[31] = 0x0114878B; arr[32] = 0x80F60000; arr[33] = 0x00000E60; arr[34] = 0x313B7501;
-        arr[35] = 0x10888AC9; arr[36] = 0x51000008; arr[37] = 0xDC9AB7E8; arr[38] = 0x04C483FF; arr[39] = 0x2674C085; arr[40] = 0x000006BB; arr[41] = 0x08583900;
-        arr[42] = 0x978B3A74; arr[43] = 0x00000114; arr[44] = 0x8AC03150; arr[45] = 0x00081082; arr[46] = 0x01E85000; arr[47] = 0x83FFDC9B; arr[48] = 0xC08508C4;
-        arr[49] = 0x25E8DF74; arr[50] = 0x85FFCB95; arr[51] = 0x560F74C0; arr[52] = 0xDA6E1BE8; arr[53] = 0x04C483FF; arr[54] = 0x4F850B68; arr[55] = 0x8368C300;
-        arr[56] = 0xC3004F99; arr[57] = 0x01148F8B; arr[58] = 0x1F680000; arr[59] = 0xC3004F92;
+        arr[28] = 0x8D4CBBE8; arr[29] = 0x04C483F2; arr[30] = 0x4A74C085; arr[31] = 0x0114878B; arr[32] = 0x80F60000; arr[33] = 0x00000E60; arr[34] = 0x313B7501;
+        arr[35] = 0x10888AC9; arr[36] = 0x51000008; arr[37] = 0x9E5227E8; arr[38] = 0x04C483F2; arr[39] = 0x2674C085; arr[40] = 0x000006BB; arr[41] = 0x08583900;
+        arr[42] = 0x978B3A74; arr[43] = 0x00000114; arr[44] = 0x8AC03150; arr[45] = 0x00081082; arr[46] = 0x71E85000; arr[47] = 0x83F29E52; arr[48] = 0xC08508C4;
+        arr[49] = 0x95E8DF74; arr[50] = 0x85F28D4C; arr[51] = 0x560F74C0; arr[52] = 0x00011BE8; arr[53] = 0x04C48300; arr[54] = 0x4F850B68; arr[55] = 0x8368C300;
+        arr[56] = 0xC3004F99; arr[57] = 0x01148F8B; arr[58] = 0xD2310000; arr[59] = 0x0810918A; arr[60] = 0xE8520000; arr[61] = 0xF29E52A8; arr[62] = 0x5604C483;
+        arr[63] = 0x9C255FE8; arr[64] = 0x04C483F2; arr[65] = 0x4F850B68; arr[66] = 0x9090C300;
         link = GetScrDataField(PlayerUpdate4f8460);
         FixCallOpcode(link + 0x4d, 0x40a5c0);
         FixCallOpcode(link + 0x70, 0x40a5c0);
@@ -3911,6 +3915,9 @@ int PlayerUpdate4f8460()
         FixCallOpcode(link + 0xc6, 0x40a5f0);
         // FixCallOpcode(link + 0xd0, 0x4f7ef0);       //@todo. 여기를 서브클래싱 해줘야 한다!
         FixCallOpcode(link + 0xd0, PlayerRespawn004f7ef0());       //@brief. 서브클래싱 링크
+        FixCallOpcode(link + 0xf3, 0x51ac30);
+        // FixCallOpcode(link + 0xfc, 0x4f7ef0);           //@brief. todo
+        FixCallOpcode(link + 0xfc, PlayerRespawn004f7ef0());           //@brief. todo
     }
     return link;
 }

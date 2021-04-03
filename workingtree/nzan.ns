@@ -1,0 +1,5624 @@
+
+
+int LastUnitGlobalID;
+int LastUnitID = 2700;
+int player[20];
+int EnableMemoryReadWriteFunction(int t) {}
+
+
+
+int ImportAllowAllDrop()
+{
+	int arr[19], link;
+
+	if (!link)
+	{
+		arr[0] = 0x550CEC83; arr[1] = 0x14246C8B; arr[2] = 0x24748B56; arr[3] = 0xECAE391C; arr[4] = 0x74000001; arr[5] = 0xC0315E08; arr[6] = 0x0CC4835D;
+		arr[7] = 0x0845F6C3; arr[8] = 0x68207404; arr[9] = 0x0053EBF0; arr[10] = 0x2454FF56; arr[11] = 0x08C48304; arr[12] = 0x0F74C085; arr[13] = 0x53EC8068;
+		arr[14] = 0x56016A00; arr[15] = 0x082454FF; arr[16] = 0x680CC483; arr[17] = 0x004ED301; arr[18] = 0x909090C3;
+		CancelTimer(FrameTimerWithArg(10, ImportAllowAllDrop, ImportAllowAllDrop));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+int CreateYellowPotion(int restoreAmount, float xProfile, float yProfile)
+{
+    int unit = CreateObjectAt("RedPotion", xProfile, yProfile);
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 4, 639); //YellowPotion
+    SetMemory(GetMemory(ptr + 0x2e0), restoreAmount);
+
+    return unit;
+}
+
+int CreateBlackPotion(int restoreAmount, float xProfile, float yProfile)
+{
+    int unit = CreateObjectAt("RedPotion", xProfile, yProfile);
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 4, 641); //BlackPotion
+    SetMemory(GetMemory(ptr + 0x2e0), restoreAmount);
+
+    return unit;
+}
+
+int CreateWhitePotion(int restoreAmount, float xProfile, float yProfile)
+{
+    int unit = CreateObjectAt("RedPotion", xProfile, yProfile);
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 4, 640); //WhitePotion
+    SetMemory(ptr + 12, GetMemory(ptr + 12) ^ 0x20);
+    SetMemory(GetMemory(ptr + 0x2e0), restoreAmount);
+
+    return unit;
+}
+
+int CheckPotionThingID(int unit)
+{
+    int thingID = GetUnitThingID(unit), x = unit;
+
+    if (thingID == 639)
+        x = CreateYellowPotion(125, GetObjectX(unit), GetObjectY(unit));
+    else if (thingID == 640)
+        x = CreateWhitePotion(100, GetObjectX(unit), GetObjectY(unit));
+    else if (thingID == 641)
+        x = CreateBlackPotion(85, GetObjectX(unit), GetObjectY(unit));
+    if (x ^ unit) Delete(unit);
+    PotionPickupRegist(x);
+
+    return x;
+}
+
+int ImportMonsterActionPush()
+{
+    int arr[12], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50685650; arr[1] = 0xFF005072; arr[2] = 0x708D2414; arr[3] = 0xA2606804; arr[4] = 0x36FF0050; arr[5] = 0x54FF30FF;
+        arr[6] = 0xC4830824; arr[7] = 0x7230680C; arr[8] = 0xFF500050; arr[9] = 0x83042454; arr[10] = 0x585E0CC4; arr[11] = 0x909090C3;
+        CancelTimer(FrameTimerWithArg(10, ImportMonsterActionPush, ImportMonsterActionPush));
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+int MonsterActionPush(int sUnit, int sActType)
+{
+    int ptr = UnitToPtr(sUnit), link, temp = GetMemory(0x5c31bc), res = 0;
+
+    if (!link)
+    {
+        CancelTimer(FrameTimerWithArg(10, MonsterActionPush, MonsterActionPush));
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    if (ptr)
+    {
+        sUnit = ptr;
+        SetMemory(0x5c31bc, ImportMonsterActionPush());
+        res = GetHolder(link);
+        SetMemory(0x5c31bc, temp);
+    }
+    return res;
+}
+
+void ForceCastSpell(int sUnit, int sSpellNumber, float xProfile, float yProfile)
+{
+	int act = MonsterActionPush(sUnit, 19);
+
+	if (act)
+	{
+		SetMemory(act + 4, sSpellNumber);
+		SetMemory(act + 12, ToInt(xProfile));
+		SetMemory(act + 16, ToInt(yProfile));
+	}
+}
+
+void UnitZeroFleeRange(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0); //Flee Range set to 0
+}
+
+void SetUnitStatus(int unit, int stat)
+{
+    int temp, ptr = UnitToPtr(unit);
+
+    if (ptr)
+    {
+        temp = GetMemory(ptr + 0x2ec);
+        if (temp)
+            SetMemory(temp + 0x5a0, stat);
+    }
+}
+
+int GetUnitStatus(int unit)
+{
+    int temp, ptr = UnitToPtr(unit);
+
+    if (ptr)
+    {
+        temp = GetMemory(ptr + 0x2ec);
+        if (temp)
+            return GetMemory(temp + 0x5a0);
+    }
+    return 0;
+}
+
+int GhostBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1936681031; arr[1] = 116; arr[2] = 0; arr[3] = 0; arr[4] = 0; 
+		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
+		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
+		arr[15] = 0; arr[16] = 0; arr[17] = 40; arr[18] = 20; arr[19] = 60; 
+		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 0; arr[24] = 1066192077; 
+		arr[25] = 0; arr[26] = 0; arr[27] = 1; arr[28] = 1092616192; arr[29] = 10; 
+		arr[30] = 0; arr[31] = 4; arr[32] = 1; arr[33] = 3; arr[34] = 0; 
+		arr[35] = 0; arr[36] = 0; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
+		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
+		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
+		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 0; arr[54] = 0; 
+		arr[55] = 0; arr[56] = 0; arr[57] = 0; arr[58] = 0; arr[59] = 5542784; 
+		arr[60] = 0; arr[61] = 0; 
+		CancelTimer(FrameTimerWithArg(10, GhostBinTable, GhostBinTable));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+int BlackWidowBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1667329090; arr[1] = 1684625259; arr[2] = 30575; arr[3] = 0; arr[4] = 0; 
+		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
+		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
+		arr[15] = 0; arr[16] = 0; arr[17] = 130; arr[18] = 45; arr[19] = 85; 
+		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 4; arr[24] = 1069547520; 
+		arr[25] = 0; arr[26] = 4; arr[27] = 3; arr[28] = 1097859072; arr[29] = 25; 
+		arr[30] = 0; arr[31] = 8; arr[32] = 13; arr[33] = 21; arr[34] = 50; 
+		arr[35] = 3; arr[36] = 6; arr[37] = 1684631635; arr[38] = 1884516965; arr[39] = 29801; 
+		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
+		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
+		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 1128792064; arr[54] = 0; 
+		arr[55] = 20; arr[56] = 28; arr[57] = 0; arr[58] = 0; arr[59] = 5544896; 
+		arr[60] = 0; arr[61] = 45071360; 
+		CancelTimer(FrameTimerWithArg(10, BlackWidowBinTable, BlackWidowBinTable));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+int WizardRedBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1635412311; arr[1] = 1699898482; arr[2] = 100; arr[17] = 520; arr[18] = 100; 
+		arr[19] = 70; arr[21] = 1065353216; arr[24] = 1065353216; arr[26] = 4; arr[28] = 1112014848; 
+		arr[29] = 80; arr[32] = 13; arr[33] = 21; arr[53] = 1128792064; arr[54] = 4; 
+		arr[59] = 5542784; 
+		CancelTimer(FrameTimerWithArg(10, WizardRedBinTable, WizardRedBinTable));
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+void WizardRedSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1074161254);
+		SetMemory(ptr + 0x224, 1074161254);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 0);
+		SetMemory(GetMemory(ptr + 0x22c), 520);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 520);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, WizardRedBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int WeirdlingBeastBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1919509847; arr[1] = 1852402788; arr[2] = 1634026087; arr[3] = 29811; arr[4] = 0; 
+		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
+		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
+		arr[15] = 0; arr[16] = 0; arr[17] = 85; arr[18] = 50; arr[19] = 55; 
+		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 32776; arr[24] = 1068708659; 
+		arr[25] = 0; arr[26] = 4; arr[27] = 0; arr[28] = 1082130432; arr[29] = 20; 
+		arr[30] = 0; arr[31] = 2; arr[32] = 8; arr[33] = 16; arr[34] = 0; 
+		arr[35] = 0; arr[36] = 0; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
+		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
+		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
+		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 0; arr[54] = 0; 
+		arr[55] = 0; arr[56] = 0; arr[57] = 5548112; arr[58] = 0; arr[59] = 5542784; 
+		arr[60] = 0; arr[61] = 0; 
+		CancelTimer(FrameTimerWithArg(10, WeirdlingBeastBinTable, WeirdlingBeastBinTable));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+int GoonBinTable()
+{
+	int arr[62], link, unit;
+	if (!link)
+	{
+		arr[0] = 1852796743; arr[1] = 0; arr[2] = 0; arr[3] = 0; arr[4] = 0; 
+		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
+		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
+		arr[15] = 0; arr[16] = 0; arr[17] = 85; arr[18] = 0; arr[19] = 80; 
+		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 32776; arr[24] = 1066192077; 
+		arr[25] = 0; arr[26] = 4; arr[27] = 0; arr[28] = 1106247680; arr[29] = 25; 
+		arr[30] = 1092616192; arr[31] = 4; arr[32] = 20; arr[33] = 28; arr[34] = 2; 
+		arr[35] = 3; arr[36] = 20; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
+		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
+		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
+		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 0; arr[54] = 0; 
+		arr[55] = 0; arr[56] = 0; arr[57] = 5548176; arr[58] = 5546608; arr[59] = 5543680; 
+		arr[60] = 0; arr[61] = 0; 
+		CancelTimer(FrameTimerWithArg(10, GoonBinTable, GoonBinTable));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+int FireSpriteBinTable()
+{
+	int arr[62], link, unit;
+	if (!link)
+	{
+		arr[0] = 1701996870; arr[1] = 1769107539; arr[2] = 25972; arr[3] = 0; arr[4] = 0; 
+		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
+		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
+		arr[15] = 0; arr[16] = 0; arr[17] = 85; arr[18] = 25; arr[19] = 100; 
+		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 65544; arr[24] = 1065353216; 
+		arr[25] = 0; arr[26] = 0; arr[27] = 0; arr[28] = 0; arr[29] = 0; 
+		arr[30] = 0; arr[31] = 0; arr[32] = 0; arr[33] = 0; arr[34] = 0; 
+		arr[35] = 0; arr[36] = 0; arr[37] = 1801545047; arr[38] = 1701996870; arr[39] = 1819042146; 
+		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
+		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
+		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 1128792064; arr[54] = 0; 
+		arr[55] = 15; arr[56] = 21; arr[57] = 0; arr[58] = 5545472; arr[59] = 0; 
+		arr[60] = 0; arr[61] = 0; 
+		CancelTimer(FrameTimerWithArg(10, FireSpriteBinTable, FireSpriteBinTable));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+void UnitLinkBinScript(int unit, int binAddr)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, binAddr);
+}
+
+void SetUnitVoice(int unit, int voiceIndex)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x1e8, VoiceList(voiceIndex));
+}
+
+int GetOwner(int unit)
+{
+    int ptr = UnitToPtr(unit), res;
+
+    if (ptr)
+    {
+        res = GetMemory(ptr + 0x1fc);
+        if (res)
+            return GetMemory(res + 0x2c);
+    }
+    return 0;
+}
+
+void SetUnitFlags(int unit, int flag)
+{
+	int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(ptr + 0x10, flag);
+}
+
+int GetUnitFlags(int unit)
+{
+	int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x10);
+    return 0;
+}
+
+void Callee()
+{
+    Callee();
+}
+
+void CallFunction(int func)
+{
+    int link;
+
+    if (!link)
+    {
+        CancelTimer(FrameTimerWithArg(10, Callee, Callee));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x20));
+    }
+    else
+    {
+        SetMemory(link + 4, func);
+        Callee();
+    }
+}
+
+int ImportCreateAtFunc()
+{
+    int arr[20], link;
+    if (!link)
+    {
+        arr[0] = 0xAA506856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xFF502414; arr[4] = 0x50042454;
+        arr[5] = 0x082454FF; arr[6] = 0x4085048B; arr[7] = 0x680097BB; arr[8] = 0x004E3810; arr[9] = 0x2454FF50;
+        arr[10] = 0x08C48304; arr[11] = 0xF685F08B; arr[12] = 0x006A0A74; arr[13] = 0x2454FF56; arr[14] = 0x08C48314;
+        arr[15] = 0x50723068; arr[16] = 0x54FF5600; arr[17] = 0xC4830424; arr[18] = 0x5EC03118; arr[19] = 0x909090C3; 
+        CancelTimer(FrameTimerWithArg(10, ImportCreateAtFunc, ImportCreateAtFunc));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+int CreateObjectAt(string name, float x, float y)
+{
+    int temp = GetMemory(0x5c3160), res;
+
+    SetMemory(0x5c3160, ImportCreateAtFunc());
+    res = CreateMover(SToInt(name), ToInt(x), y);
+    SetMemory(0x5c3160, temp);
+    if (res) return GetMemory(res + 0x2c);
+    else return 0;
+}
+
+int CalleeArgInt(int arg)
+{
+    return CalleeArgInt(arg);
+}
+
+int CallFunctionWithArgInt(int func, int arg)
+{
+    int link, ptr;
+
+    if (!link)
+    {
+        CancelTimer(FrameTimerWithArg(10, CalleeArgInt, CalleeArgInt));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x20));
+        return 0;
+    }
+    else
+    {
+        SetMemory(link + 0x10, func);
+        return CalleeArgInt(arg);
+    }
+}
+
+int GetUnitThingID(int unit)
+{
+	int ptr = UnitToPtr(unit);
+
+	if (ptr)
+		return GetMemory(ptr + 4);
+	return 0;
+}
+
+int ImportUnitToPtrFunc()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
+        arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3; 
+        CancelTimer(FrameTimerWithArg(10, ImportUnitToPtrFunc, ImportUnitToPtrFunc));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+int UnitToPtr(int unit)
+{
+    int temp = GetMemory(0x5c336c), res;
+    SetMemory(0x5c336c, ImportUnitToPtrFunc());
+    res = Unknownb8(unit);
+    SetMemory(0x5c336c, temp);
+	return res;
+}
+
+void UseMapSetting()
+{
+    SetMemory(0x5d5330, 0x2000);
+    SetMemory(0x5d5394, 1);
+}
+
+int DummyUnitCreate(string name, float locX, float locY)
+{
+    int unit = CreateObjectAt(name, locX, locY);
+
+    Damage(unit, 0, MaxHealth(unit) + 1, -1);
+    ObjectOff(unit);
+    Frozen(unit, 1);
+    return unit;
+}
+
+void SpecialUnitSearchEnd(int allCount)
+{
+    UniPrintToAll("모두 " + IntToString(allCount) + "개의 리워드 마커를 처리 완료했습니다");
+}
+
+void SpecialUnitRewardMarker(int cur)
+{
+    MoveWaypoint(1, GetObjectX(cur), GetObjectY(cur));
+    Delete(cur);
+    CallFunctionWithArgInt(FieldItemFunction() + Random(0, 6), 1);
+}
+
+void SpecialUnitSearching(int cur)
+{
+    int count, i;
+
+    for (i = 0 ; i < 10 ; i ++)
+    {
+        if (cur < LastUnitGlobalID)
+        {
+            if (GetUnitThingID(cur) == 2672)
+            {
+                SpecialUnitRewardMarker(cur);
+                count ++;
+            }
+            cur += 2;
+        }
+        else
+        {
+            SpecialUnitSearchEnd(count);
+            return;
+        }
+    }
+    FrameTimerWithArg(1, cur, SpecialUnitSearching);
+}
+
+void StartSpecialUnitSearch(int firstUnit)
+{
+    if (IsObjectOn(firstUnit))
+        SpecialUnitSearching(firstUnit + 2);
+}
+
+void ChangePlayerDeathSound(int handle, int soundNumber)
+{
+    SetMemory(handle + 0x258, soundNumber);
+}
+
+int OpcodeGetTargetAddr(int curAddr)
+{
+    return GetMemory(curAddr + 1) + curAddr + 5;
+}
+
+void OpcodeLoadEffectiveAddr(int loadAddr, int codeAddr, int offset)
+{
+    int targetAddr = OpcodeGetTargetAddr(codeAddr + offset);
+
+    SetMemory(loadAddr + offset + 1, targetAddr - (loadAddr + offset) - 5);
+}
+
+void OpcodeCopies(int destPtr, int callNodePtr, int startAddr, int endAddr)
+{
+    int destBase = destPtr;
+    int curAddr = startAddr;
+
+    while (curAddr <= endAddr)
+    {
+        SetMemory(destPtr, GetMemory(curAddr));
+        if (GetMemory(callNodePtr))
+        {
+            if (GetMemory(callNodePtr) + 1 <= curAddr)
+            {
+                OpcodeLoadEffectiveAddr(destBase, startAddr, GetMemory(callNodePtr) - startAddr);
+                callNodePtr += 4;
+            }
+        }
+        curAddr += 4;
+        destPtr += 4;
+    }
+}
+
+int DiePlayerHandlerCopiedCode()
+{
+    int arr[314], link, callNode;
+
+    if (!link)
+    {
+        CallNode54d2b0();
+        CancelTimer(FrameTimerWithArg(10, DiePlayerHandlerCopiedCode, DiePlayerHandlerCopiedCode));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        CancelTimer(FrameTimerWithArg(10, CallNode54d2b0, CallNode54d2b0));
+        callNode = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        OpcodeCopies(link, callNode, 0x54d2b0, 0x54d794);
+    }
+    return link;
+}
+
+void DiePlayerHandlerEntry(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+        SetMemory(ptr + 0x2d4, DiePlayerHandlerCopiedCode());
+}
+
+void CallNode54d2b0()
+{
+    int arr[40];
+
+    if (!arr[0])
+    {
+        arr[0] = 0x54d2d1;
+        arr[1] = 0x54d2e3;
+        arr[2] = 0x54d2f3;
+        arr[3] = 0x54d30a;
+        arr[4] = 0x54d348;
+        arr[5] = 0x54d375;
+        arr[6] = 0x54d3aa;
+        arr[7] = 0x54d45c;
+        arr[8] = 0x54d47b;
+        arr[9] = 0x54d513;
+        arr[10] = 0x54d527;
+        arr[11] = 0x54d566;
+        arr[12] = 0x54d574;
+        arr[13] = 0x54d588;
+        arr[14] = 0x54d594;
+        arr[15] = 0x54d5a6;
+        arr[16] = 0x54d5b2;
+        arr[17] = 0x54d5c4;
+        arr[18] = 0x54d5d1;
+        arr[19] = 0x54d5e2;
+        arr[20] = 0x54d5f4;
+        arr[21] = 0x54d610;
+        arr[22] = 0x54d622;
+        arr[23] = 0x54d62c;
+        arr[24] = 0x54d639;
+        arr[25] = 0x54d642;
+        arr[26] = 0x54d65b;
+        arr[27] = 0x54d662;
+        arr[28] = 0x54d668;
+        arr[29] = 0x54d67a;
+        arr[30] = 0x54d680;
+        arr[31] = 0x54d693;
+        arr[32] = 0x54d6a6;
+        arr[33] = 0x54d727;
+        arr[34] = 0x54d72d;
+        arr[35] = 0x54d733;
+        arr[36] = 0x54d73d;
+        arr[37] = 0x54d749;
+        arr[38] = 0x54d782;
+    }
+}
+
+/////PlayerHandlerClassEnd//////////////////
+
+
+int CallNode4f37d0()
+{
+    int arr[21];
+
+    if (!arr[0])
+    {
+        arr[0] = 0x4f37f1;
+        arr[1] = 0x4f3806;
+        arr[2] = 0x4f382e;
+        arr[3] = 0x4f3841;
+        arr[4] = 0x4f3852;
+        arr[5] = 0x4f3862;
+        arr[6] = 0x4f38d4;
+        arr[7] = 0x4f38fb;
+        arr[8] = 0x4f390a;
+        arr[9] = 0x4f3973;
+        arr[10] = 0x4f3992;
+        arr[11] = 0x4f39a1;
+        arr[12] = 0x4f39c8;
+        arr[13] = 0x4f39d9;
+        arr[14] = 0x4f39e2;
+        arr[15] = 0x4f39eb;
+        arr[16] = 0x4f3a06;
+        arr[17] = 0x4f3a19;
+        arr[18] = 0x4f3a2a;
+        arr[19] = 0x4f3a43;
+    }
+    return 0;
+}
+
+int CallNode4f31e0()
+{
+    int arr[12];
+
+    if (!arr[0])
+    {
+        arr[0] = 0x4f31e8;
+        arr[1] = 0x4f3200;
+        arr[2] = 0x4f3211;
+        arr[3] = 0x4f3223;
+        arr[4] = 0x4f325a;
+        arr[5] = 0x4f32c8;
+        arr[6] = 0x4f32e9;
+        arr[7] = 0x4f32f5;
+        arr[8] = 0x4f3315;
+        arr[9] = 0x4f3324;
+        arr[10] = 0x4f3330;
+    }
+    return 0;
+}
+
+int PotionPickupPart2Code()
+{
+    int arr[90], link, callNode;
+
+    if (!link)
+    {
+        CallNode4f31e0();
+        CancelTimer(FrameTimerWithArg(10, PotionPickupPart2Code, PotionPickupPart2Code));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        CancelTimer(FrameTimerWithArg(10, CallNode4f31e0, CallNode4f31e0));
+        callNode = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        OpcodeCopies(link, callNode, 0x4f31e0, 0x4f3344);
+    }
+    return link;
+}
+
+int PotionPickupPartCode()
+{
+    int arr[162], link, callNode;
+
+    if (!link)
+    {
+        CallNode4f37d0();
+        CancelTimer(FrameTimerWithArg(10, PotionPickupPartCode, PotionPickupPartCode));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        CancelTimer(FrameTimerWithArg(10, CallNode4f37d0, CallNode4f37d0));
+        callNode = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        OpcodeCopies(link, callNode, 0x4f37d0, 0x4f3a54);
+    }
+    return link;
+}
+
+void PotionPickupCustomizing()
+{
+    int ptr1 = PotionPickupPartCode();
+    int ptr2 = PotionPickupPart2Code();
+
+    SetMemory(ptr1 + 0x68, (GetMemory(ptr1 + 0x68) & 0xffffff00) | 0xeb);
+    SetMemory(ptr2 + 0x128, (GetMemory(ptr2 + 0x128) & 0xffffff00) | 0x09);
+    SetMemory(ptr1 + 0x25a + 1, ptr2 - (ptr1 + 0x25a) - 5);
+}
+
+int PotionPickupRegist(int potion)
+{
+    int ptr = UnitToPtr(potion);
+
+    if (ptr)
+    {
+        if (GetMemory(ptr + 0x2c4) == 0x4f37d0)
+            SetMemory(ptr + 0x2c4, PotionPickupPartCode());
+    }
+    return potion;
+}
+
+void DiePInit()
+{
+    int ptr = DiePlayerHandlerCopiedCode();
+    ChangePlayerDeathSound(ptr, 913);
+    SetMemory(ptr + 0x386, (GetMemory(ptr + 0x386) & 0xffff0000) | 0x9eb);
+}
+
+void MapInitialize()
+{
+    int t = EnableMemoryReadWriteFunction(0);
+
+    MusicEvent();
+    LastUnitGlobalID = MasterUnit();
+    ImportTellStoryUniNamePartB();
+    PotionPickupCustomizing();
+    DiePInit();
+    CallFunction(0);
+    CallFunctionWithArgInt(0, 0);
+    ImportUnitToPtrFunc();
+    ImportCreateAtFunc();
+    ImportMonsterStrikeFunc();
+    ImportMonsterActionPush();
+    ImportUniChatCore();
+    ImportUniPrintCore();
+    VoiceList(0);
+    MapPotionPlace("RedPotion");
+    MathSine(0, 0.0);
+    InitJailSwitchs();
+    RedMagicItem();
+    BlueMagicItem();
+    ImportPlaySoundAround();
+    ImportUnitCollideFunc();
+    OrbGreen();
+    FrameTimerWithArg(25, Object("StopElevator"), DelayDisableUnit);
+    FrameTimerWithArg(25, Object("OgreElev"), DelayDisableUnit);
+    FrameTimerWithArg(35, Object("MinesNewElev"), DelayDisableUnit);
+    FrameTimer(1, SetGameTypeCoopMode);
+    FrameTimer(20, MapStandBy);
+    MapWaypointInit();
+}
+
+int GetWordValue(int num)
+{
+	return num & 0xffff;
+}
+
+void WriteAddressByteValue(int addr, int byt)
+{
+	int temp = GetMemory(addr) & 0xffffff00;
+	SetMemory(addr, temp | byt);
+}
+
+int NoxUnicodeToUtf8(int src, int destPtr)
+{
+	int i, byt, dest = destPtr;
+
+	for (i = 0 ; i < 20 ; i ++)
+	{
+		byt = GetWordValue(GetMemory(src));
+        if (!byt) break;
+		if (byt < 0x80)
+		{
+			WriteAddressByteValue(dest, byt);
+			dest ++;
+		}
+		else if (byt < 0x800)
+		{
+			WriteAddressByteValue(dest, ((byt >> 6) & 0x1f) | 0xc0);
+			WriteAddressByteValue(dest + 1, (byt & 0x3f) | 0x80);
+			dest += 2;
+		}
+		else
+		{
+			WriteAddressByteValue(dest, ((byt >> 12) & 0x0f) | 0xe0);
+			WriteAddressByteValue(dest + 1, ((byt >> 6) & 0x3f) | 0x80);
+			WriteAddressByteValue(dest + 2, (byt & 0x3f) | 0x80);
+			dest += 3;
+		}
+        src += 2;
+	}
+    WriteAddressByteValue(dest, 0);
+	return dest - destPtr;
+}
+
+string PlayerIngameNick(int sUnit)
+{
+    string emptyName = {
+        "00:01234567890123456789abcd0123456789abxyz", "01:01234567890123456789abcd0123456789abxyz",
+        "02:01234567890123456789abcd0123456789abxyz", "03:01234567890123456789abcd0123456789abxyz",
+        "04:01234567890123456789abcd0123456789abxyz", "05:01234567890123456789abcd0123456789abxyz",
+        "06:01234567890123456789abcd0123456789abxyz", "07:01234567890123456789abcd0123456789abxyz",
+        "08:01234567890123456789abcd0123456789abxyz", "09:01234567890123456789abcd0123456789abxyz",
+        "10:01234567890123456789abcd0123456789abxyz", "11:01234567890123456789abcd0123456789abxyz",
+        "12:01234567890123456789abcd0123456789abxyz", "13:01234567890123456789abcd0123456789abxyz",
+        "14:01234567890123456789abcd0123456789abxyz", "15:01234567890123456789abcd0123456789abxyz",
+        "16:01234567890123456789abcd0123456789abxyz", "17:01234567890123456789abcd0123456789abxyz",
+        "18:01234567890123456789abcd0123456789abxyz", "19:01234567890123456789abcd0123456789abxyz",
+        "20:01234567890123456789abcd0123456789abxyz", "21:01234567890123456789abcd0123456789abxyz",
+        "22:01234567890123456789abcd0123456789abxyz", "23:01234567890123456789abcd0123456789abxyz",
+        "24:01234567890123456789abcd0123456789abxyz", "25:01234567890123456789abcd0123456789abxyz",
+        "26:01234567890123456789abcd0123456789abxyz", "27:01234567890123456789abcd0123456789abxyz",
+        "28:01234567890123456789abcd0123456789abxyz", "29:01234567890123456789abcd0123456789abxyz",
+        "30:01234567890123456789abcd0123456789abxyz", "31:01234567890123456789abcd0123456789abxyz"};
+    int ptr = UnitToPtr(sUnit), plrIndex, destPtr, srcPtr;
+    
+    if (ptr)
+    {
+        if (GetMemory(ptr + 0x08) & 4)
+        {
+            plrIndex = GetMemory(GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x810);
+            destPtr = GetMemory(0x97bb40 + ((SToInt(emptyName) + plrIndex) * 4));
+            srcPtr = GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x889;
+            NoxUnicodeToUtf8(srcPtr, destPtr);
+            return ToStr(SToInt(emptyName) + plrIndex);
+        }
+    }
+    return "NULL";
+}
+
+int PlayerClassItemTable()
+{
+    int picker;
+    int itemTable[1300];
+}
+
+int PlayerClassItemIndexTable(int arg0)
+{
+    int plr = arg0 & 0xff, isSave = (arg0 >> 0x8) & 0xff, table[10];
+
+    if (isSave)
+        table[plr] = arg0 >> 0x10;
+    return table[plr];
+}
+
+int PlayerClassPickAll(int pUnit, int tablePtr4, int startIndex)
+{
+    int count = GetMemory(tablePtr4 + (startIndex * 4)), i;
+
+    if (count > GetHost()) return 0;
+    for (i = count ; i ; i --)
+        Pickup(pUnit, GetMemory(tablePtr4 + (((startIndex + i) % 1300) * 4)));
+    return 1;
+}
+
+int PlayerClassDropAll(int pUnit, int tablePtr)
+{
+    int cntPtr = tablePtr, inv = GetLastItem(pUnit), headIndex = GetMemory(tablePtr), count = 0;
+
+    tablePtr += 4;
+    while (inv)
+    {
+        count ++;
+        SetMemory(cntPtr, (GetMemory(cntPtr) + 1) % 1300);
+        SetMemory(tablePtr + (GetMemory(cntPtr) * 4), inv);
+        Drop(pUnit, inv);
+        inv = GetLastItem(pUnit);
+    }
+    SetMemory(tablePtr + (headIndex * 4), count);
+    return headIndex;
+}
+
+void MapStandBy()
+{
+    MinesBook(44);
+    UseMapSetting();
+    Sentry();
+    OgreKey();
+    PutBones(10, 23);
+    SetStartSwitch(1);
+    GridKey();
+    SpawnSpellbooks();
+    FrameTimer(1, PutMapDecorations);
+    FrameTimer(3, InitItemAddress);
+    FrameTimer(2, PlaceArea1Monsters);
+    FrameTimer(10, LoopPreservePlayers);
+    FrameTimer(20, InitGirls);
+    SecondTimerWithArg(3, 0, HowToPlay);
+    InitCProperty();
+}
+
+void InitItemAddress()
+{
+    WeaponEffect();
+    WeaponPower();
+    MaterialList();
+    ArmorEffect();
+    ArmorQuality();
+    FrameTimerWithArg(1, Object("FirstSearchUnit"), StartSpecialUnitSearch);
+}
+
+string GameGuide(int num)
+{
+    string table =
+    "맵 이름: 11명의 여자구출작전";
+    "당신의 임무: 이 마을 곳곳에 11명의 여자들이 인질로 잡혀있습니다, 당신은 이 여자들을 모두 구출해 내야합니다";
+    "여자를 발견했다면 클릭(말걸기)하여 자신을 따라오게 한 후 필드 시작지점 출입문 안으로 데려오면 구출된 것으로 간주됩니다";
+    "캐릭터의 부활터에 있는 두 여성은 단순한 NPC가 아닌 상인입니다, 클릭하여 상점을 이용할 수 있습니다";
+    "게임 팁_ 조심스럽게 걷기를 시전하면 전방에 나무구조물을 던져 적에게 피해를 줄 수 있습니다";
+    "게임 팁_ 필드 곳곳에 랜덤한 아이템들이 널부러져 있습니다, 가끔은 골드가 있을 수도 있고 최고급 옵션의 무기나 갑옷이 있을 수도 있습니다";
+    "게임 팁_ 미션완수도 중요하지만 조금만 더 여유를 가지시고 맵 구석구석을 잘 조사하신다면 좋은 아이템을 얻으실 수 있을것입니다";
+    "게임 팁_ 독저항 물약을 사용하면 부활터로 이동됩니다, 귀찮음을 방지하기 위해서라도 독저항 물약을 많이 모아두시기 바랍니다";
+    "게임 팁_ 이곳에서의 우물은 일정시간동안 당신의 체력을 서서히 회복시켜줍니다, 우물을 버프삼아 전투를 한다면 많은 도움이 될 것입니다";
+    "게임 팁_ 이 맵에는 3개의 보스 몬스터가 존재합니다, 참고하시기 바랍니다";
+    "게임 팁_ 이 맵에서는 캐릭터가 격추되어도 아이템을 잃지 않습니다, 그렇지만 원활한 기능동작을 위해 무기 갑옷되살리기 기능을 끄십시오";
+    return ToStr(SToInt(table) + num);
+}
+
+void HowToPlay(int num)
+{
+    if (num < 10)
+    {
+        UniPrintToAll(GameGuide(num));
+        SecondTimerWithArg(5, num + 1, HowToPlay);
+    }
+}
+
+void UserMapSign()
+{
+    RegistSignMessage(Object("UniSign1"), "마나광산 입구: 이곳에 들어가려면 출입증이 필요하다");
+    RegistSignMessage(Object("UniSign2"), "지하 채굴장 출입구");
+    RegistSignMessage(Object("UniSign3"), "이 우물을 클릭하면 잠시동안 체력 회복속도가 향상됩니다");
+    RegistSignMessage(Object("UniSign4"), "11명의 여자 인질 구출 대작전!");
+    RegistSignMessage(Object("UniSign5"), "육군 교도소- 붉은 마법사에게서 열쇠를 얻어낼 수 있을것이다");
+    RegistSignMessage(Object("UniSign6"), "마을 회장님의 저택입니다. 캡스 경비구역이기도 하니 관계자 외 출입을 삼가하십시오");
+    RegistSignMessage(Object("UniSign7"), "쥐불놀이라고 들어봤니?");
+    RegistSignMessage(Object("UniSign8"), "커닝시티 워닝 스트리트 삼거리");
+    RegistSignMessage(Object("UniSign9"), "정말로 필드로 나가실거에요? 거긴 위험해요!");
+    RegistSignMessage(Object("UniSign10"), "지도 곳곳에 흩어진 11명의 행방불명 실종 여고생들을 구출하라!");
+    RegistSignMessage(Object("UniSign11"), "바이올런스 가");
+    RegistSignMessage(Object("UniSign12"), "이 아래는 지하 창고 입니다");
+    RegistSignMessage(Object("UniSign13"), "바이올런스 가: 어둡고 음침한 도시지역이다");
+    RegistSignMessage(Object("UniSign14"), "자신이 힘좀 쎄다고 생각하면 걸어올라 와봐 by. 오우거 총장");
+    RegistSignMessage(Object("UniSign15"), "오우거 밀집 거주지역");
+    RegistSignMessage(Object("UniSign16"), "노예 수용시설");
+    RegistSignMessage(Object("UniSign17"), "건물 옥상 축구경기장");
+}
+
+void PutMapDecorations()
+{
+    int unit;
+    
+    FrameTimer(2, MovingTestStart);
+    FrameTimer(1, UserMapSign);
+    Frozen(CreateObject("DunMirScaleTorch1", 59), 1);
+    Frozen(CreateObject("DunMirScaleTorch1", 60), 1);
+    Frozen(CreateObject("DunMirScaleTorch1", 61), 1);
+    Frozen(CreateObject("DunMirScaleTorch1", 62), 1);
+    unit = CreateObject("Maiden", 68);
+    CreateObject("Maiden", 69);
+    CreateObject("Maiden", 71);
+    CreateObject("Maiden", 123);
+    CreateObject("Maiden", 53);
+    CreateObject("Maiden", 52);
+    CreateObject("Maiden", 169);
+    Frozen(unit, 1);
+    Frozen(unit + 1, 1);
+    Frozen(unit + 2, 1);
+    Frozen(unit + 3, 1);
+    Frozen(unit + 4, 1);
+    LookWithAngle(unit + 4, 0);
+    Frozen(unit + 5, 1);
+    LookWithAngle(unit + 5, 1);
+    Frozen(unit + 6, 1);
+    SetCallback(unit, 9, OpenWoodGate);
+    SetCallback(unit + 1, 9, OpenHiddenGate);
+    SetCallback(unit + 2, 9, OpenUnderGate);
+    SetCallback(unit + 3, 9, OpenOgreDoors);
+    SetCallback(unit + 4, 9, FieldTeleport);
+    SetCallback(unit + 5, 9, FieldTeleport);
+    SetCallback(unit + 6, 9, OpenUndergroundGate);
+    SpawnWaspNest(118);
+    SpawnWaspNest(119);
+    SpawnWaspNest(120);
+    SpawnWaspNest(121);
+    Frozen(CreateObject("Candleabra5", 136), 1);
+    Frozen(CreateObject("Candleabra5", 137), 1);
+    Frozen(CreateObject("Candleabra5", 138), 1);
+    FrameTimer(1, Dec2);
+    FrameTimerWithArg(2, 0, AllChestInit);
+    FrameTimerWithArg(2, 1, AllChestInit);
+    FrameTimerWithArg(2, 2, AllChestInit);
+    FrameTimerWithArg(3, Object("OgrePartChest"), GoOgrePartBox);
+    HiddenMarketChest("HiddenChest", 1);
+}
+
+void Dec2()
+{
+    CreateObject("BlackPowderBarrel", 222);
+    CreateObject("BlackPowderBarrel", 223);
+    CreateObject("BlackPowderBarrel2", 223);
+    Frozen(CreateObject("BoulderCave", 224), 1);
+    Frozen(CreateObject("BoulderCave", 227), 1);
+    CreateObject("Boulder", 225);
+    SpawnBlackSpider(225);
+}
+
+void PlaceArea1Monsters()
+{
+    int ptr;
+    SpawnWolf(24); SpawnWolf(25); SpawnMecaFly(23); SpawnMecaFly(26);
+
+    ptr = SpawnRedWizard(39);
+    SetCallback(ptr, 3, JailKeeperTalk);
+    SetCallback(ptr, 5, DeadJailRedWizard);
+    SpawnBlackSpider(2);
+    SpawnBlackSpider(2);
+    SpawnBlackSpider(2);
+    SpawnBear(155);
+    SpawnArcher(156);
+    SpawnArcher(157);
+    SpawnArcher(158);
+    SpawnArcher(159);
+    SpawnMecaFly(160);
+    SpawnBlackSpider(36);
+    SpawnCreature("Shade", 29, 180);
+    SpawnCreature("Shade", 29, 180);
+    SpawnCreature("Shade", 29, 180);
+    SpawnArcher(161);
+    SpawnArcher(162);
+    SpawnArcher(163);
+    SpawnArcher(164);
+    SpawnSwordsman(165);
+    SpawnSwordsman(165);
+    SpawnSwordsman(165);
+    SpawnSwordsman(18);
+    SpawnCreature("AlbinoSpider", 15, 130);
+    SpawnCreature("AlbinoSpider", 15, 130);
+    SpawnBlackSpider(16);
+    SpawnCreature("SpittingSpider", 30, 140);
+    SpawnCreature("SpittingSpider", 30, 140);
+    SpawnCreature("SpittingSpider", 30, 140);
+    SpawnMecaFly(34);
+    SpawnMecaFly(34);
+}
+
+void PlaceArea2Monsters()
+{
+    int unit = SpawnWisp(178);
+    SetCallback(unit, 5, Area2WispDead);
+
+    SpawnSwordsman(179);
+    SpawnArcher(179);
+    SpawnSwordsman(179);
+    SpawnBlackSpider(171);
+    SpawnMystic(171);
+    SpawnCreature("BlackWolf", 172, 225);
+    SpawnCreature("BlackWolf", 172, 225);
+    SpawnCreature("BlackWolf", 172, 225);
+    SpawnMecaFly(177);
+    SpawnMecaFly(177);
+    SpawnSwordsman(178);
+    SpawnSwordsman(178);
+    SpawnSwordsman(178);
+    SpawnSwordsman(178);
+    SpawnSwordsman(178);
+    SpawnSwordsman(178);
+    SpawnSwordsman(178);
+    SpawnSwordsman(178);
+    SpawnSwordsman(178);
+    SpawnGhost(174);
+    SpawnGhost(173);
+    SpawnGhost(176);
+    SpawnBlackSpider(175);
+    SpawnBear(175);
+}
+
+void PlaceArea21Monsters()
+{
+    SpawnZombie(180);
+    SpawnSkeletonLord(180);
+    SpawnZombie(181);
+    SpawnSkeletonLord(181);
+    SpawnSkeleton(182);
+    SpawnSkeletonLord(182);
+    SpawnSkeleton(183);
+    SpawnSkeletonLord(183);
+    SpawnGhost(184);
+    SpawnGhost(184);
+    SpawnMystic(184);
+    SpawnCreature("EvilCherub", 185, 64);
+    SpawnCreature("EvilCherub", 185, 64);
+    SpawnMecaFly(185);
+    SpawnCreature("EvilCherub", 186, 64);
+    SpawnCreature("EvilCherub", 186, 64);
+    SpawnArcher(186);
+    SpawnGhost(187);
+    SpawnSkeleton(187);
+    SpawnZombie(42);
+}
+
+void PlaceOgreMonsters()
+{
+    ObjectOff(self);
+    SpawnWisp(201);
+    SpawnWisp(202);
+    SpawnOgress(189);
+    SpawnOgress(189);
+    SpawnScorpion(10);
+    SpawnOgress(10);
+    SpawnOgre(190);
+    SpawnOgre(191);
+    SpawnOgress(192);
+    SpawnOgre(122);
+    SpawnScorpion(122);
+    SpawnBear(193);
+    SpawnOgre(194);
+    SpawnOgre(195);
+    SpawnOgress(195);
+    SpawnOgre(196);
+    SpawnScorpion(196);
+    SpawnOgre(197);
+    SpawnOgress(198);
+    SpawnOgress(199);
+    SpawnBear(200);
+    SpawnOgre(203);
+    SpawnSkeletonLord(203);
+    SpawnOgre(204);
+    SpawnSkeletonLord(204);
+    FrameTimerWithArg(1, 188, PutSwampUrchins);
+}
+
+void LastPartMonsters()
+{
+    int unit = CreateObject("Maiden", 414);
+    Frozen(unit, 1);
+    SetCallback(unit, 9, OpenLastArchDoors);
+    SpawnSkeletonLord(408);
+    SpawnSkeletonLord(408);
+    SpawnSkeletonLord(408);
+    SpawnImp(409);
+    SpawnImp(409);
+    SpawnMystic(410);
+    SpawnMystic(410);
+    SpawnSwordsman(410);
+    SpawnGoon(411);
+    SpawnGoon(411);
+    SpawnGoon(412);
+    SpawnGoon(412);
+    SpawnImp(412);
+    SpawnImp(415);
+    SpawnImp(415);
+    SpawnImp(415);
+    SpawnImp(416);
+    SpawnImp(416);
+    SpawnImp(416);
+    SpawnSwordsman(417);
+    SpawnSwordsman(417);
+    SpawnImp(417);
+    SpawnSwordsman(418);
+    SpawnSwordsman(418);
+    SpawnSwordsman(418);
+    SpawnSwordsman(419);
+    SpawnSkeletonLord(419);
+    SpawnGoon(419);
+    FrameTimer(3, LastPartMonsters2);
+}
+
+void LastPartMonsters2()
+{
+    SpawnCreature("EmberDemon", 420, 96);
+    SpawnImp(420);
+    SpawnImp(420);
+    SpawnZombie(421);
+    SpawnZombie(421);
+    SpawnWolf(421);
+    SpawnImp(422);
+    SpawnArcher(422);
+    SpawnSwordsman(422);
+    SpawnGoon(423);
+    SpawnGoon(423);
+    SpawnScorpion(423);
+    SpawnMystic(424);
+    SpawnImp(425);
+    SpawnImp(425);
+    SpawnMystic(426);
+    SpawnImp(427);
+    SpawnImp(427);
+}
+
+int MasterUnit()
+{
+    int unit;
+
+    if (!unit)
+    {
+        unit = CreateObject("Hecubah", 150);
+        Frozen(unit, 1);
+    }
+    return unit;
+}
+
+void DeadJailRedWizard()
+{
+    int ptr;
+    MoveObject(RedMagicItem(), GetObjectX(self), GetObjectY(self));
+    ptr = SpawnBlackSpider(38);
+    SpawnBlackSpider(64);
+    SpawnBlackSpider(65);
+    SpawnBlackSpider(66);
+    SpawnBlackSpider(67);
+    LookWithAngle(ptr, 96);
+    LookWithAngle(ptr+1, 96);
+    LookWithAngle(ptr+2, 96);
+    LookWithAngle(ptr+3, 96);
+    LookWithAngle(ptr+4, 96);
+}
+
+void RedWizardMeleeAttack()
+{
+    int victim = GetVictimUnit();
+
+    if (CurrentHealth(victim) && IsVisibleTo(self, victim))
+    {
+        ForceCastSpell(self, 0, GetObjectX(self) + UnitRatioX(victim, self, 30.0), GetObjectY(self) + UnitRatioY(victim, self, 30.0));
+        Damage(victim, self, 30, 16);
+    }
+}
+
+int RedWizMeleeAttackFunc()
+{
+    StopScript(RedWizardMeleeAttack);
+}
+
+void NothingTrigger()
+{
+    return;
+}
+
+void JailKeeperTalk()
+{
+    SetCallback(self, 3, NothingTrigger);
+    PlaySoundAround(self, 614);
+    UniChatMessage(self, "아니 이봐, 당신은 이곳에 들어올 수 없어!\n저놈을 당장 죽여!", 150);
+}
+
+int SpawnCreature(string name, int wp, int hp)
+{
+    int unit = CreateObject(name, wp);
+
+    SetUnitMaxHealth(unit, hp);
+    SetCallback(unit, 5, FieldMonsterDeath);
+    return unit;
+}
+
+int SpawnRedWizard(int wp)
+{
+    int id = CreateObject("WizardRed", wp);
+
+    WizardRedSubProcess(id);
+    RegistryUnitStrikeFunction(id, RedWizMeleeAttackFunc());
+    //SetCallback(id, 3, RWizWeapon);
+    SetOwner(MasterUnit(), id);
+    SetCallback(id, 5, FieldMonsterDeath);
+    //SetCallback(id, 8, FleeEvent);
+    //SetCallback(id, 13, FleeEvent);
+    return id;
+}
+
+int SpawnBlackSpider(int wp)
+{
+    int id = CreateObject("BlackWidow", wp);
+
+    UnitLinkBinScript(id, BlackWidowBinTable());
+    SetUnitVoice(id, 29);
+    CreatureGuard(id, GetObjectX(id), GetObjectY(id), GetObjectX(id), GetObjectY(id), 450.0);
+    SetUnitMaxHealth(id, 250);
+    SetCallback(id, 5, BlackSpiderDeath);
+    SetOwner(MasterUnit(), id);
+
+    return id;
+}
+
+int SpawnMecaFly(int wp)
+{
+    int unit = CreateObject("FlyingGolem", wp);
+
+    CreatureGuard(unit, GetObjectX(unit), GetObjectY(unit), GetObjectX(unit), GetObjectY(unit), 450.0);
+    SetUnitMaxHealth(unit, 130);
+    SetCallback(unit, 3, MecaFlyWeapon);
+    SetCallback(unit, 5, FieldMonsterDeath);
+    SetOwner(MasterUnit(), unit);
+
+    return unit;
+}
+
+int SpawnUrchinShaman(int wp)
+{
+    int unit = CreateObject("UrchinShaman", wp);
+
+    SetUnitMaxHealth(unit, 170);
+    SetOwner(MasterUnit(), unit);
+    SetCallback(unit, 5, FieldMonsterDeath);
+    SetCallback(unit, 8, FleeEvent);
+    SetCallback(unit, 13, FleeEvent);
+    return unit;
+}
+
+int SpawnMystic(int wp)
+{
+    int id = CreateObject("Wizard", wp);
+
+    SetUnitMaxHealth(id, 225);
+    Enchant(id, "ENCHANT_ANCHORED", 0.0);
+    CreatureGuard(id, GetObjectX(id), GetObjectY(id), GetObjectX(id), GetObjectY(id), 450.0);
+    SetOwner(MasterUnit(), id);
+    SetCallback(id, 5, FieldMonsterDeath);
+    SetCallback(id, 8, FleeEvent);
+    SetCallback(id, 13, FleeEvent);
+
+    return id;
+}
+
+int SpawnSwordsman(int wp)
+{
+    int id = CreateObject("Swordsman", wp);
+
+    SetUnitMaxHealth(id, 310);
+    CreatureGuard(id, GetObjectX(id), GetObjectY(id), GetObjectX(id), GetObjectY(id), 450.0);
+    SetCallback(id, 3, TheifWeapon);
+    SetCallback(id, 5, FieldMonsterDeath);
+    SetOwner(MasterUnit(), id);
+    RetreatLevel(id, 0.0);
+    ResumeLevel(id, 1.0);
+    AggressionLevel(id, 1.0);
+
+    return id;
+}
+
+int SpawnArcher(int wp)
+{
+    int id = CreateObject("Archer", wp);
+
+    SetUnitMaxHealth(id, 98);
+    CreatureGuard(id, GetObjectX(id), GetObjectY(id), GetObjectX(id), GetObjectY(id), 450.0);
+    SetOwner(MasterUnit(), id);
+    SetCallback(id, 5, FieldMonsterDeath);
+    RetreatLevel(id, 0.0);
+    ResumeLevel(id, 1.0);
+    AggressionLevel(id, 1.0);
+    return id;
+}
+
+int SpawnGhost(int wp)
+{
+    int id = CreateObject("Ghost", wp);
+
+    UnitLinkBinScript(id, GhostBinTable());
+    Enchant(id, "ENCHANT_HASTED", 0.0);
+    Enchant(id, "ENCHANT_REFLECTIVE_SHIELD", 0.0);
+    Enchant(id, "ENCHANT_VAMPIRISM", 0.0);
+    Enchant(id, "ENCHANT_INFRAVISION", 0.0);
+    SetUnitMaxHealth(id, 64);
+    SetCallback(id, 5, FieldMonsterDeath);
+    CreatureGuard(id, GetObjectX(id), GetObjectY(id), GetObjectX(id), GetObjectY(id), 450.0);
+    SetOwner(MasterUnit(), id);
+    RetreatLevel(id, 0.0);
+    AggressionLevel(id, 1.0);
+
+    return id;
+}
+
+int SpawnWisp(int wp)
+{
+    int id = CreateObject("WillOWisp", wp);
+
+    SetUnitMaxHealth(id, 295);
+    SetOwner(MasterUnit(), id);
+    UnitZeroFleeRange(id);
+    SetCallback(id, 5, FieldMonsterDeath);
+    SetCallback(id, 8, FleeEvent);
+    SetCallback(id, 13, FleeEvent);
+
+    return id;
+}
+
+int SpawnWolf(int wp)
+{
+    int id = CreateObject("WhiteWolf", wp);
+
+    SetUnitMaxHealth(id, 130);
+    SetCallback(id, 5, FieldMonsterDeath);
+    SetOwner(MasterUnit(), id);
+    return id;
+}
+
+int SpawnBear(int wp)
+{
+    int id = CreateObject("Bear", wp);
+
+    SetUnitMaxHealth(id, 325);
+    SetCallback(id, 5, FieldMonsterDeath);
+    SetOwner(MasterUnit(), id);
+    RetreatLevel(id, 0.0);
+    return id;
+}
+
+int SpawnSpirit(int wp)
+{
+    int id = CreateObject("FireSprite", wp);
+
+    UnitLinkBinScript(id, FireSpriteBinTable());
+    
+    SetUnitMaxHealth(id, 128);
+    SetUnitStatus(id, GetUnitStatus(id) ^ 0x10000);
+    SetOwner(MasterUnit(), id);
+    SetCallback(id, 5, FieldMonsterDeath);
+
+    return id;
+}
+
+int SpawnZombie(int wp)
+{
+    int id = CreateObject("VileZombie", wp);
+    int ptr = GetMemory(0x750710);
+
+    SetUnitMaxHealth(id, 306);
+    SetMemory(ptr + 0x224, ToInt(1.5));
+    CreatureGuard(id, GetObjectX(id), GetObjectY(id), GetObjectX(id), GetObjectY(id), 450.0);
+    SetOwner(MasterUnit(), id);
+    SetCallback(id, 5, DeadZombieEvent);
+    SetCallback(id, 3, ZombieStrike);
+
+    return id;
+}
+
+int SpawnSkeletonLord(int wp)
+{
+    int id = CreateObject("SkeletonLord", wp);
+
+    CreatureGuard(id, GetObjectX(id), GetObjectY(id), GetObjectX(id), GetObjectY(id), 450.0);
+    SetUnitMaxHealth(id, 300);
+    SetOwner(MasterUnit(), id);
+    SetCallback(id, 3, SkullLordStrike);
+    SetCallback(id, 5, FieldMonsterDeath);
+
+    return id;
+}
+
+int SpawnSkeleton(int wp)
+{
+    int id = CreateObject("Skeleton", wp);
+
+    CreatureGuard(id, GetObjectX(id), GetObjectY(id), GetObjectX(id), GetObjectY(id), 450.0);
+    SetUnitMaxHealth(id, 225);
+    SetOwner(MasterUnit(), id);
+    SetCallback(id, 5, FieldMonsterDeath);
+
+    return id;
+}
+
+int SpawnScorpion(int wp)
+{
+    int id = CreateObject("Scorpion", wp);
+
+    SetUnitMaxHealth(id, 225);
+    SetOwner(MasterUnit(), id);
+    SetCallback(id, 3, ReleasePoison);
+    SetCallback(id, 5, FieldMonsterDeath);
+
+    return id;
+}
+
+int SpawnOgress(int wp)
+{
+    int id = CreateObject("GruntAxe", wp);
+    int ptr = GetMemory(0x750710);
+
+    SetUnitMaxHealth(id, 225);
+    SetOwner(MasterUnit(), id);
+    SetMemory(ptr + 0xc, GetMemory(ptr + 0xc) ^ 0x200);
+    SetCallback(id, 5, FieldMonsterDeath);
+
+    return id;
+}
+
+int SpawnOgre(int wp)
+{
+    int id = CreateObject("OgreBrute", wp);
+    int ptr = GetMemory(0x750710);
+
+    SetUnitMaxHealth(id, 280);
+    SetOwner(MasterUnit(), id);
+    SetMemory(ptr + 0xc, GetMemory(ptr + 0xc) ^ 0x200);
+    SetCallback(id, 5, FieldMonsterDeath);
+
+    return id;
+}
+
+int SpawnGoon(int wp)
+{
+    int id = CreateObject("Goon", wp);
+    int ptr = GetMemory(0x750710);
+
+    UnitLinkBinScript(id, GoonBinTable());
+    SetUnitVoice(id, 63);
+    SetUnitMaxHealth(id, 128);
+    SetOwner(MasterUnit(), id);
+    SetMemory(ptr + 0xc, GetMemory(ptr + 0xc) ^ 0x200);
+    SetCallback(id, 3, GoonAttack);
+    SetCallback(id, 5, FieldMonsterDeath);
+
+    return id;
+}
+
+int SpawnImp(int wp)
+{
+    int id = CreateObject("Imp", wp);
+
+    SetUnitMaxHealth(id, 96);
+    SetOwner(MasterUnit(), id);
+    SetCallback(id, 3, ImpStrike);
+    SetCallback(id, 5, FieldMonsterDeath);
+
+    return id;
+}
+
+int SpawnBeast(int wp)
+{
+    int id = CreateObject("WeirdlingBeast", wp);
+
+    SetUnitMaxHealth(id, 130);
+    UnitLinkBinScript(id, WeirdlingBeastBinTable());
+    UnitZeroFleeRange(id);
+    SetOwner(MasterUnit(), id);
+    SetCallback(id, 5, FieldMonsterDeath);
+    
+    return id;
+}
+
+int SpawnDryad(int wp)
+{
+    int id = CreateObject("WizardGreen", wp);
+
+    CreateObject("InvisibleLightBlueHigh", wp);
+    CreateObject("InvisibleLightBlueHigh", wp);
+    CreateObject("InvisibleLightBlueHigh", wp);
+    CreateObject("InvisibleLightBlueHigh", wp);
+
+    Enchant(id, "ENCHANT_ANCHORED", 0.0);
+    SetUnitMaxHealth(id, 192);
+    SetOwner(MasterUnit(), id);
+    SetCallback(id, 3, DryadStrike);
+    SetCallback(id, 5, DryadDeath);
+
+    return id;
+}
+
+void RWizWeapon()
+{
+    if (CurrentHealth(other))
+    {
+        Effect("SENTRY_RAY", GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other));
+        Damage(other, self, 30, 16);
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+        {
+            Enchant(self, "ENCHANT_DETECTING", 0.0);
+            FrameTimerWithArg(30, GetTrigger(), ResetUnitSight);
+        }
+    }
+}
+
+void MecaFlyWeapon()
+{
+    int mis;
+    if (CurrentHealth(other))
+    {
+        MoveWaypoint(1, GetObjectX(self) - UnitRatioX(self, other, 19.0), GetObjectY(self) - UnitRatioY(self, other, 19.0));
+        mis = CreateObject("CherubArrow", 1);
+        SetOwner(self, mis);
+        LookAtObject(mis, other);
+        PushObject(mis, -45.0, GetObjectX(other), GetObjectY(other));
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+        {
+            Enchant(self, "ENCHANT_DETECTING", 0.0);
+            FrameTimerWithArg(25, GetTrigger(), ResetUnitSight);
+        }
+    }
+}
+
+void TheifWeapon()
+{
+    int mis;
+
+    if (CurrentHealth(other))
+    {
+        MoveWaypoint(1, GetObjectX(self) - UnitRatioX(self, other, 19.0), GetObjectY(self) - UnitRatioY(self, other, 19.0));
+        AudioEvent("ChakramThrow", 1);
+        mis = CreateObject("OgreShuriken", 1);
+        SetOwner(self, mis);
+        Enchant(mis, "ENCHANT_SHOCK", 0.0);
+        PushObject(mis, -45.0, GetObjectX(other), GetObjectY(other));
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+        {
+            Enchant(self, "ENCHANT_DETECTING", 0.0);
+            FrameTimerWithArg(45, GetTrigger(), ResetUnitSight);
+        }
+    }
+}
+
+void GhostAttack()
+{
+	if (CurrentHealth(other))
+	{
+		CreatureIdle(self);
+		LookAtObject(self, other);
+		AggressionLevel(self, 1.0);
+		CreatureHunt(self);
+		if (!HasEnchant(self, "ENCHANT_DETECTING"))
+		{
+			Enchant(self, "ENCHANT_DETECTING", 0.0);
+			FrameTimerWithArg(15, GetTrigger(), ResetUnitSight);
+		}
+	}
+}
+
+void ZombieStrike()
+{
+    if (CurrentHealth(other))
+    {
+        if (Distance(GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other)) < 80.0)
+        {
+            MoveWaypoint(41, GetObjectX(self), GetObjectY(self));
+            AudioEvent("CrushHard", 41);
+            PushObjectTo(self, -UnitRatioX(self, other, 80.0), -UnitRatioY(self, other, 80.0));
+            Effect("CHARM", GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other));
+            Damage(other, self, 20, 10);
+            RestoreHealth(self, 10);
+        }
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+		{
+			Enchant(self, "ENCHANT_DETECTING", 0.0);
+			FrameTimerWithArg(65, GetTrigger(), ResetUnitSight);
+		}
+    }
+}
+
+void SkullLordStrike()
+{
+    if (CurrentHealth(other))
+    {
+        if (Distance(GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other)) < 100.0)
+        {
+            MoveWaypoint(41, GetObjectX(other), GetObjectY(other));
+            Effect("LIGHTNING", GetObjectX(other), GetObjectY(other), GetObjectX(other), GetObjectY(other) - 200.0);
+            AudioEvent("FirewalkFlame", 41);
+            FrameTimerWithArg(10, CreateObject("PlayerWaypoint", 41), ThunderStorm);
+            CreateObject("PlayerWaypoint", 41);
+            CreateObject("PlayerWaypoint", 41);
+        }
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+		{
+			Enchant(self, "ENCHANT_DETECTING", 0.0);
+			FrameTimerWithArg(90, GetTrigger(), ResetUnitSight);
+		}
+    }
+}
+
+void ReleasePoison()
+{
+    if (CurrentHealth(other))
+    {
+        if (!HasEnchant(self, "ENCHANT_BURNING"))
+        {
+            Enchant(self, "ENCHANT_BURNING", 1.0);
+            MoveWaypoint(41, GetObjectX(self), GetObjectY(self));
+            SetOwner(self, SpawnToxicCloud(41, 20));
+            AudioEvent("PoisonTrapTriggered", 41);
+        }
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+		{
+			Enchant(self, "ENCHANT_DETECTING", 0.0);
+			FrameTimerWithArg(75, GetTrigger(), ResetUnitSight);
+		}
+    }
+}
+
+void GoonAttack()
+{
+    int mis;
+
+    if (CurrentHealth(other))
+    {
+        if (!HasEnchant(self, "ENCHANT_BURNING"))
+        {
+            Enchant(self, "ENCHANT_BURNING", 1.0);
+            MoveWaypoint(41, GetObjectX(self) - UnitRatioX(self, other, 19.0), GetObjectY(self) - UnitRatioY(self, other, 19.0));
+            AudioEvent("EggBreak", 41);
+            mis = CreateObject("ThrowingStone", 41);
+            CreateObject("SpiderSpit", 41);
+            SetOwner(self, mis);
+            SetOwner(self, mis + 1);
+            PushObject(mis, -30.0, GetObjectX(other), GetObjectY(other));
+            PushObject(mis + 1, -30.0, GetObjectX(other), GetObjectY(other));
+        }
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+		{
+			Enchant(self, "ENCHANT_DETECTING", 0.0);
+			FrameTimerWithArg(30, GetTrigger(), ResetUnitSight);
+		}
+    }
+}
+
+void ImpStrike()
+{
+    if (CurrentHealth(other))
+    {
+        MoveWaypoint(41, GetObjectX(self) - UnitRatioX(self, other, 17.0), GetObjectY(self) - UnitRatioY(self, other, 17.0));
+        CreateMagicMissile(41, GetMemory(0x979724));
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+		{
+			Enchant(self, "ENCHANT_DETECTING", 0.0);
+			FrameTimerWithArg(30, GetTrigger(), ResetUnitSight);
+		}
+    }
+}
+
+void DryadStrike()
+{
+    int ptr = GetTrigger() + 1;
+    int unit;
+    int rnd;
+    int exist;
+
+    if (CurrentHealth(other))
+    {
+        if (!HasEnchant(self, "ENCHANT_BURNING"))
+        {
+            rnd = Random(0, 2);
+            exist = ToInt(GetObjectZ(ptr + GetDirection(ptr)));
+            MoveWaypoint(1, GetObjectX(self) - UnitRatioX(self, other, 23.0), GetObjectY(self) - UnitRatioY(self, other, 23.0));
+            if (CurrentHealth(exist))
+            {
+                Effect("COUNTERSPELL_EXPLOSION", GetObjectX(exist), GetObjectY(exist), 0.0, 0.0);
+                Delete(exist);
+            }
+            DeleteObjectTimer(CreateObject("BlueSummons", 1), 10);
+            if (!rnd)
+                unit = SpawnBear(1);
+            else if (rnd == 1)
+                unit = SpawnOgre(1);
+            else
+                unit = SpawnOgress(1);
+            MoveObject(ptr + GetDirection(ptr), GetObjectX(self), GetObjectY(self));
+            Raise(ptr + GetDirection(ptr), ToFloat(unit));    //regist_on_list
+            FrameTimerWithArg(1, unit, DelayAttackToTarget);
+            FrameTimerWithArg(1, GetCaller(), DelayAttackToTarget);
+            AudioEvent("TelekinesisOn", 1);
+            Enchant(self, "ENCHANT_BURNING", 6.0);
+            LookWithAngle(ptr, (GetDirection(ptr) + 1) % 4);
+        }
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+		{
+			Enchant(self, "ENCHANT_DETECTING", 0.0);
+			FrameTimerWithArg(270, GetTrigger(), ResetUnitSight);
+		}
+    }
+}
+
+void DelayPlaceReward(int sUnit)
+{
+    if (IsObjectOn(sUnit))
+    {
+        MoveWaypoint(1, GetObjectX(sUnit), GetObjectY(sUnit));
+        RewardMarkerFunc(1, 7);
+        Delete(sUnit);
+    }
+}
+
+void ReviveZombie(int sUnit)
+{
+    int zomb = ToInt(GetObjectZ(sUnit));
+
+    if (MaxHealth(zomb))
+    {
+        DeleteObjectTimer(CreateObjectAt("MagicSpark", GetObjectX(zomb), GetObjectY(zomb) + 4.0), 7);
+        RaiseZombie(zomb);
+    }
+    else
+    {
+        FrameTimerWithArg(85, sUnit, DelayPlaceReward);
+        PlaySoundAround(sUnit, 8);
+        DeleteObjectTimer(CreateObjectAt("Flame", GetObjectX(sUnit), GetObjectY(sUnit)), 210);
+        Effect("SPARK_EXPLOSION", GetObjectX(sUnit), GetObjectY(sUnit), 0.0, 0.0);
+    }
+}
+
+void DeadZombieEvent()
+{
+    int unit = CreateObjectAt("InvisibleLightBlueLow", GetObjectX(self), GetObjectY(self));
+
+    Raise(unit, GetTrigger());
+    FrameTimerWithArg(23, unit, ReviveZombie);
+}
+
+void DelayAttackToTarget(int ptr)
+{
+    int unit;
+
+    if (!unit)
+        unit = ptr;
+    else
+    {
+        CreatureFollow(unit, ptr);
+        AggressionLevel(unit, 1.0);
+        unit = 0;
+    }
+}
+
+void DelaySpiderReward(int dummyUnit)
+{
+    if (IsObjectOn(dummyUnit))
+    {
+        MoveWaypoint(1, GetObjectX(dummyUnit), GetObjectY(dummyUnit));
+        RewardMarkerFunc(1, 7);
+        Delete(dummyUnit);
+    }
+}
+
+void BlackSpiderDeath()
+{
+    int unit;
+
+    FrameTimerWithArg(150, CreateObjectAt("Mover", GetObjectX(self), GetObjectY(self)), DelaySpiderReward);
+
+    unit = CreateObjectAt("WaterBarrelBreaking", GetObjectX(self), GetObjectY(self));
+    FieldMonsterDeath();
+    DeleteObjectTimer(CreateObjectAt("BigSmoke", GetObjectX(unit), GetObjectY(unit)), 7);
+    PlaySoundAround(unit, 847);
+    PlaySoundAround(CreateObjectAt("ArachnaphobiaFocus", GetObjectX(unit), GetObjectY(unit)), 563);
+    Delete(self);
+}
+
+void MysticDeath()
+{
+    int unit;
+
+    MoveWaypoint(1, GetObjectX(self), GetObjectY(self));
+    unit = CreateObject("InvisibleLightBlueHigh", 1);
+    SpawnBeast(1);
+    SpawnBeast(1);
+    SpawnBeast(1);
+    SetOwner(MasterUnit(), unit);
+    CastSpellObjectObject("SPELL_TURN_UNDEAD", unit, unit);
+    Delete(unit);
+}
+
+void DryadDeath()
+{
+    int k;
+    int ptr = GetTrigger() + 1;
+
+    for (k = 3 ; k >= 0 ; k --)
+    {
+        if (CurrentHealth(ToInt(GetObjectZ(ptr + k))))
+        {
+            DeleteObjectTimer(ToInt(GetObjectZ(ptr + k)), 1);
+        }
+        Delete(ptr + k);
+    }
+}
+
+void ThunderStorm(int unit)
+{
+    int unit2;
+    MoveWaypoint(41, GetObjectX(unit), GetObjectY(unit));
+    Delete(unit);
+    Delete(unit + 1);
+    Delete(unit + 2);
+    unit2 = CreateObject("Maiden", 41);
+    Frozen(unit2, 1);
+    SetCallback(unit2, 9, ThunderTouched);
+    DeleteObjectTimer(unit2, 1);
+    Effect("BLUE_SPARKS", GetWaypointX(41), GetWaypointY(41), 0.0, 0.0);
+    Effect("JIGGLE", GetObjectX(unit), GetObjectY(unit), 35.0, 0.0);
+}
+
+void ThunderTouched()
+{
+    if (CurrentHealth(other) && !IsOwnedBy(other, MasterUnit()))
+    {
+        Damage(other, MasterUnit(), 30, 9);
+        Effect("RICOCHET", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
+        Enchant(other, "ENCHANT_CHARMING", 1.0);
+    }
+}
+
+void InitJailSwitchs()
+{
+    int ptr;
+    int k;
+
+    for (k = 4; k >= 0 ; k --)
+    {
+        ptr = Object("sw" + IntToString(k + 1));
+        LookWithAngle(ptr, k);
+    }
+}
+
+void WishWellEvent()
+{
+    if (!HasEnchant(other, "ENCHANT_VILLAIN"))
+    {
+        Enchant(other, "ENCHANT_VILLAIN", 10.0);
+        UniPrint(other, "이 우물이 잠시동안 당신의 체력을 회복시켜 줄 것입니다.");
+        MoveWaypoint(48, GetObjectX(self), GetObjectY(self));
+        DeleteObjectTimer(CreateObject("MagicSpark", 48), 10);
+        AudioEvent("PotionUse", 48);
+        LoopUnitHeal(GetCaller());
+    }
+}
+
+void LoopUnitHeal(int unit)
+{
+    if (CurrentHealth(unit) && HasEnchant(unit, "ENCHANT_VILLAIN"))
+    {
+        Effect("GREATER_HEAL", GetObjectX(unit), GetObjectY(unit), GetObjectX(unit), GetObjectY(unit) - 100.0);
+        RestoreHealth(unit, 1);
+        FrameTimerWithArg(2, unit, LoopUnitHeal);
+    }
+}
+
+void GMOn()
+{
+    int ankh;
+
+    if (!GetDirection(self))
+    {
+        LookWithAngle(self, 1);
+        ankh = CreateObject("Ankh", 5);
+        CreateObject("Ankh", 6);
+        CreateObject("Ankh", 8);
+        CreateObject("Ankh", 9);
+        FixCreateMover(ankh, 0, 20.0);
+        FixCreateMover(ankh + 1, 0, 20.0);
+        FixCreateMover(ankh + 2, 0, 20.0);
+        FixCreateMover(ankh + 3, 0, 20.0);
+        Raise(Object("DanceColor"), ankh);
+        SpawnGhost(168);
+        SpawnGhost(168);
+        SpawnGhost(168);
+    }
+    else if (GetDirection(self) == 1)
+    {
+        LockDoor(Object("SentryGate"));
+        UniPrint(other, "옆 방 출입문이 잠겼습니다");
+        Move(ankh, 6);
+        Move(ankh + 1, 8);
+        Move(ankh + 2, 9);
+        Move(ankh + 3, 5);
+        LookWithAngle(self, 2);
+    }
+    else
+    {
+        if (IsObjectOn(Object("DanceColor")))
+        {
+            UnlockDoor(Object("SentryGate"));
+            UniPrint(other, "옆 방 출입문의 잠금이 해제되었습니다");
+        }
+        Move(ankh, 56);
+        Move(ankh + 1, 55);
+        Move(ankh + 2, 54);
+        Move(ankh + 3, 57);
+        LookWithAngle(self, 1);
+    }
+}
+
+void CLOn()
+{
+    int col;
+
+    if (!col)
+    {
+        col = Object("DanceColor");
+        LoopAnkhSentryRay(col);
+    }
+    ObjectToggle(col);
+}
+
+void LoopAnkhSentryRay(int unit)
+{
+    int k, ptr = ToInt(GetObjectZ(unit));
+    string name = "SENTRY_RAY";
+
+    if (IsObjectOn(unit) && ptr)
+    {
+        Effect(name, GetObjectX(ptr), GetObjectY(ptr), GetObjectX(ptr + 1), GetObjectY(ptr + 1));
+        Effect(name, GetObjectX(ptr + 1), GetObjectY(ptr + 1), GetObjectX(ptr + 2), GetObjectY(ptr + 2));
+        Effect(name, GetObjectX(ptr + 2), GetObjectY(ptr + 2), GetObjectX(ptr + 3), GetObjectY(ptr + 3));
+        Effect(name, GetObjectX(ptr), GetObjectY(ptr), GetObjectX(ptr + 3), GetObjectY(ptr + 3));
+        Effect(name, GetObjectX(ptr), GetObjectY(ptr), GetObjectX(ptr + 2), GetObjectY(ptr + 2));
+        Effect(name, GetObjectX(ptr + 1), GetObjectY(ptr + 1), GetObjectX(ptr + 3), GetObjectY(ptr + 3));
+    }
+    FrameTimerWithArg(1, unit, LoopAnkhSentryRay);
+}
+
+void ToggleJailGate()
+{
+    int door = Object("Door" + IntToString(GetDirection(self) + 1));
+
+    if (IsLocked(door))
+        UnlockDoor(door);
+    else
+        LockDoor(door);
+}
+
+void UndergroundElevator()
+{
+    int elv[2];
+
+    if (!elv[0])
+    {
+        elv[0] = Object("ToggleElev");
+        elv[1] = Object("ToggleElevGear");
+    }
+    ObjectToggle(elv[0]);
+    ObjectToggle(elv[1]);
+    MoveWaypoint(58, GetObjectX(self), GetObjectY(self));
+    if (IsObjectOn(elv[0]))
+        AudioEvent("CreatureCageAppears", 58);
+    else
+        AudioEvent("SwitchToggle", 58);
+}
+
+int BlueMagicItem()
+{
+    int item;
+
+    if (!item)
+        item = CreateObject("BlueOrbKeyOfTheLich", 63);
+    return item;
+}
+
+int RedMagicItem()
+{
+    int item;
+
+    if (!item)
+        item = CreateObject("RedOrbKeyOfTheLich", 1);
+    return item;
+}
+
+int OrbGreen()
+{
+    int orb;
+
+    if (!orb)
+        orb = CreateObject("GreenOrb", 17);
+    return orb;
+}
+
+void BookInfo()
+{
+    PlaySoundAround(other, 903);
+    UniPrint(other, "책의 내용 일부에 '광산 출입 허가증' 이라고 써있습니다.");
+}
+
+int MinesBook(int location)
+{
+    int book, ptr;
+
+    if (!book)
+    {
+        book = CreateObject("BlackBook1", location);
+        ptr = GetMemory(0x750710);
+        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
+        CancelTimer(FrameTimerWithArg(10, BookInfo, BookInfo));
+        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+    }
+    return book;
+}
+
+void ResetUnitSight(int unit)
+{
+    EnchantOff(unit, "ENCHANT_ANTI_MAGIC");
+    EnchantOff(unit, "ENCHANT_DETECTING");
+    Enchant(unit, "ENCHANT_BLINDED", 0.08);
+    AggressionLevel(unit, 1.0);
+}
+
+void OpenWoodGate()
+{
+    if (HasClass(other, "PLAYER") && CurrentHealth(other))
+    {
+        if (HasItem(other, RedMagicItem()))
+        {
+            Delete(RedMagicItem());
+            Delete(self);
+            UnlockDoor(Object("WoodGateMan1"));
+            UnlockDoor(Object("WoodGateMan2"));
+        }
+    }
+}
+
+void OpenHiddenGate()
+{
+    if (HasClass(other, "PLAYER") && CurrentHealth(other))
+    {
+        if (HasItem(other, BlueMagicItem()))
+        {
+            Delete(BlueMagicItem());
+            Delete(self);
+            UnlockDoor(Object("HiddenGate"));
+            SpawnUrchinShaman(19);
+            SpawnBlackSpider(19);
+            SpawnBlackSpider(19);
+            SpawnMecaFly(70);
+            SpawnMecaFly(70);
+            SpawnMecaFly(70);
+            SpawnMecaFly(70);
+            SpawnMecaFly(70);
+            SpawnSwordsman(18);
+            SpawnSwordsman(18);
+            SpawnUrchinShaman(32);
+            SpawnArcher(156);
+            SpawnArcher(157);
+            SpawnMecaFly(158);
+            SpawnMecaFly(159);
+        }
+    }
+}
+
+void OpenMagicDoors()
+{
+    ObjectOff(self);
+    UniPrint(other, "어딘가에서 문의 잠금이 해제되었습니다.");
+    UnlockDoor(Object("MagicDoor1"));
+    UnlockDoor(Object("MagicDoor2"));
+    SpawnMystic(11);
+    SpawnMystic(12);
+    SpawnMystic(13);
+    SpawnMystic(14);
+    SpawnGhost(12);
+    SpawnGhost(12);
+    SpawnGhost(12);
+    SpawnArcher(5);
+    SpawnArcher(6);
+    SpawnArcher(8);
+    SpawnArcher(9);
+    SpawnMecaFly(30);
+    SpawnMecaFly(30);
+    SpawnMecaFly(30);
+    SpawnBlackSpider(27);
+}
+
+void OpenUnderGate()
+{
+    if (CurrentHealth(other) && HasClass(other, "PLAYER"))
+    {
+        if (HasItem(other, OrbGreen()))
+        {
+            Delete(self);
+            Delete(OrbGreen());
+            UnlockDoor(Object("Part2Gate1"));
+            UnlockDoor(Object("Part2Gate2"));
+            FrameTimer(1, PlaceArea2Monsters);
+        }
+    }
+}
+
+void OpenMinesGate()
+{
+    int unit, id;
+
+    if (IsCaller(MinesBook(0)))
+    {
+        UniPrintToAll("광산 출입문이 열렸습니다");
+        Delete(MinesBook(0));
+        ObjectOff(self);
+        UnlockDoor(Object("MinesGate"));
+        DisableMagicalProperties(CreateObject("Magic", 73));
+        id = CreateObject("WeirdlingBeast", 73);
+        Frozen(id - 1, 1);
+        Damage(id, 0, 9999, 14);
+        ObjectOff(id);
+        SetDialog(id, "NORMAL", RemoveMagicWall, DummyFunction);
+        FrameTimer(1, PutMinesMob);
+    }
+}
+
+void PutMinesMob()
+{
+    SpawnSpirit(205);
+    SpawnScorpion(206);
+    SpawnSkeletonLord(207);
+    SpawnSkeleton(208);
+    SpawnSkeletonLord(209);
+    SpawnSpirit(210);
+    SpawnSpirit(211);
+    SpawnSpirit(212);
+    SpawnScorpion(213);
+    SpawnScorpion(475);
+    SpawnBlackSpider(476);
+    SpawnBear(477);
+    SpawnScorpion(478);
+    SpawnBlackSpider(479);
+    SpawnSkeletonLord(480);
+    SpawnBear(481);
+    FrameTimer(1, GasBarrelBreakingWalls);
+}
+
+void GasBarrelBreakingWalls()
+{
+    string name = {"BlackPowderBarrel", "BlackPowderBarrel2"};
+    int i;
+    for (i = 0 ; i < 5 ; i ++)
+        CreateObject(ToStr(SToInt(name) + Random(0, 1)), 482 + i);
+}
+
+void RemoveMagicWall()
+{
+    int k;
+    ObjectOn(Object("MinesNewElev"));
+    UniPrint(other, "비밀의 벽이 열렸습니다");
+    WallOpen(Wall(217, 89));
+    WallOpen(Wall(216, 90));
+    SpawnBear(214);
+    SpawnCreature("BlackBear", 214, 250);
+    SpawnCreature("BlackBear", 215, 250);
+    SpawnGoon(215);
+    SpawnCreature("GiantLeech", 216, 98);
+    SpawnCreature("GiantLeech", 216, 98);
+    SpawnCreature("GiantLeech", 217, 98);
+    SpawnCreature("GiantLeech", 217, 98);
+    SpawnCreature("GiantLeech", 218, 98);
+    SpawnCreature("GiantLeech", 218, 98);
+    SpawnSwordsman(405);
+    SpawnSwordsman(406);
+    SpawnSwordsman(405);
+    SpawnSwordsman(406);
+    SpawnSwordsman(405);
+    SpawnSwordsman(406);
+    SpawnGoon(407);
+    SpawnGoon(407);
+    SpawnGoon(407);
+    SpawnBear(219);
+    FrameTimer(1, PutMinesMob2);
+    Delete(self);
+}
+
+void PutMinesMob2()
+{
+    SpawnGoon(220);
+    SpawnGoon(220);
+    SpawnScorpion(221);
+    SpawnCreature("GiantLeech", 222, 98);
+    SpawnOgre(226);
+    SpawnBlackSpider(226);
+    SpawnScorpion(226);
+    SpawnBlackSpider(227);
+    SpawnCreature("Troll", 227, 325);
+    SpawnCreature("Troll", 229, 325);
+    SpawnGoon(228);
+    SpawnMecaFly(228);
+    SpawnBear(230);
+    SpawnWolf(230);
+    SpawnOgress(231);
+    SpawnOgress(231);
+    SpawnOgre(401);
+    SpawnScorpion(401);
+    SpawnBlackSpider(401);
+    SpawnBlackSpider(402);
+    SpawnUrchinShaman(402);
+    SpawnSwordsman(93);
+    SpawnSwordsman(93);
+    SpawnSwordsman(93);
+    SpawnSwordsman(403);
+    SpawnSwordsman(403);
+    SpawnSwordsman(403);
+    SpawnRedWizard(98);
+    SpawnSwordsman(404);
+    SpawnSwordsman(404);
+    SpawnBear(404);
+}
+
+void FxRumble()
+{
+    int ptr;
+
+    if (HasClass(other, "PLAYER") && CurrentHealth(other))
+    {
+        MoveWaypoint(1, GetObjectX(self), GetObjectY(self));
+        AudioEvent("EarthRumbleMajor", 1);
+        ptr = CreateObject("CaveRocksMedium", 1);
+        CreateObject("CaveRocksSmall", 1);
+        CreateObject("CaveRocksSmall", 1);
+        Raise(ptr, 200.0);
+        Raise(ptr + 1, 200.0);
+        Raise(ptr + 2, 200.0);
+        Effect("JIGGLE", GetObjectX(other), GetObjectY(other), 50.0, 0.0);
+        Delete(self);
+    }
+}
+
+void SpawnRumbleUnit()
+{
+    int k, rumbUnit = CreateObject("AirshipCaptain", 74);
+
+    Damage(rumbUnit, 0, 9999, -1);
+    SetCallback(rumbUnit, 9, FxRumble);
+    for (k = 1 ; k < 15 ; k ++)
+    {
+        CreateObject("AirshipCaptain", 74 + k);
+        Damage(rumbUnit + k, 0, 9999, -1);
+        SetCallback(rumbUnit + k, 9, FxRumble);
+    }
+}
+
+int CaveGasBarrels()
+{
+    int barr, k;
+
+    if (!barr)
+    {
+        barr = CreateObject("BlackPowderBarrel2", 97);
+        Frozen(barr, 1);
+        for (k = 98 ; k <= 116 ; k ++)
+            Frozen(CreateObject("BlackPowderBarrel2", k), 1);
+        return 0;
+    }
+    return barr;
+}
+
+void ExplosionAllGasBarrels(int barr)
+{
+    int k;
+
+    for (k = 19 ; k >= 0 ; k --)
+    {
+        Frozen(barr + k, 0);
+        Damage(barr + k, 0, 255, 14);
+    }
+    Effect("JIGGLE", GetWaypointX(100), GetWaypointY(100), 100.0, 0.0);
+    Effect("JIGGLE", GetWaypointX(111), GetWaypointY(111), 100.0, 0.0);
+    RemoveCaveWalls();
+    RockFallingOnBottom(97);
+}
+
+void RockFallingOnBottom(int wp)
+{
+    int unit;
+
+    if (wp <= 116)
+    {
+        unit = CreateObject(Rocks(), wp);
+        Raise(unit, 200.0);
+        Effect("SMOKE_BLAST", GetWaypointX(wp), GetWaypointY(wp), 0.0, 0.0);
+        AudioEvent("FistHit", wp);
+        FrameTimerWithArg(1, wp + 1, RockFallingOnBottom);
+    }
+}
+
+string Rocks()
+{
+    string rockTable = {"Rock2", "BoulderCave", "CaveBoulders", "CaveRocksHuge", "CaveRocksLarge"};
+    
+    return ToStr(SToInt(rockTable) + Random(0, 4));
+}
+
+void CavePartInit()
+{
+    ObjectOff(self);
+    FireChunk();
+    CaveGasBarrels();
+    SpawnRumbleUnit();
+}
+
+void ActionFireboom()
+{
+    int unit;
+    int next = CaveBarrel();
+
+    ObjectOff(self);
+    Rocks();
+
+    Effect("JIGGLE", GetWaypointX(117), GetWaypointY(117), 80.0, 0.0);
+    AudioEvent("EarthRumbleMajor", 117);
+    unit = CreateObject("CaveBoulders", 117);
+    Raise(unit, 200.0);
+    DeleteObjectTimer(unit, 60);
+    FrameTimerWithArg(25, next, DelayCrashBarrel);
+}
+
+void DelayCrashBarrel(int unit)
+{
+    int fire = CreateObject("MediumFlame", 117);
+    
+    FixCreateMover(fire, 0, 40.0);
+    Frozen(unit, 0);
+    Damage(unit, 0, 999, 14);
+    FrameTimerWithArg(1, fire, DelayMover);
+    FrameTimerWithArg(1, 90, DelayMover);
+    FrameTimerWithArg(160, CaveGasBarrels(), ExplosionAllGasBarrels);
+}
+
+void DelayMover(int arg)
+{
+    int unit;
+
+    if (!unit)
+        unit = arg;
+    else
+    {
+        Move(unit, arg);
+        unit = 0;
+    }
+}
+
+void RemoveCaveWalls()
+{
+    NoWallSound(1);
+    WallOpen(Wall(61, 175));
+    WallOpen(Wall(60, 176));
+    WallOpen(Wall(59, 175));
+    WallOpen(Wall(58, 176));
+    WallOpen(Wall(57, 177));
+    WallOpen(Wall(56, 178));
+    WallOpen(Wall(55, 179));
+    WallOpen(Wall(54, 180));
+    WallOpen(Wall(55, 181));
+    NoWallSound(0);
+}
+
+int CaveBarrel()
+{
+    int unit;
+
+    if (!unit)
+    {
+        unit = CreateObject("BlackPowderBarrel", 117);
+        Frozen(unit, 1);
+    }
+    return unit;
+}
+
+int OgreKey()
+{
+    int key;
+
+    if (!key)
+        key = CreateObject("RedOrbKeyOfTheLich", 122);
+    return key;
+}
+
+void OpenOgreDoors()
+{
+    if (CurrentHealth(other) && HasClass(other, "PLAYER"))
+    {
+        if (HasItem(other, OgreKey()))
+        {
+            UniPrint(other, "열쇠를 사용하여 문의 잠금을 해제하였습니다.");
+            Delete(self);
+            Delete(OgreKey());
+            UnlockDoor(Object("OgrePartDoor1"));
+            UnlockDoor(Object("OgrePartDoor2"));
+            PutTwoHints();
+        }
+    }
+}
+
+void HintPick()
+{
+    int flag, unit;
+
+    flag ++;
+    if (flag == 1)
+    {
+        WallOpen(Wall(143, 19));
+        WallOpen(Wall(144, 20));
+        WallOpen(Wall(145, 21));
+        unit = CreateObject("RollingBoulder", 129);
+        FixCreateMover(unit, 0, 60.0);
+        FrameTimerWithArg(30, unit, DelayMover);
+        FrameTimerWithArg(30, 124, DelayMover);
+    }
+    else if (flag == 2)
+    {
+        WallOpen(Wall(146, 16));
+        WallOpen(Wall(147, 17));
+        WallOpen(Wall(148, 18));
+        unit = CreateObject("RollingBoulder", 130);
+        FixCreateMover(unit, 0, 60.0);
+        FrameTimerWithArg(30, unit, DelayMover);
+        FrameTimerWithArg(30, 124, DelayMover);
+        FrameTimer(60, RemoveLastGoalWalls);
+    }
+    Delete(self);
+}
+
+void PutTwoHints()
+{
+    CancelTimer(FrameTimerWithArg(10, HintPick, HintPick));
+    UnitPickupEvent(CreateObject("RedOrb", 132), GetMemory(GetMemory(0x83395c) + 8));
+    CancelTimer(FrameTimerWithArg(10, HintPick, HintPick));
+    UnitPickupEvent(CreateObject("BlueOrb", 132), GetMemory(GetMemory(0x83395c) + 8));
+}
+
+void RemoveLastGoalWalls()
+{
+    int unit = CreateObject("RollingBoulder", 131);
+
+    WallOpen(Wall(149, 13));
+    WallOpen(Wall(150, 14));
+    WallOpen(Wall(151, 15));
+    FixCreateMover(unit, 0, 60.0);
+    FrameTimerWithArg(30, unit, DelayMover);
+    FrameTimerWithArg(30, 124, DelayMover);
+    SecondTimer(4, SpawnOgreBoss);
+}
+
+void SpawnOgreBoss()
+{
+    int boss = CreateObject("OgreWarlord", 134);
+
+    SetUnitMaxHealth(boss, 900);
+    LookWithAngle(boss, 96);
+    SetCallback(boss, 3, BossOgreSkill);
+    SetCallback(boss, 5, DeadBossOgre);
+}
+
+void BossOgreSkill()
+{
+    if (CurrentHealth(other))
+    {
+        if (!HasEnchant(self, "ENCHANT_VILLAIN"))
+        {
+            if (!Random(0, 1))
+                CastTripleArrowShot();
+            else
+                FallingStoneAttack();
+            Enchant(self, "ENCHANT_VILLAIN", 2.0);
+        }
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+        {
+            Enchant(self, "ENCHANT_DETECTING", 0.0);
+            FrameTimerWithArg(95, GetTrigger(), ResetUnitSight);
+        }
+    }
+}
+
+void CastTripleArrowShot()
+{
+    float pos_x = UnitRatioX(self, other, 19.0);
+    float pos_y = UnitRatioY(self, other, 19.0);
+    int k;
+    int missile;
+
+    MoveWaypoint(1, GetObjectX(self) + (1.0 / 1.6 * pos_y) - pos_x, GetObjectY(self) - (1.0 / 1.6 * pos_x) - pos_y);
+    
+    for (k = 8 ; k >= 0 ; k --)
+    {
+        pos_x = GetRatioUnitWpX(self, 1, 19.0);
+        pos_y = GetRatioUnitWpY(self, 1, 19.0);
+        MoveWaypoint(1, GetObjectX(self) - (1.0 / 8.0 * pos_y) - pos_x, GetObjectY(self) + (1.0 / 8.0 * pos_x) - pos_y);
+        missile = CreateObject("OgreShuriken", 1);
+        SetOwner(self, missile);
+        PushObject(missile, 23.0, GetObjectX(self), GetObjectY(self));
+    }
+}
+
+void OgreHitStone()
+{
+    Damage(other, GetOwner(GetOwner(self)), 100, 2);
+}
+
+void UnitVisibleSplashHuman()
+{
+    int parent = GetOwner(self);
+
+    if (!HasEnchant(other, "ENCHANT_DETECTING") && CurrentHealth(GetOwner(parent)))
+    {
+        if (Distance(GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other)) <= GetObjectX(parent))
+        {
+            CallFunction(ToInt(GetObjectZ(parent)));
+            Enchant(other, "ENCHANT_DETECTING", 0.1);
+        }
+    }
+}
+
+void UnitVisibleSplash()
+{
+    int parent = GetOwner(self);
+    int spIdx = ToInt(GetObjectZ(parent + 1)), ptr = UnitToPtr(other);
+
+    if (ptr)
+    {
+        if (HasClass(other, "PLAYER"))
+            UnitVisibleSplashHuman();
+        else if (GetMemory(ptr + 0x1c) ^ spIdx && CurrentHealth(GetOwner(parent)))
+        {
+            if (Distance(GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other)) <= GetObjectX(parent))
+            {
+                CallFunction(ToInt(GetObjectZ(parent)));
+                SetMemory(ptr + 0x1c, spIdx);
+            }
+        }
+    }
+}
+
+void SplashHandler(int owner, int func, float x, float y, float range)
+{
+    int ptr = CreateObjectAt("InvisibleLightBlueHigh", range, y) + 2, k, SplashIdx;
+
+    Raise(CreateObjectAt("InvisibleLightBlueHigh", GetObjectX(ptr), GetObjectY(ptr)), SplashIdx);
+    SetOwner(owner, ptr - 2);
+    Raise(ptr - 2, ToFloat(func));
+    for (k = 0 ; k < 8 ; k ++)
+    {
+        DeleteObjectTimer(CreateObjectAt("WeirdlingBeast", x, y), 1);
+        UnitNoCollide(ptr + k);
+        LookWithAngle(ptr + k, k * 32);
+        SetOwner(ptr - 2, ptr + k);
+        SetCallback(ptr + k, 3, UnitVisibleSplash);
+    }
+    DeleteObjectTimer(ptr - 2, 2);
+    SplashIdx ++;
+}
+
+void UnitNoCollide(int unit)
+{
+    SetUnitFlags(unit, GetUnitFlags(unit) ^ 0x40);
+}
+
+void FallenStoneHanlder(int ptr)
+{
+    int owner = GetOwner(ptr);
+    float posZ = GetObjectZ(ptr + 1);
+    
+    while (1)
+    {
+        if (CurrentHealth(owner))
+        {
+            if (ToInt(posZ))
+            {
+                Raise(ptr + 1, posZ - 20.0);
+                FrameTimerWithArg(1, ptr, FallenStoneHanlder);
+                break;
+            }
+            else
+            {
+                Raise(ptr, OgreHitStone);
+                SplashHandler(owner, ToInt(GetObjectZ(ptr)), GetObjectX(ptr), GetObjectY(ptr), 140.0);
+                Effect("JIGGLE", GetObjectX(ptr), GetObjectY(ptr), 32.0, 0.0);
+            }
+        }
+        Delete(ptr);
+        Delete(ptr + 1);
+        break;
+    }
+}
+
+void FallingStoneAttack()
+{
+    int unit;
+
+    MoveWaypoint(1, GetObjectX(other), GetObjectY(other));
+    AudioEvent("HitStoneBreakable", 1);
+    unit = CreateObject("InvisibleLightBlueLow", 1);
+    UnitNoCollide(CreateObject("CaveBoulders", 1));
+    Raise(unit + 1, 200.0);
+    SetOwner(self, unit);
+    FrameTimerWithArg(1, unit, FallenStoneHanlder);
+}
+
+void DeadBossOgre()
+{
+    MoveWaypoint(1, GetObjectX(self), GetObjectY(self));
+    DeleteObjectTimer(CreateObject("StormCloud", 1), 15);
+    AudioEvent("HecubahDieFrame283", 1);
+    //FireChunk();
+    MoveObject(MinesBook(0), GetWaypointX(1), GetWaypointY(1));
+    DeleteObjectTimer(self, 30);
+    UniPrintToAll("오우거로드가 죽었습니다");
+}
+
+int FireChunk()
+{
+    int key;
+
+    if (!key)
+        key = CreateObject("BraceletofHealth", 491);
+    return key;
+}
+
+void EnableOgreElevator()
+{
+    UniPrint(other, "엘리베이터가 작동되었습니다.");
+    ObjectOff(self);
+    ObjectOn(Object("OgreElev"));
+}
+
+void Enable3PartElev()
+{
+    if (HasItem(other, FireChunk()))
+    {
+        UniPrint(other, "정령의 돌을 이용해 엘리베이터를 작동시켰습니다.");
+        ObjectOff(self);
+        ObjectOn(Object("CaveConnectElev"));
+        Delete(FireChunk());
+        FrameTimer(1, LastPartMonsters);
+        FrameTimerWithArg(11, GetCaller(), SpawnMonsterGroups);
+    }
+}
+
+void SpawnMonsterGroups(int enemy)
+{
+    int ptr = SpawnSwordsman(135);
+    SpawnSwordsman(135);
+    SpawnSwordsman(135);
+    SpawnArcher(135);
+    SpawnArcher(135);
+    SpawnArcher(135);
+    SpawnMecaFly(135);
+    SpawnMecaFly(135);
+    SpawnMecaFly(135);
+    FrameTimerWithArg(1, ptr, TargetForAttack);
+}
+
+void FieldMonsterDeath()
+{
+    MoveWaypoint(1, GetObjectX(self), GetObjectY(self));
+    RewardMarkerFunc(1, 7);
+}
+
+void TargetForAttack(int ptr)
+{
+    int target;
+    int k;
+
+    if (!target)
+        target = ptr;
+    else
+    {
+        for (k = 8 ; k >= 0 ; k --)
+        {
+            CreatureFollow(ptr + k, target);
+            AggressionLevel(ptr + k, 1.0);
+        }
+        target = 0;
+    }
+}
+
+void SpawnSpellbooks()
+{
+    int flag;
+
+    if (!flag)
+    {
+        flag = 1;
+        CreateEMagicBook(40, 0, 6);
+        CreateEMagicBook(139, 1, 6);
+        CreateEMagicBook(140, 2, 6);
+        FrameTimer(30, SpawnSpellbooks);
+        LibraryColor();
+    }
+    else
+    {
+        CreateEMagicBook(141, 3, 8);
+        CreateEMagicBook(142, 0, 6);
+        CreateEMagicBook(143, 1, 6);
+    }
+}
+
+void CreateEMagicBook(int wp, int type, int amount)
+{
+    string bookList = {"ConjurerSpellBook", "WizardSpellBook", "AbilityBook", "FieldGuide"};
+    int k;
+
+    for (k = amount - 1 ; k >= 0 ; k --)
+    {
+        UnitPickupEvent(CreateObject(ToStr(SToInt(bookList) + type), wp), BookEventFuncPtr() + type);
+        MoveWaypoint(wp, GetWaypointX(wp) - 46.0, GetWaypointY(wp) + 46.0);
+    }
+}
+
+int LibraryColor()
+{
+    int col;
+
+    if (!col) col = CreateObject("InvisibleLightBlueHigh", 7);
+    return col;
+}
+
+int BookEventFuncPtr()
+{
+    StopScript(BookEventWithConjurer);
+}
+
+void BookEventWithConjurer()
+{
+    MoveObject(LibraryColor(), GetObjectX(other), GetObjectY(other));
+    if (!Random(0, 1))
+        CastSpellObjectLocation("SPELL_METEOR", LibraryColor(), GetObjectX(other), GetObjectY(other));
+    else if (!Random(0, 1))
+        CastSpellObjectLocation("SPELL_FIST", LibraryColor(), GetObjectX(other), GetObjectY(other));
+    else
+    {
+        MoveWaypoint(41, GetObjectX(self), GetObjectY(self));
+        CreateObject("ArachnaphobiaFocus", 41);
+        DeleteObjectTimer(CreateObject("BigSmoke", 41), 7);
+        AudioEvent("PoisonTrapTriggered", 41);
+    }
+    Delete(self);
+}
+
+void BookEventWithWizard()
+{
+    MoveObject(LibraryColor(), GetObjectX(other), GetObjectY(other));
+    if (Random(0, 1))
+        CastSpellObjectObject("SPELL_CLEANSING_FLAME", self, self);
+    else
+        CastSpellObjectLocation("SPELL_FIREBALL", LibraryColor(), GetObjectX(other) + UnitAngleCos(other, 17.0), GetObjectY(other) + UnitAngleSin(other, 17.0));
+    Delete(self);
+}
+
+void BookEventWithWarrior()
+{
+    MoveWaypoint(41, GetObjectX(self), GetObjectY(self));
+    AudioEvent("Clank1", 41);
+    if (!Random(0, 1))
+        CreateObject("BearTrap", 41);
+    else
+        CreateObject("PoisonGasTrap", 41);
+    Delete(self);
+}
+
+void CreatureGuidePick()
+{
+    string spell = "SPELL_SUMMON_";
+    string creNameList = {"EMBER_DEMON", "BAT", "BEAR", "BLACK_BEAR", "BLACK_WOLF", "LICH", "SKELETON_LORD", "SPIDER", "URCHIN_SHAMAN", "VILE_ZOMBIE"};
+    MoveObject(LibraryColor(), GetObjectX(self), GetObjectY(self));
+    CastSpellObjectObject(spell + ToStr(SToInt(creNameList) + Random(0, 9)), self, self);
+    Delete(self);
+}
+
+void InitLibarySoulFlame()
+{
+    int id = CreateObject("Maiden", 144);
+    CreateObject("Maiden", 145);
+    LibraryObstacle();
+
+    Enchant(id, "ENCHANT_HASTED", 0.0);
+    Enchant(id + 1, "ENCHANT_HASTED", 0.0);
+    FixCreateMover(id, 0, 30.0);
+    FixCreateMover(id + 1, 0, 30.0);
+    Frozen(id, 1);
+    Frozen(id + 1, 1);
+    SetCallback(id, 9, SoulTouched);
+    SetCallback(id + 1, 9, SoulTouched);
+    FrameTimerWithArg(1, id, DelayMover);
+    FrameTimerWithArg(1, 146, DelayMover);
+    FrameTimerWithArg(1, id + 1, DelayMover);
+    FrameTimerWithArg(1, 148, DelayMover);
+}
+
+int LibraryObstacle()
+{
+    int block;
+
+    if (!block)
+    {
+        block = CreateObject("IronBlock", 151);
+        CreateObject("IronBlock", 152);
+        FixCreateMover(block, 0, 10.0);
+        FixCreateMover(block + 1, 0, 10.0);
+    }
+    return block;
+}
+
+void SoulTouched()
+{
+    if (CurrentHealth(other) && IsAttackedBy(other, MasterUnit()))
+    {
+        Damage(other, MasterUnit(), 20, 16);
+        Enchant(other, "ENCHANT_CHARMING", 0.5);
+        Effect("VIOLET_SPARKS", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
+    }
+}
+
+void OpenLibraryBlocks()
+{
+    ObjectOff(self);
+    AudioEvent("SpikeBlockMove", 151);
+    MoveWaypoint(151, GetWaypointX(151) + 46.0, GetWaypointY(151) - 46.0);
+    MoveWaypoint(152, GetWaypointX(152) - 46.0, GetWaypointY(152) + 46.0);
+    Move(LibraryObstacle(), 151);
+    Move(LibraryObstacle() + 1, 152);
+    SpawnSecondBoss();
+}
+
+int SpawnSecondBoss()
+{
+    int id = CreateObject("WizardWhite", 153);
+
+    SetUnitMaxHealth(id, 900);
+    Enchant(id, "ENCHANT_ANCHORED", 0.0);
+    SetCallback(id, 3, ScdBossWeapon);
+    SetCallback(id, 5, DeadScdBoss);
+    SetCallback(id, 8, FleeEvent);
+    SetCallback(id, 13, FleeEvent);
+    CreatureGuard(id, GetObjectX(id), GetObjectY(id), GetObjectX(id), GetObjectY(id), 500.0);
+    return id;
+}
+
+void DeadScdBoss()
+{
+    int unit = CreateObject("Maiden", 154);
+
+    Frozen(unit, 1);
+    SetCallback(unit, 9, OpenLastDoors);
+    MoveWaypoint(41, GetObjectX(self), GetObjectY(self));
+    LastKey();
+    ObjectOn(Object("StopElevator"));
+    RemovePart3Walls();
+}
+
+int LastKey()
+{
+    int key;
+
+    if (!key) key = CreateObject("ProtectionEnchantments", 41);
+    return key;
+}
+
+void FleeEvent()
+{
+    CastSpellObjectObject("SPELL_SHIELD", self, self);
+    EnchantOff(self, "ENCHANT_ANTI_MAGIC");
+    AggressionLevel(self, 1.0);
+}
+
+void ScdBossWeapon()
+{
+    int rnd;
+
+    if (CurrentHealth(other))
+    {
+        rnd = Random(0, 3);
+        if (!rnd)
+        {
+            MoveWaypoint(41, GetObjectX(self) - UnitRatioX(self, other, 21.0), GetObjectY(self) - UnitRatioY(self, other, 21.0));
+            CastSpellObjectObject("SPELL_SHIELD", self, self);
+            CreateMagicMissile(41, GetMemory(0x979724));
+        }
+        else if (rnd == 1)
+            CastSpellObjectLocation("SPELL_DEATH_RAY", self, GetObjectX(other) + RandomFloat(-12.0, 12.0), GetObjectY(other) + RandomFloat(-12.0, 12.0));
+        else if (rnd == 2)
+        {
+            CastSpellObjectObject("SPELL_SHOCK", self, self);
+            CastSpellObjectObject("SPELL_PLASMA", self, other);
+            PauseObject(self, 60);
+        }
+        else
+        {
+            CastSpellObjectObject("SPELL_FIREBALL", self, other);
+        }
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+        {
+            Enchant(self, "ENCHANT_DETECTING", 0.0);
+            FrameTimerWithArg(45, GetTrigger(), ResetUnitSight);
+        }
+    }
+}
+
+void RemovePart3Walls()
+{
+    int k;
+    WallOpen(Wall(214, 200));
+    for (k = 21 ; k >= 0 ; k --)
+        WallOpen(Wall(213 - k, 199 + k));
+}
+
+void OpenLastDoors()
+{
+    if (CurrentHealth(other) && HasClass(other, "PLAYER"))
+    {
+        if (HasItem(other, LastKey()))
+        {
+            UniChatMessage(other, "문의 잠금을 해제했습니다.", 150);
+            Delete(LastKey());
+            Delete(self);
+            UnlockDoor(Object("LastPartDoor1"));
+            UnlockDoor(Object("LastPartDoor2"));
+        }
+    }
+}
+
+int GridKey()
+{
+    int key;
+
+    if (!key) key = CreateObject("Fear", 44);
+    return key;
+}
+
+void OpenUndergroundGate()
+{
+    if (CurrentHealth(other) && HasClass(other, "PLAYER"))
+    {
+        if (HasItem(other, GridKey()))
+        {
+            UniChatMessage(other, "문의 잠금을 해제했습니다.", 150);
+            Delete(GridKey());
+            Delete(self);
+            UnlockDoor(Object("GridGate1"));
+            UnlockDoor(Object("GridGate2"));
+            FrameTimer(1, PlaceArea21Monsters);
+        }
+    }
+}
+
+void Area2WispDead()
+{
+    MoveObject(GridKey(), GetObjectX(self), GetObjectY(self));
+}
+
+void ToggleOgreGate()
+{
+    int door[2];
+
+    if (!door[0])
+    {
+        door[0] = Object("OgrePartCage1");
+        door[1] = Object("OgrePartCage2");
+    }
+    if (IsLocked(door[0]))
+    {
+        UniPrint(other, "잠금해제");
+        UnlockDoor(door[0]);
+        UnlockDoor(door[1]);
+    }
+    else
+    {
+        UniPrint(other, "잠금");
+        LockDoor(door[0]);
+        LockDoor(door[1]);
+    }
+}
+
+void PutSwampUrchins(int wp)
+{
+    int k;
+    SpawnUrchinShaman(wp);
+    for (k = 9 ; k >= 0 ; k --)
+        SpawnCreature("Urchin", wp, 64);
+}
+
+void OpenLastArchDoors()
+{
+    if (CurrentHealth(other) && HasClass(other, "PLAYER"))
+    {
+        UnlockDoor(Object("ArchDoor1"));
+        UnlockDoor(Object("ArchDoor2"));
+        SpawnMystic(413);
+        SpawnMystic(413);
+        SpawnGoon(413);
+        Delete(self);
+    }
+}
+
+void RespectGWizs()
+{
+    int unit;
+
+    ObjectOff(self);
+    if (!unit)
+    {
+        unit = SpawnDryad(428);
+        SpawnDryad(429);
+        Effect("TELEPORT", GetWaypointX(428), GetWaypointY(428), 0.0, 0.0);
+        Effect("TELEPORT", GetWaypointX(429), GetWaypointY(429), 0.0, 0.0);
+        SpawnBlackSpider(430);
+        SpawnBlackSpider(430);
+    }
+}
+
+void RespectFinalBoss()
+{
+    int unit;
+    ObjectOff(self);
+    if (!unit)
+        unit = FinalBoss();
+}
+
+int FinalBoss()
+{
+    int finBoss, id, fx;
+
+    if (!finBoss)
+    {
+        finBoss = CreateObject("Horrendous", 431);
+        fx = CreateObject("InvisibleLightBlueHigh", 431);
+        SetOwner(MasterUnit(), id);
+        SetOwner(MasterUnit(), fx);
+        SetUnitMaxHealth(finBoss, 1500);
+        CreatureGuard(id, GetObjectX(id), GetObjectY(id), GetObjectX(id), GetObjectY(id), 600.0);
+        CastSpellObjectObject("SPELL_TURN_UNDEAD", fx, fx);
+        AudioEvent("HecubahDieFrame283", 431);
+        UnlockDoor(Object("GM1"));
+        UnlockDoor(Object("GM2"));
+        SetCallback(id, 3, FBossSkill);
+        SetCallback(id, 5, DeadFinalBoss);
+    }
+    return id;
+}
+
+void DeadFinalBoss()
+{
+    UniPrintToAll("최종보스를 죽였습니다.");
+    MoveWaypoint(431, GetObjectX(self), GetObjectY(self));
+    //TeleportAllPlayers(431);
+    Effect("WHITE_FLASH", GetWaypointX(431), GetWaypointY(431), 0.0, 0.0);
+    AudioEvent("StaffOblivionAchieve1", 431);
+    //FrameTimer(1, StrVictory);
+}
+
+void FBossSkill()
+{
+    int enemy;
+    if (CurrentHealth(other))
+    {
+        if (!HasEnchant(self, "ENCHANT_BURNING"))
+        {
+            Enchant(self, "ENCHANT_BURNING", 10.0);
+            if (Random(0, 2))
+            {
+                LookAtObject(self, other);
+                ShootFireArrow(GetTrigger());
+            }
+            else
+            {
+                MoveWaypoint(41, GetObjectX(other), GetObjectY(other));
+                enemy = CreateObject("InvisibleLightBlueHigh", 41);
+                Raise(enemy, ToFloat(GetTrigger()));
+                Effect("SENTRY_RAY", GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other));
+                ObjectOff(self);
+                Enchant(self, "ENCHANT_INVULNERABLE", 0.0);
+                Enchant(self, "ENCHANT_FREEZE", 0.0);
+                FrameTimerWithArg(10, enemy, SentryTrick);
+            }
+        }
+        if (!HasEnchant(self, "ENCHANT_DETECTING"))
+        {
+            Enchant(self, "ENCHANT_DETECTING", 0.0);
+            FrameTimerWithArg(30, GetTrigger(), ResetUnitSight);
+        }
+    }
+}
+
+int MakeArrow(int unit)
+{
+	int ptr;
+	float gap = 7.0;
+	float pos_x = -UnitAngleCos(unit, gap);
+	float pos_y = -UnitAngleSin(unit, gap);
+	string name = "SmallFlame";
+	float x_buf[2]; float y_buf[2];
+
+	MoveWaypoint(431, GetObjectX(unit) - (pos_x * 3.0), GetObjectY(unit) - (pos_y * 3.0));
+	ptr = CreateObject(name, 431);
+	MoveWaypoint(431, GetWaypointX(431) - pos_x, GetWaypointY(431) - pos_y);
+	CreateObject(name, 431);
+	MoveWaypoint(431, GetWaypointX(431) - pos_x, GetWaypointY(431) - pos_y);
+	CreateObject(name, 431);
+	MoveWaypoint(431, GetWaypointX(431) - pos_x, GetWaypointY(431) - pos_y);
+	CreateObject(name, 431);
+	MoveWaypoint(431, GetWaypointX(431) - pos_x, GetWaypointY(431) - pos_y);
+	CreateObject(name, 431);
+	MoveWaypoint(431, GetWaypointX(431) - pos_x, GetWaypointY(431) - pos_y);
+	CreateObject(name, 431);
+	MoveWaypoint(431, GetWaypointX(431) - pos_x, GetWaypointY(431) - pos_y);
+	CreateObject(name, 431); //6
+	MoveWaypoint(431, GetObjectX(ptr + 6) + pos_y, GetObjectY(ptr + 6) - pos_x);
+	MoveWaypoint(432, GetObjectX(ptr + 6) - pos_y, GetObjectY(ptr + 6) + pos_x);
+	x_buf[0] = UnitWpRatioX(ptr + 5, 431, gap); x_buf[1] = UnitWpRatioX(ptr + 5, 432, gap);
+	y_buf[0] = UnitWpRatioY(ptr + 5, 431, gap); y_buf[1] = UnitWpRatioY(ptr + 5, 432, gap);
+	MoveWaypoint(431, GetObjectX(ptr + 6) + x_buf[0], GetObjectY(ptr + 6) + y_buf[0]);
+	MoveWaypoint(432, GetObjectX(ptr + 6) + x_buf[1], GetObjectY(ptr + 6) + y_buf[1]);
+	CreateObject(name, 431);
+	CreateObject(name, 432);
+	MoveWaypoint(431, GetWaypointX(431) + x_buf[0], GetWaypointY(431) + y_buf[0]);
+	MoveWaypoint(432, GetWaypointX(432) + x_buf[1], GetWaypointY(432) + y_buf[1]);
+	CreateObject(name, 431);
+	CreateObject(name, 432);
+	MoveWaypoint(431, GetWaypointX(431) + x_buf[0], GetWaypointY(431) + y_buf[0]);
+	MoveWaypoint(432, GetWaypointX(432) + x_buf[1], GetWaypointY(432) + y_buf[1]);
+	CreateObject(name, 431);
+	CreateObject(name, 432);
+    Raise(CreateObject("InvisibleLightBlueHigh", 431), pos_x);
+    Raise(CreateObject("InvisibleLightBlueHigh", 431), pos_y);
+    return ptr;
+}
+
+void ShootFireArrow(int caster)
+{
+    int ptr;
+    int unit;
+    if (CurrentHealth(caster))
+    {
+        ptr = MakeArrow(caster);
+        MoveWaypoint(431, GetObjectX(ptr + 6), GetObjectY(ptr + 6));
+        unit = CreateObject("Maiden", 431);
+        SetCallback(unit, 9, FireArrowTouched);
+        Frozen(unit, 1);
+        FrameTimerWithArg(1, ptr, MovingFireArrow);
+    }
+}
+
+void MovingFireArrow(int ptr)
+{
+    int k;
+
+    if (GetDirection(ptr) < 60 && CurrentHealth(ptr + 15) && CheckUnitMapBoundary(ptr + 15))
+    {
+        for (k = 15 ; k >= 0 ; k --)
+            MoveObject(ptr + k, GetObjectX(ptr + k) - (GetObjectZ(ptr + 13) * 2.0), GetObjectY(ptr + k) - (GetObjectZ(ptr + 14) * 2.0));
+        LookWithAngle(ptr, GetDirection(ptr) + 1);
+        FrameTimerWithArg(1, ptr, MovingFireArrow);
+    }
+    else
+    {
+        for (k = 15 ; k >= 0 ; k --)
+            Delete(ptr + k);
+    }
+}
+
+void FireArrowTouched()
+{
+    int plr = GetDirection(self);
+
+    if (CurrentHealth(other) && IsAttackedBy(other, MasterUnit()))
+    {
+        Delete(self);
+        Effect("SPARK_EXPLOSION", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
+        Damage(other, self, 100, 1);
+    }
+}
+
+void TeleportAllPlayers(int wp)
+{
+    int k;
+
+    for (k = 9 ; k >= 0 ; k --)
+    {
+        if (CurrentHealth(player[k]))
+            MoveObject(player[k], GetWaypointX(wp), GetWaypointY(wp));
+    }
+}
+
+void OpenGirlCage()
+{
+    int k;
+    ObjectOff(self);
+    UniPrint(other, "격자창이 열립니다.");
+    for (k = 9 ; k >= 0 ; k --)
+        WallOpen(Wall(202 + k, 146 + k));
+}
+
+void InitGirls()
+{
+    int k, unit;
+
+    for (k = 10 ; k >= 0 ; k --)
+    {
+        unit = Object("FemaleVictim" + IntToString(k + 1));
+        SetDialog(unit, "NORMAL", TalkWithMaiden, DummyFunction);
+        RetreatLevel(unit, 0.0);
+        SetCallback(unit, 5, MaidenDead);
+    }
+}
+
+string FemaleVictimMent(int num)
+{
+    string femCry =
+    "저를 구출해 주셔서 고맙습니다,\n저를 안전한 곳으로 데려다 주세요"; //0
+    "저를 도와주세요!\n이곳은 혼자있기에 너무 무서운 곳이었어요!"; //1
+    "오! 나의 구세주..."; //2
+    "저 여기있어요! 저좀 꺼내 주세요!"; //3
+    "드디어 이곳에서 탈출할 수 있게 되었네요. 고마워요 이름모를 모험가씨"; //4
+    "아~ 지금이 몇시인데 이제와? 빨리 안와"; //5
+    "정말 감사합니다!\n엉엉 ㅠㅠㅠ"; //6
+    "당신의 뒤만 따르겠어요"; //7
+    "길을 헤매는 동안 괴물들이 나를 봉쇄했어요\n잠시의 틈을 통해 그들에게 도망쳐 나올 수 있었죠\n그리고 여기에 숨었고\n마침내 당신이 온거죠"; //8
+    "다른이들은 위험하다며 날 버렸지만..\n당신만은 날...\n착하시군요?"; //9
+    "나.. 드디어 여기서 나갈 수 있는거야??\n (기절)"; //10
+    "Thank You! (외국인)"; //11
+
+    return "MISSING: " + ToStr(SToInt(femCry) + num);
+}
+
+void TalkWithMaiden()
+{
+    if (!HasEnchant(self, "ENCHANT_BURNING"))
+    {
+        Enchant(self, "ENCHANT_BURNING", 7.0);
+        MoveObject(self, GetObjectX(other), GetObjectY(other));
+        if (!IsOwnedBy(self, other))
+        {
+            if (MaxHealth(self) != 300)
+                SetUnitMaxHealth(GetMemory(0x979724), 300);
+            UniChatMessage(self, FemaleVictimMent(GetDirection(GetTrigger() + 1)), 180);
+            SetOwner(other, self);
+            MoveWaypoint(41, GetObjectX(self), GetObjectY(self));
+            CreatureFollow(self, other);
+            AudioEvent("MaidenTalkable", 41);
+        }
+    }
+}
+
+void MaidenDead()
+{
+    int ggover;
+    MoveWaypoint(41, GetObjectX(self), GetObjectY(self));
+    AudioEvent("MaidenDie", 41);
+    DeleteObjectTimer(self, 1);
+    if (!ggover)
+    {
+        UniPrintToAll("미션실패_! 방금 한명의 여성이 희생되었습니다");
+        TeleportAllPlayers(433);
+        MoveObject(Object("StartLocation"), GetWaypointX(433), GetWaypointY(433));
+        SetStartSwitch(0);
+        FrameTimer(1, StrFailMission);
+    }
+}
+
+void BringGirl()
+{
+    int save;
+
+    if (GetUnitThingID(other) == 1385)
+    {
+        save ++;
+        UniPrintToAll("방금 한명의 여성이 구출되었습니다 (11명 중 " + IntToString(save) + " 명)");
+        UniChatMessage(other, "감사합니다!", 150);
+        Frozen(other, 1);
+        CancelDialog(other);
+        LookWithAngle(other, 32);
+        MoveObject(other, GetWaypointX(434), GetWaypointY(434));
+        MoveWaypoint(434, GetWaypointX(434) + 23.0, GetWaypointY(434) - 23.0);
+        if (save == 11)
+        {
+            UniPrintToAll("미션성공, 모든 여성을 맵에서 구출했습니다");
+            TeleportAllPlayers(433);
+            MoveObject(Object("StartLocation"), GetWaypointX(433), GetWaypointY(433));
+            Effect("WHITE_FLASH", GetWaypointX(433), GetWaypointY(433), 0.0, 0.0);
+            MoveWaypoint(431, GetWaypointX(433), GetWaypointY(433));
+            StrVictory();
+            ObjectOff(self);
+        }
+    }
+}
+
+void MapPotionPlace(string name)
+{
+    PotionPickupRegist(CreateObject(name, 22));
+    PotionPickupRegist(CreateObject(name, 435));
+    PotionPickupRegist(CreateObject(name, 436));
+    PotionPickupRegist(CreateObject(name, 239));
+    PotionPickupRegist(CreateObject(name, 240));
+    PotionPickupRegist(CreateObject(name, 241));
+    PotionPickupRegist(CreateObject(name, 242));
+    PotionPickupRegist(CreateObject(name, 27));
+    PotionPickupRegist(CreateObject(name, 70));
+    PotionPickupRegist(CreateObject(name, 18));
+    PotionPickupRegist(CreateObject(name, 34));
+    PotionPickupRegist(CreateObject(name, 11));
+    PotionPickupRegist(CreateObject(name, 12));
+    PotionPickupRegist(CreateObject(name, 13));
+    FrameTimerWithArg(1, name, MapPotionPlace2);
+}
+
+void MapPotionPlace2(string name)
+{
+    PotionPickupRegist(CreateObject(name, 171));
+    PotionPickupRegist(CreateObject(name, 174));
+    PotionPickupRegist(CreateObject(name, 173));
+    PotionPickupRegist(CreateObject(name, 180));
+    PotionPickupRegist(CreateObject(name, 185));
+    PotionPickupRegist(CreateObject(name, 181));
+    PotionPickupRegist(CreateObject(name, 182));
+    PotionPickupRegist(CreateObject(name, 183));
+    PotionPickupRegist(CreateObject(name, 184));
+    PotionPickupRegist(CreateObject(name, 10));
+    PotionPickupRegist(CreateObject(name, 437));
+    PotionPickupRegist(CreateObject(name, 438));
+    PotionPickupRegist(CreateObject(name, 122));
+    FrameTimerWithArg(1, name, MapPotionPlace3);
+}
+
+void MapPotionPlace3(string name)
+{
+    PotionPickupRegist(CreateObject(name, 217));
+    PotionPickupRegist(CreateObject(name, 221));
+    PotionPickupRegist(CreateObject(name, 224));
+    PotionPickupRegist(CreateObject(name, 230));
+    PotionPickupRegist(CreateObject(name, 231));
+    PotionPickupRegist(CreateObject(name, 227));
+    PotionPickupRegist(CreateObject(name, 93));
+    PotionPickupRegist(CreateObject(name, 92));
+    PotionPickupRegist(CreateObject(name, 439));
+    PotionPickupRegist(CreateObject(name, 440));
+    PotionPickupRegist(CreateObject(name, 441));
+    PotionPickupRegist(CreateObject(name, 442));
+    PotionPickupRegist(CreateObject(name, 443));
+    PotionPickupRegist(CreateObject(name, 444));
+    FrameTimerWithArg(1, name, MapPotionPlace4);
+}
+
+void MapPotionPlace4(string name)
+{
+    int k;
+    for (k = 445 ; k <= 464 ; k ++)
+        PotionPickupRegist(CreateObject(name, k));
+}
+
+void SetStartSwitch(int stat)
+{
+    int ptr;
+
+    if (!ptr) ptr = Object("MainGameSw");
+    if (!stat)
+        ObjectOff(ptr);
+    else
+        ObjectOn(ptr);
+}
+
+void PlayerInit(int plr, int plrUnit)
+{
+    player[plr] = plrUnit;
+    player[plr + 10] = 1;
+    DiePlayerHandlerEntry(plrUnit);
+    SelfDamageClassEntry(plrUnit);
+    ChangeGold(plrUnit, -GetGold(plrUnit));
+    UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 지도에 입장하셨습니다");
+}
+
+void PlayerEntryPoint()
+{
+    int plr, k;
+
+    while (1)
+    {
+        if (CurrentHealth(other))
+        {
+            if (MaxHealth(other) == 150)
+            {
+                plr = CheckPlayer();
+
+                for (k = 9 ; k >= 0 && plr < 0 ; k --)
+                {
+                    if (!MaxHealth(player[k]))
+                    {
+                        PlayerInit(k, GetCaller());
+                        plr = k;
+                        break;
+                    }
+                }
+                if (plr >= 0)
+                {
+                    PlayerJoin(plr);
+                    break;
+                }
+            }
+        }
+        CantJoin();
+        break;
+    }
+}
+
+void PlayerJoin(int plr)
+{
+    int ptr;
+
+    EmptyAll(player[plr]);
+    if (PlayerClassCheckDeathFlag(plr))
+    {
+        PlayerClassSetDeathFlag(plr);
+        CancelTimer(FrameTimerWithArg(10, PlayerClassItemTable, PlayerClassItemTable));
+        ptr = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        PlayerClassPickAll(player[plr], ptr + 4, PlayerClassItemIndexTable(plr));
+    }
+    MoveObject(player[plr], GetWaypointX(51), GetWaypointY(51));
+    DeleteObjectTimer(CreateObject("BlueRain", 51), 10);
+    Effect("TELEPORT", GetWaypointX(51), GetWaypointY(51), 0.0, 0.0);
+}
+
+void CantJoin()
+{
+    Enchant(other, "ENCHANT_ANCHORED", 0.0);
+    Enchant(other, "ENCHANT_FREEZE", 0.0);
+    MoveObject(other, GetWaypointX(50), GetWaypointY(50));
+    UniPrint(other, "이 맵은 전사만 입장할 수 있습니다.");
+    UniPrint(other, "또한 기술적 한계로 인하여 이 맵은 최대 10명 까지만 입장가능합니다.");
+}
+
+void EmptyAll(int unit)
+{
+    while (GetLastItem(unit))
+        Delete(GetLastItem(unit));
+}
+
+void GreenSparkFx(int wp)
+{
+    int ptr = CreateObject("MonsterGenerator", wp);
+
+    Damage(ptr, 0, 10, 100);
+    Delete(ptr);
+}
+
+void GreenSparkFxAt(float sX, float sY)
+{
+    int fxGen = CreateObjectAt("MonsterGenerator", sX, sY);
+
+    Damage(fxGen, 0, 10, 100);
+    Delete(fxGen);
+}
+
+int ImportRemoveSneakDelay()
+{
+    int arr[7], link;
+
+    if (!link)
+    {
+        arr[0] = 0x72506850; arr[1] = 0x14FF0050; arr[2] = 0xC3006824; arr[3] = 0x046A004F; arr[4] = 0x2454FF50; arr[5] = 0x10C48308; arr[6] = 0x9090C358;
+        CancelTimer(FrameTimerWithArg(10, ImportRemoveSneakDelay, ImportRemoveSneakDelay));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void RemoveTreadLightly(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit), temp = GetMemory(0x5c336c);
+
+    if (ptr)
+    {
+        if (GetMemory(ptr + 0x08) & 0x04)
+        {
+            SetMemory(0x5c336c, ImportRemoveSneakDelay());
+            Unknownb8(ptr);
+            SetMemory(0x5c336c, temp);
+        }
+    }
+}
+
+int PlayerCheckFlagSkill2(int plr)
+{
+    return player[plr + 10] & 0x02;
+}
+
+void PlayerSetFlagSkill2(int plr)
+{
+    player[plr + 10] = player[plr + 10] ^ 0x02;
+}
+
+int PlayerClassCheckDeathFlag(int plr)
+{
+    return player[plr + 10] & 0x04;
+}
+
+void PlayerClassSetDeathFlag(int plr)
+{
+    player[plr + 10] = player[plr + 10] ^ 0x04;
+}
+
+void PlayerOnDeath(int plr)
+{
+    int ptr;
+
+    CancelTimer(FrameTimerWithArg(10, PlayerClassItemTable, PlayerClassItemTable));
+    ptr = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    PlayerClassItemIndexTable((PlayerClassDropAll(player[plr], ptr) << 0x10) | (1 << 0x08) | plr);
+    UniPrintToAll(PlayerIngameNick(player[plr]) + " 님께서 적에게 격추되었습니다");
+}
+
+void CheckAwardNewSkill(int plr)
+{
+    int inv = GetLastItem(player[plr]);
+
+    if (GetUnitThingID(inv) == 2676)
+    {
+        MoveWaypoint(1, GetObjectX(player[plr]), GetObjectY(player[plr]));
+        GreenSparkFx(1);
+        AudioEvent("AwardSpell", 1);
+        player[plr + 10] = player[plr + 10] ^ 2;
+        Delete(inv);
+        UniPrint(player[plr], "새로운 능력을 배웠습니다!");
+        UniPrint(player[plr], "조심스럽게 걷기를 시전하면 새로운 능력이 발동됩니다");
+    }
+}
+
+void PlayerOnFree(int plr)
+{
+    CancelPlayerDialog(player[plr]);
+    player[plr] = 0;
+    player[plr + 10] = 0;
+}
+
+void LoopPreservePlayers()
+{
+    int i;
+
+    for (i = 9 ; i >= 0 ; i --)
+    {
+        while (1)
+        {
+            if (MaxHealth(player[i]))
+            {
+                if (GetUnitFlags(player[i]) & 0x40)
+                    1;
+                else if (CurrentHealth(player[i]))
+                {
+                    if (UnitCheckEnchant(player[i], GetLShift(31)))
+                    {
+                        EnchantOff(player[i], EnchantList(31));
+                        RemoveTreadLightly(player[i]);
+                        if (PlayerCheckFlagSkill2(i))
+                            FrameTimerWithArg(1, player[i], RideVicle);
+                    }
+                    else if (!PlayerCheckFlagSkill2(i))
+                        CheckAwardNewSkill(i);
+                    break;
+                }
+                else
+                {
+                    if (!PlayerClassCheckDeathFlag(i) && player[i + 10])
+                    {
+                        PlayerClassSetDeathFlag(i);
+                        PlayerOnDeath(i);
+                    }
+                    break;
+                }
+            }
+            if (player[i + 10])
+            {
+                PlayerOnFree(i);
+            }
+            break;
+        }
+    }
+    FrameTimer(1, LoopPreservePlayers);
+}
+
+void CollideVicle()
+{
+    int owner = GetOwner(GetTrigger() + 2);
+
+    if (CurrentHealth(other) && IsAttackedBy(other, owner) && MaxHealth(self))
+    {
+        CreateObjectAt("CrateBreaking2", GetObjectX(self), GetObjectY(self));
+        Delete(self);
+        Delete(GetTrigger() + 2);
+        Damage(other, owner, 125, 11);
+    }
+}
+
+void RideVicle(int caster)
+{
+    int unit;
+    float vectX, vectY;
+
+    if (!UnitCheckEnchant(caster, GetLShift(11)))
+    {
+        UnitSetEnchantTime(caster, 11, 240);
+        vectX = UnitAngleCos(caster, 20.0);
+        vectY = UnitAngleSin(caster, 20.0);
+        unit = DummyUnitCreate("Maiden", GetObjectX(caster) + vectX, GetObjectY(caster) + vectY);
+        Frozen(unit, 1);
+        SetCallback(unit, 9, CollideVicle);
+        UnitNoCollide(CreateObjectAt("AirshipBasket", GetObjectX(unit), GetObjectY(unit)));
+        Raise(CreateObjectAt("InvisibleLightBlueHigh", GetObjectX(unit), GetObjectY(unit)), vectX);
+        SetOwner(caster, unit + 2);
+        LookWithAngle(unit + 2, 40);
+        Raise(CreateObjectAt("InvisibleLightBlueHigh", GetObjectX(caster) - vectX, GetObjectY(caster) - vectY), vectY);
+        FrameTimerWithArg(1, unit + 2, LoopRideHandling);
+    }
+}
+
+void LoopRideHandling(int sUnit)
+{
+    int durate = GetDirection(sUnit), owner = GetOwner(sUnit);
+
+    while (1)
+    {
+        if (CurrentHealth(owner) && IsVisibleTo(sUnit, sUnit + 1))
+        {
+            if (durate)
+            {
+                MoveObject(sUnit, GetObjectX(sUnit) + GetObjectZ(sUnit), GetObjectY(sUnit) + GetObjectZ(sUnit + 1));
+                MoveObject(sUnit + 1, GetObjectX(sUnit + 1) + GetObjectZ(sUnit), GetObjectY(sUnit + 1) + GetObjectZ(sUnit + 1));
+                MoveObject(sUnit - 1, GetObjectX(sUnit), GetObjectY(sUnit));
+                MoveObject(sUnit - 2, GetObjectX(sUnit), GetObjectY(sUnit));
+                FrameTimerWithArg(1, sUnit, LoopRideHandling);
+                LookWithAngle(sUnit, durate - 1);
+                break;
+            }
+        }
+        Delete(sUnit);
+        Delete(sUnit + 1);
+        Delete(sUnit - 1);
+        Delete(sUnit - 2);
+        break;
+    }
+}
+
+void WispDestroyFx(float sX, float sY)
+{
+    int wisp = CreateObjectAt("WillOWisp", sX, sY);
+
+    UnitNoCollide(wisp);
+    Damage(wisp, 0, CurrentHealth(wisp) + 1, -1);
+}
+
+void TeleportToHome(int sUnit)
+{
+    int owner = GetOwner(sUnit);
+
+    if (CurrentHealth(owner) && UnitCheckEnchant(owner, GetLShift(15)))
+    {
+        EnchantOff(owner, EnchantList(15));
+        if (Distance(GetObjectX(owner), GetObjectY(owner), GetObjectX(sUnit), GetObjectY(sUnit)) < 15.0)
+        {
+            Effect("COUNTERSPELL_EXPLOSION", GetObjectX(owner), GetObjectY(owner), 0.0, 0.0);
+            MoveObject(owner, GetWaypointX(167), GetWaypointY(167));
+            AudioEvent("HecubahDieFrame98", 167);
+            Effect("COUNTERSPELL_EXPLOSION", GetObjectX(owner), GetObjectY(owner), 0.0, 0.0);
+            Effect("SMOKE_BLAST", GetObjectX(owner), GetObjectY(owner), 0.0, 0.0);
+            UniPrint(owner, "안전한 피신처로 이동했습니다");
+        }
+        else
+            UniPrint(owner, "공간이동을 취소했습니다");
+    }
+    Delete(sUnit);
+    Delete(sUnit + 1);
+}
+
+void HealingPotion(int sUnit)
+{
+    int durate = GetDirection(sUnit), owner = GetOwner(sUnit);
+
+    while (IsObjectOn(sUnit))
+    {
+        if (CurrentHealth(owner))
+        {
+            if (durate)
+            {
+                RestoreHealth(owner, 1);
+                LookWithAngle(sUnit, durate - 1);
+                FrameTimerWithArg(1, sUnit, HealingPotion);
+                MoveObject(sUnit, GetObjectX(owner), GetObjectY(owner));
+                break;
+            }
+            WispDestroyFx(GetObjectX(owner), GetObjectY(owner));
+        }
+        Delete(sUnit);
+        break;
+    }
+}
+
+void RottenMeatClassSetUnitHealth(int unit, int amount)
+{
+    if (UnitCheckEnchant(unit, GetLShift(23)))
+        EnchantOff(unit, EnchantList(23));
+    if (UnitCheckEnchant(unit, GetLShift(26)))
+        EnchantOff(unit, EnchantList(26));
+    Damage(unit, 0, CurrentHealth(unit) - 1, -1);
+    Pickup(unit, CreateObjectAt("RottenMeat", GetObjectX(unit), GetObjectY(unit)));
+    Damage(unit, 0, CurrentHealth(unit) - amount, -1);
+}
+
+int MagicItemUseFunction()
+{
+    StopScript(PlayerSendToStartZone);
+}
+
+void PlayerSendToStartZone()
+{
+    int unit;
+
+    if (!UnitCheckEnchant(other, GetLShift(15)))
+    {
+        Delete(self);
+        UnitSetEnchantTime(other, 15, 30 * 7);
+        PlaySoundAround(other, 592);
+        unit = CreateObjectAt("InvisibleLightBlueHigh", GetObjectX(other), GetObjectY(other));
+        SetOwner(other, CreateObjectAt("VortexSource", GetObjectX(unit), GetObjectY(unit)) - 1);
+        FrameTimerWithArg(60, unit, TeleportToHome);
+        UniPrint(other, "부활터로 귀환을 시도하고 있습니다, 취소하려면 움직이세요");
+    }
+    else
+        UniPrint(other, "쿨다운 입니다...");
+}
+
+void ApplyShockField()
+{
+    Delete(self);
+    UnitSetEnchantTime(other, 22, 30 * 60);
+}
+
+void UseHealingPotion()
+{
+    int unit = CreateObjectAt("InvisibleLightBlueLow", GetObjectX(other), GetObjectY(other));
+
+    FrameTimerWithArg(1, unit, HealingPotion);
+    SetOwner(other, unit);
+    LookWithAngle(unit, 250);
+    SetUnitEnchantCopy(unit, GetLShift(8) | GetLShift(26) | GetLShift(4));
+    GreenSparkFxAt(GetObjectX(other), GetObjectY(other));
+    Delete(self);
+    UniPrint(other, "힐링포션을 사용했습니다. 잠시동안 체력이 빠르게 회복됩니다 (중첩가능)");
+}
+
+void UseMeteorShowerStone()
+{
+    CastSpellObjectLocation("SPELL_METEOR_SHOWER", other, GetObjectX(other), GetObjectY(other));
+    Delete(self);
+    UniPrint(other, "메테오 샤워를 시전합니다");
+}
+
+void UseRottenMeat()
+{
+    int ptr = UnitToPtr(other);
+
+    if (ptr)
+    {
+        if (GetMemory(ptr + 0x08) & 4)
+        {
+            RottenMeatClassSetUnitHealth(other, MaxHealth(other) * 2);
+            UniPrint(other, "역시 썩은고기! 썩은고기로 인해 현재 체력 수치가 최대체력의 2배가 됩니다");
+        }
+    }
+    Delete(self);
+}
+
+int Sentry()
+{
+    int trap;
+
+    if (!trap)
+    {
+        trap = CreateObject("SentryGlobeMovable", 47);
+        ObjectOff(trap);
+    }
+    return trap;
+}
+
+void SentryTrick(int unit)
+{
+    int me = ToInt(GetObjectZ(unit)), xray, ptr;
+
+    if (CurrentHealth(me))
+    {
+        xray = Sentry();
+        ptr = UnitToPtr(xray);
+        MoveObject(xray, GetObjectX(me) - UnitRatioX(me, unit, 23.0), GetObjectY(me) + UnitRatioY(me, unit, 23.0));
+        LookAtObject(me, unit);
+        SetMemory(GetMemory(ptr + 0x2ec) + 4, ToInt(3.141592 / 180.0 * IntToFloat(GetDirection(me)) * 45.0 / 32.0));
+        SetOwner(me, xray);
+        FrameTimerWithArg(10, xray, BackToPosition);
+        FrameTimerWithArg(10, me, EnableFinalBoss);
+    }
+    Delete(unit);
+}
+
+void BackToPosition(int unit)
+{
+    ObjectOff(unit);
+    MoveObject(unit, GetWaypointX(47), GetWaypointY(47));
+}
+
+void EnableFinalBoss(int unit)
+{
+    ObjectOn(unit);
+    EnchantOff(unit, "ENCHANT_INVULNERABLE");
+    EnchantOff(unit, "ENCHANT_FREEZE");
+}
+
+float IntToFloat(int x)
+{
+    int i, pos = x;
+    float result = 0.0;
+ 
+    if (pos < 0)
+        pos = -pos;
+    for (i = 0; i < 32; i ++)
+    {
+        if (pos & 0x80000000)
+            result += 1.0;
+        pos = pos << 1;
+        if (i != 31)
+            result *= 2.0;
+    }
+    if (x < 0)
+        return -result;
+    else
+        return result;
+}
+
+int CheckPlayer()
+{
+    int k;
+
+    for (k = 9 ; k >= 0 ; k --)
+    {
+        if (IsCaller(player[k]))
+            return k;
+    }
+    return -1;
+}
+
+string PlayerName(int unit)
+{
+    int ptr = UnitToPtr(unit);
+    int addr = GetMemory(0x97bb40), xwis_id;
+    
+    if (ptr)
+    {
+        xwis_id = GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x830;
+
+        SetMemory(addr, GetMemory(xwis_id));
+        SetMemory(addr + 4, GetMemory(xwis_id + 4));
+        SetMemory(addr + 8, GetMemory(xwis_id + 8));
+        StopScript(0);
+    }
+    return "NULL";
+}
+
+void SetGoldAmount(int unit, int amount)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+	    SetMemory(GetMemory(ptr + 0x2b4), amount);
+}
+
+int FixCreateMover(int targetUnit, int destLocation, float speed)
+{
+    int unitMover = CreateMover(targetUnit, destLocation, speed), unitPtr = UnitToPtr(targetUnit);
+    int movPtr;
+
+    if (unitMover)
+    {
+        movPtr = UnitToPtr(unitMover);
+        if (movPtr && unitPtr)
+        {
+            SetMemory(unitPtr + 0x28, LastUnitID);
+            movPtr = GetMemory(movPtr + 0x2ec);
+            SetMemory(movPtr + 0x20, LastUnitID);
+        }
+    }
+    LastUnitID ++;
+
+    return unitMover;
+}
+
+void SetUnitMaxHealth(int unit, int amount)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+    {
+        SetMemory(GetMemory(ptr + 0x22c), amount);
+        SetMemory(GetMemory(ptr + 0x22c) + 0x4, amount);
+    }
+}
+
+void UnitPickupEvent(int unit, int functionNumber)
+{
+	int ptr = UnitToPtr(unit);
+
+    if (ptr)
+		SetMemory(ptr + 0x300, functionNumber);
+}
+
+void DisableMagicalProperties(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+	    SetMemory(ptr + 0xc, GetMemory(ptr + 0xc) ^ 0x1);
+}
+
+void SetUnitFlag(int ptr, int flag)
+{
+	SetMemory(ptr + 0x10, GetMemory(ptr + 0x10) ^ flag);
+}
+
+int ImportUnitDieFunc()
+{
+    int arr[9], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50731068; arr[1] = 0x8B565000; arr[2] = 0x8B102474; arr[3] = 0x0002FC86;
+        arr[4] = 0x006A5600; arr[5] = 0x2454FF50; arr[6] = 0x0CC48314; arr[7] = 0xC483585E;
+        arr[8] = 0x9090C304; 
+        CancelTimer(FrameTimerWithArg(10, ImportUnitDieFunc, ImportUnitDieFunc));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void HiveDestroy()
+{
+    float xProfile = GetObjectX(self), yProfile = GetObjectY(self);
+
+    PlaySoundAround(self, 292);
+    CreateObjectAt("WaspNestDestroy", xProfile, yProfile);
+    Delete(self);
+    if (Random(0, 1))
+    {
+        SetUnitMaxHealth(CreateObjectAt("Wasp", xProfile, yProfile), 64);
+        SetUnitMaxHealth(CreateObjectAt("Wasp", xProfile, yProfile), 64);
+        SetUnitMaxHealth(CreateObjectAt("Wasp", xProfile, yProfile), 64);
+        SetUnitMaxHealth(CreateObjectAt("Wasp", xProfile, yProfile), 64);
+    }
+    else
+    {
+        MoveWaypoint(1, xProfile, yProfile);
+        RewardMarkerFunc(1, 7);
+    }
+}
+
+int SpawnWaspNest(int wp)
+{
+    int hive = CreateObject("WaspNest", wp);
+    int ptr = GetMemory(0x750710);
+
+    SetUnitMaxHealth(hive, 600);
+    SetMemory(ptr + 0x2d4, ImportUnitDieFunc());
+    CancelTimer(FrameTimerWithArg(10, HiveDestroy, HiveDestroy));
+    SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+    return hive;
+}
+
+void PutBones(int wp, int amount)
+{
+    int k;
+
+    for (k = amount ; k ; k --)
+        CreateObject(Bones(), wp);
+}
+
+string Bones()
+{
+    int k;
+    string name[19];
+
+    if (!k)
+    {
+        k = 1;
+        name[0] = "CorpseLeftLowerArm"; name[1] = "CorpseLeftLowerLeg"; name[2] = "CorpseLeftUpperArm";
+        name[3] = "CorpseLeftUpperLeg"; name[4] = "CorpsePelvis"; name[5] = "CorpseRibCage";
+        name[6] = "CorpseRightLowerArm"; name[7] = "CorpseRightLowerLeg"; name[8] = "CorpseRightUpperArm";
+        name[9] = "CorpseRightUpperLeg"; name[10] = "CorpseSkull";
+        name[11] = "E"; name[12] = "N"; name[13] = "NE"; name[14] = "NW"; name[15] = "S"; name[16] = "SE"; name[17] = "SW"; name[18] = "W";
+        return "NULL";
+    }
+    return name[Random(0, 10)] + name[Random(11, 18)];
+}
+
+void DelayDisableUnit(int unit)
+{
+    ObjectOff(unit);
+}
+
+int CreateMagicMissile(int wp, int owner)
+{
+	int mis = CreateObject("MagicMissile", wp);
+    int ptr = GetMemory(0x750710);
+
+	SetMemory(GetMemory(ptr + 0x2ec), owner);
+	SetMemory(ptr + 0x1fc, owner);
+
+    return mis;
+}
+
+void FieldTeleport()
+{
+    if (HasClass(other, "PLAYER"))
+    {
+        if (!GetDirection(self))
+            MoveObject(other, GetWaypointX(166), GetWaypointY(166));
+        else
+            MoveObject(other, GetWaypointX(167), GetWaypointY(167));
+        Effect("TELEPORT", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
+        Effect("SMOKE_BLAST", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
+    }
+}
+
+int SpawnToxicCloud(int wp, int time)
+{
+	int cloud = CreateObject("ToxicCloud", wp);
+    int ptr = GetMemory(0x750710);
+
+	SetMemory(GetMemory(ptr + 0x2ec), time);
+    return cloud;
+}
+
+void AmmoTypeItemChecking(int ptr)
+{
+    int id = GetMemory(ptr + 4);
+
+    if (id == 1178)
+        SetMemory(GetMemory(ptr + 0x2e0), 0xffff);
+    else if (id == 1168)
+        SetMemory(GetMemory(ptr + 0x2e0), 0xffff);
+}
+
+void DisableOblivionEvent(int ptr)
+{
+    int id = GetMemory(ptr + 4);
+
+    if (id >= 222 && id <= 225)
+    {
+        SetMemory(ptr + 0x2c4, 0x53a720);
+        SetMemory(ptr + 0x2c8, ImportAllowAllDrop());
+    }
+}
+
+string ArmorList()
+{
+    string table = {
+        "OrnateHelm", "Breastplate", "PlateArms", "PlateBoots", "PlateLeggings", "ChainCoif", "ChainLeggings", "ChainTunic",
+        "MedievalCloak", "LeatherArmbands", "LeatherArmor", "LeatherArmoredBoots", "LeatherBoots", "MedievalPants", "MedievalShirt",
+        "LeatherHelm", "SteelShield", "WoodenShield"
+    };
+
+    return ToStr(SToInt(table) + Random(0, 17));
+}
+
+string WeaponList()
+{
+    string table = {
+        "WarHammer", "GreatSword", "StaffWooden", "RoundChakram", "FanChakram", "MorningStar", "OgreAxe", "BattleAxe",
+        "Longsword", "Sword", "OblivionHalberd", "OblivionHeart", "OblivionWierdling"
+    };
+
+    return ToStr(SToInt(table) + Random(0, 12));
+}
+
+int MaterialList()
+{
+    int addr[6];
+
+    if (!addr[0])
+    {
+        //Lv.3 ~ 7, null
+        addr[0] = 0x5ba834; addr[1] = 0x5ba84c; addr[2] = 0x5ba864; addr[3] = 0x5ba87c; addr[4] = 0x5ba894; addr[5] = 0x611c5c;
+        return 0;
+    }
+    return GetMemory(addr[Random(0, 5)]);
+}
+
+int WeaponPower()
+{
+    int addr[6];
+
+    if (!addr[0])
+    {
+        addr[0] = 0x5BA714; addr[1] = 0x5BA72C; addr[2] = 0x5BA744; addr[3] = 0x5BA75C; addr[4] = 0x5BA774; addr[5] = 0x611c5c;
+        return 0;
+    }
+    return GetMemory(addr[Random(0, 5)]);
+}
+
+int ArmorQuality()
+{
+    int addr[6];
+
+    if (!addr[0])
+    {
+        addr[0] = 0x5BA7A4; addr[1] = 0x5BA7BC; addr[2] = 0x5BA7D4; addr[3] = 0x5BA7EC; addr[4] = 0x5BA804; addr[5] = 0x611c5c;
+        return 0;
+    }
+    return GetMemory(addr[Random(0, 5)]);
+}
+
+int WeaponEffect()
+{
+    int addr[29];
+
+    if (!addr[0])
+    {
+        addr[0] = 0x5BA1BC; addr[1] = 0x5BA1D4; addr[2] = 0x5BA1EC; addr[3] = 0x5BA204; addr[4] = 0x5BA21C; addr[5] = 0x5BA234; addr[6] = 0x5BA24C; addr[7] = 0x5BA264;
+        addr[8] = 0x5BA27C; addr[9] = 0x5BA294; addr[10] = 0x5BA2AC; addr[11] = 0x5BA2C4; addr[12] = 0x5BA2DC; addr[13] = 0x5BA2F4; addr[14] = 0x5BA30C; addr[15] = 0x5BA324;
+        addr[16] = 0x5BA33C; addr[17] = 0x5BA354; addr[18] = 0x5BA36C; addr[19] = 0x5BA384; addr[20] = 0x5BA39C; addr[21] = 0x5BA3B4; addr[22] = 0x5BA3CC; addr[23] = 0x5BA3E4;
+        addr[24] = 0x5BA3FC; addr[25] = 0x5BA414; addr[26] = 0x5BA42C; addr[27] = 0x5BA444; addr[28] = 0x611c5c;
+        return 0;
+    }
+    return GetMemory(addr[Random(0, 28)]);
+}
+
+int ArmorEffect()
+{
+    int addr[21];
+
+    if (!addr[0])
+    {
+        addr[0] = 0x5BA45C; addr[1] = 0x5BA474; addr[2] = 0x5BA48C; addr[3] = 0x5BA4A4; addr[4] = 0x5BA4BC; addr[5] = 0x5BA4D4; addr[6] = 0x5BA4EC; addr[7] = 0x5BA504;
+        addr[8] = 0x5BA51C; addr[9] = 0x5BA534; addr[10] = 0x5BA54C; addr[11] = 0x5BA564; addr[12] = 0x5BA57C; addr[13] = 0x5BA594; addr[14] = 0x5BA5AC; addr[15] = 0x5BA5C4;
+        addr[16] = 0x5BA5DC; addr[17] = 0x5BA5F4; addr[18] = 0x5BA60C; addr[19] = 0x5BA624; addr[20] = 0x611c5c;
+        return 0;
+    }
+    return GetMemory(addr[Random(0, 20)]);
+}
+
+int FieldItemFunction()
+{
+    StopScript(SpawnGold);
+}
+
+int SpawnGold(int wp)
+{
+    string name = {"QuestGoldChest", "QuestGoldPile", "Gold"};
+    int unit = CreateObject(ToStr(SToInt(name) + Random(0, 2)), wp);
+
+    SetGoldAmount(unit, Random(200, 1000));
+    return unit;
+}
+
+int CreateRandomWeapon(int wp)
+{
+    int k, weapon = CreateObject(WeaponList(), wp);
+    int ptr = GetMemory(0x750710);
+
+    if (ptr)
+    {
+        SetMemory(GetMemory(ptr + 0x2b4), WeaponPower());
+        SetMemory(GetMemory(ptr + 0x2b4) + 4, MaterialList());
+        SetMemory(GetMemory(ptr + 0x2b4) + 8, WeaponEffect());
+        SetMemory(GetMemory(ptr + 0x2b4) + 12, WeaponEffect());
+        for (k = 31 ; k >= 0 ; k --)
+            SetMemory(ptr + 0x230 + (k*4), 0x200);
+        DisableOblivionEvent(ptr);
+        AmmoTypeItemChecking(ptr);
+    }
+    return weapon;
+}
+
+int CreateRandomArmor(int wp)
+{
+    int k, armor = CreateObject(ArmorList(), wp);
+    int ptr = GetMemory(0x750710);
+
+    if (ptr)
+    {
+        SetMemory(GetMemory(ptr + 0x2b4), ArmorQuality());
+        SetMemory(GetMemory(ptr + 0x2b4) + 4, MaterialList());
+        SetMemory(GetMemory(ptr + 0x2b4) + 8, ArmorEffect());
+        SetMemory(GetMemory(ptr + 0x2b4) + 12, ArmorEffect());
+
+        for (k = 31 ; k >= 0 ; k --)
+            SetMemory(ptr + 0x230 + (k*4), 0x200);
+    }
+    return armor;
+}
+
+int MagicalPotionCreate(int wp)
+{
+    string name = {
+        "RedPotion", "CurePoisonPotion", "VampirismPotion", "BlackPotion", "YellowPotion",
+        "Meat", "Soup", "RedApple", "HastePotion", "PoisonProtectPotion",
+        "FireProtectPotion", "ShockProtectPotion", "InfravisionPotion", "InvulnerabilityPotion", "ShieldPotion",
+        "RedPotion2"
+    };
+    return CheckPotionThingID(CreateObject(ToStr(SToInt(name) + Random(0, 15)), wp));
+}
+
+int HotPotionCreate(int wp)
+{
+    return PotionPickupRegist(CreateObject("RedPotion", wp));
+}
+
+int GermCreate(int wp)
+{
+    string germ = {"Ruby", "Ruby", "Ruby", "Emerald", "Emerald", "Diamond"};
+
+    return CreateObject(ToStr(SToInt(germ)), wp);
+}
+
+int MagicalItemCreate(int location)
+{
+    string magicName = {"AmuletofManipulation", "Fear", "BottleCandle", "ProtectionFire", "RottenMeat"};
+    int rndPick = Random(0, 4);
+    int magic = CreateObject(ToStr(SToInt(magicName) + rndPick), location);
+    int ptr = GetMemory(0x750710);
+    
+    SetMemory(ptr + 0x2c4, 0);
+    SetMemory(ptr + 0x2dc, ImportUseItemFunc());
+    SetMemory(ptr + 0x2fc, MagicItemUseFunction() + rndPick);
+    return magic;
+}
+
+int ChestKeyDrop(int location)
+{
+    return CreateObject("Befuddle", location);
+}
+
+void RewardMarkerFunc(int wp, int maxRange)
+{
+    int unit = CreateObject("InvisibleLightBlueHigh", wp);
+
+    Raise(unit, SpawnGold);
+    CallFunctionWithArgInt(ToInt(GetObjectZ(unit)) + Random(0, maxRange), wp);
+    Delete(unit);
+}
+
+int ToInt(float x)
+{
+    StopScript(x);
+}
+
+float ToFloat(int x)
+{
+    StopScript(x);
+}
+
+int SToInt(string x)
+{
+    StopScript(x);
+}
+
+string ToStr(int x)
+{
+    StopScript(x);
+}
+
+void DummyFunction()
+{
+    return;
+}
+
+float MathSine(int angle, float size)
+{
+    float var_0[91];
+    int i, k;
+ 
+    if (!ToInt(var_0[90]))
+    {
+        k = MathRingCore(48);
+        Delete(k);
+        for (i = 0 ; i <= 90 ; i ++)
+        {
+            var_0[i] = GetObjectZ(k + i + 1);
+            Delete(k + i + 1);
+        }
+        return var_0[0];
+    }
+
+    k = angle / 90;
+    i = angle - (k * 90);
+ 
+    k %= 2;
+    if (k == 1)
+        i = 90 - i;
+    if ((angle / 180) % 2 == 1)
+        return -var_0[i] * size;
+	else
+		return var_0[i] * size;
+}
+
+int MathRingCore(int wp)
+{
+    float x_ratio,y_ratio;
+    string name = "InvisibleLightBlueHigh";
+    int unit = CreateObject(name, wp),i;
+
+    MoveWaypoint(wp + 1, GetWaypointX(wp), GetWaypointY(wp) - 1.0);
+    for (i = 0 ; i <= 90 ; i ++)
+    {
+        x_ratio = WayRatioXY(wp, wp + 1, 0);
+        y_ratio = WayRatioXY(wp, wp + 1, 1);
+        MoveWaypoint(wp + 1, GetWaypointX(wp) - x_ratio, GetWaypointY(wp) - y_ratio);
+        CreateObject(name, wp + 1);
+        Raise(unit + i + 1, GetWaypointX(wp) - GetWaypointX(wp + 1));
+        MoveWaypoint(wp + 1, GetWaypointX(wp) - (1.0 / 57.3 * y_ratio) - x_ratio, GetWaypointY(wp) + (1.0 / 57.3 * x_ratio) - y_ratio);
+    }
+    return unit;
+}
+
+float WayRatioXY(int wp1, int wp2, int mode)
+{
+    if (!mode)
+        return (GetWaypointX(wp1) - GetWaypointX(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
+    else
+        return (GetWaypointY(wp1) - GetWaypointY(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
+}
+
+float UnitAngleCos(int unit, float size)
+{
+    return MathSine((GetDirection(unit) * 45 / 32) + 90, size);
+}
+
+float UnitAngleSin(int unit, float size)
+{
+    return MathSine(GetDirection(unit) * 45 / 32, size);
+}
+
+float UnitRatioX(int unit, int target, float size)
+{
+    return (GetObjectX(unit) - GetObjectX(target)) / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target)) * size;
+}
+
+float UnitRatioY(int unit, int target, float size)
+{
+    return (GetObjectY(unit) - GetObjectY(target)) / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target)) * size;
+}
+
+float GetRatioUnitWpX(int unit, int wp, float size)
+{
+    return (GetObjectX(unit) - GetWaypointX(wp)) / Distance(GetObjectX(unit), GetObjectY(unit), GetWaypointX(wp), GetWaypointY(wp)) * size;
+}
+
+float GetRatioUnitWpY(int unit, int wp, float size)
+{
+    return (GetObjectY(unit) - GetWaypointY(wp)) / Distance(GetObjectX(unit), GetObjectY(unit), GetWaypointX(wp), GetWaypointY(wp)) * size;
+}
+
+float UnitWpRatioX(int unit, int wp, float size)
+{
+	return (GetObjectX(unit) - GetWaypointX(wp)) / Distance(GetObjectX(unit), GetObjectY(unit), GetWaypointX(wp), GetWaypointY(wp)) * size;
+}
+
+float UnitWpRatioY(int unit, int wp, float size)
+{
+	return (GetObjectY(unit) - GetWaypointY(wp)) / Distance(GetObjectX(unit), GetObjectY(unit), GetWaypointX(wp), GetWaypointY(wp)) * size;
+}
+
+int CheckUnitMapBoundary(int unit)
+{
+    float pos_x = GetObjectX(unit);
+    float pos_y = GetObjectY(unit);
+
+    if (pos_x > 100.0 && pos_y > 100.0 && pos_x < 5532.0 && pos_y < 5600.0)
+        return 1;
+    else
+        return 0;
+}
+
+void StrVictory()
+{
+	int arr[13];
+	string name = "SpiderSpit";
+	int i = 0;
+	arr[0] = 2613312; arr[1] = 301998097; arr[2] = 7080064; arr[3] = 1099186194; arr[4] = 35653889; arr[5] = 268762112; arr[6] = 33718242; arr[7] = 16777488; arr[8] = 132155394; arr[9] = 134217985; 
+	arr[10] = 570458248; arr[11] = 2086650888; arr[12] = 536999970; 
+	while(i < 13)
+	{
+		drawStrVictory(arr[i], name);
+		i ++;
+	}
+}
+
+void drawStrVictory(int arg_0, string name)
+{
+	int count;
+	int i;
+	float pos_x;
+	float pos_y;
+
+	if (!count)
+	{
+		pos_x = GetWaypointX(431);
+		pos_y = GetWaypointY(431);
+	}
+	for (i = 1 ; i > 0 && count < 403 ; i <<= 1)
+	{
+		if (i & arg_0)
+			Frozen(CreateObject(name, 431), 1);
+		if (count % 38 == 37)
+			MoveWaypoint(431, GetWaypointX(431) - 111.000000, GetWaypointY(431) + 3.000000);
+		else
+			MoveWaypoint(431, GetWaypointX(431) + 3.000000, GetWaypointY(431));
+		count ++;
+	}
+	if (count >= 403)
+	{
+		count = 0;
+		MoveWaypoint(431, pos_x, pos_y);
+	}
+}
+
+void StrFailMission()
+{
+	int arr[22];
+	string name = "HealOrb";
+	int i = 0;
+	arr[0] = 270598782; arr[1] = 285235140; arr[2] = 272171586; arr[3] = 285233156; arr[4] = 673251906; arr[5] = 285233796; arr[6] = 1210221122; arr[7] = 285233796; arr[8] = 71074370; arr[9] = 285233797; 
+	arr[10] = 36192834; arr[11] = 285241984; arr[12] = 2082480706; arr[13] = 285233799; arr[14] = 2097730; arr[15] = 21124; arr[16] = 2080391746; arr[17] = 285233799; arr[18] = 67125886; arr[19] = 293361600; 
+	arr[20] = 2084553216; arr[21] = 20487; 
+	while(i < 22)
+	{
+		drawStrFailMission(arr[i], name);
+		i ++;
+	}
+}
+
+void drawStrFailMission(int arg_0, string name)
+{
+	int count;
+	int i;
+	float pos_x;
+	float pos_y;
+
+	if (!count)
+	{
+		pos_x = GetWaypointX(433);
+		pos_y = GetWaypointY(433);
+	}
+	for (i = 1 ; i > 0 && count < 682 ; i <<= 1)
+	{
+		if (i & arg_0)
+			CreateObject(name, 433);
+		if (count % 62 == 61)
+			MoveWaypoint(433, GetWaypointX(433) - 122.000000, GetWaypointY(433) + 2.000000);
+		else
+			MoveWaypoint(433, GetWaypointX(433) + 2.000000, GetWaypointY(433));
+		count ++;
+	}
+	if (count >= 682)
+	{
+		count = 0;
+		MoveWaypoint(433, pos_x, pos_y);
+	}
+}
+
+float GetMemoryFloat(int addr)
+{
+    StopScript(Unknownb9(addr));
+}
+
+int GetMemory(int addr)
+{
+    return Unknownb9(addr);
+}
+
+void SetMemory(int addr, int value)
+{
+    Unused59(addr, value);
+}
+
+int VoiceList(int num)
+{
+    int list[75], addr, k;
+
+    if (!list[0])
+    {
+        addr = GetMemory(0x663eec);
+        for (k = 0 ; k < 75 ; k ++)
+        {
+            list[k] = addr;
+            addr = GetMemory(addr + 0x4c);
+        }
+    }
+    return list[num];
+}
+
+int ImportPlayerAutoTeamSign()
+{
+    int arr[17], link;
+
+    if (!link)
+    {
+        arr[0] = 0x4191D068; arr[1] = 0x50515600; arr[2] = 0x000020B9; arr[3] = 0xF9E0B800; arr[4] = 0xC9850062;
+        arr[5] = 0x8B492774; arr[6] = 0x12DC0530; arr[7] = 0xF6850000; arr[8] = 0x5150F074; arr[9] = 0x8D24468B;
+        arr[10] = 0x016A304E; arr[11] = 0x51016A50; arr[12] = 0x54FF016A; arr[13] = 0xC4832824; arr[14] = 0xEB585914;
+        arr[15] = 0x5E5958D5; arr[16] = 0xC304C483;
+        CancelTimer(FrameTimerWithArg(10, ImportPlayerAutoTeamSign, ImportPlayerAutoTeamSign));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void PlayerAutoTeamSign()
+{
+    int temp = GetMemory(0x5c3178);
+
+    SetMemory(0x5c3178, ImportPlayerAutoTeamSign());
+    GetHost();
+    SetMemory(0x5c3178, temp);
+}
+
+void MakeCoopTeam()
+{
+    int arr[3];
+    int teamCount = GetMemory(0x654D5C), temp, link;
+
+    if (!teamCount && !link)
+    {
+        arr[0] = 0x417E1068; arr[1] = 0x2414FF00; arr[2] = 0xC304C483;
+        CancelTimer(FrameTimerWithArg(10, MakeCoopTeam, MakeCoopTeam));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        temp = GetMemory(0x5c3178);
+        SetMemory(0x5c3178, link);
+        GetHost();
+        SetMemory(0x5c3178, temp);
+        SetMemory(0x5d53a4, 268640519);
+    }
+}
+
+void RemoveCoopTeamMode()
+{
+    int arr[6], link, temp;
+
+    if (!link && GetMemory(0x654d5c) == 1)
+    {
+        arr[0] = 0x4DB8BE56; arr[1] = 0x20680065; arr[2] = 0x6A00418F; arr[3] = 0x54FF5600; arr[4] = 0xC4830824; arr[5] = 0x90C35E0C;
+        CancelTimer(FrameTimerWithArg(10, RemoveCoopTeamMode, RemoveCoopTeamMode));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        temp = GetMemory(0x5c3178);
+        SetMemory(0x5c3178, link);
+        GetHost();
+        SetMemory(0x5c3178, temp);
+    }
+}
+
+void MapExit()
+{
+    MusicEvent();
+    RemoveCoopTeamMode();
+}
+
+void SetGameTypeCoopMode()
+{
+    MakeCoopTeam();
+    PlayerAutoTeamSign();
+}
+
+int ImportUniChatCore()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0xC0685657; arr[1] = 0x6800528A; arr[2] = 0x00507250; arr[3] = 0x8B2414FF; arr[4] = 0x2414FFF8;
+        arr[5] = 0x14FFF08B; arr[6] = 0x56505724; arr[7] = 0x102454FF; arr[8] = 0x5E14C483; arr[9] = 0x9090C35F;
+        CancelTimer(FrameTimerWithArg(10, ImportUniChatCore, ImportUniChatCore));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void UniChatCore(int plrPtr, int sPtr, int sTime)
+{
+    int temp = GetMemory(0x5c3320);
+
+    SetMemory(0x5c3320, ImportUniChatCore());
+    GroupRunAway(sPtr, plrPtr, sTime);
+    SetMemory(0x5c3320, temp);
+}
+
+int ImportUniPrintCore()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x9EB06856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xF08B2414; arr[4] = 0x502414FF;
+        arr[5] = 0x2454FF56; arr[6] = 0x10C4830C; arr[7] = 0x9090C35E; 
+        CancelTimer(FrameTimerWithArg(10, ImportUniPrintCore, ImportUniPrintCore));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void UniPrintCore(int plrPtr, int sPtr)
+{
+    int temp = GetMemory(0x5c31f4);
+
+    SetMemory(0x5c31f4, ImportUniPrintCore());
+    Unused5a(sPtr, plrPtr);
+    SetMemory(0x5c31f4, temp);
+}
+
+int GetByteValue(int ptr)
+{
+    return GetMemory(ptr) & 0xff;
+}
+
+void WriteAddressWordValue(int addr, int word)
+{
+    int temp = GetMemory(addr) & 0xffff0000;
+    SetMemory(addr, temp | word);
+}
+
+void NoxUtf8ToUnicode(int src, int dest)
+{
+    int i = 0, byt;
+
+    while (1)
+    {
+        byt = GetByteValue(src + i);
+        if (!byt) break;
+        if (!(byt & 0x80))
+        {
+            WriteAddressWordValue(dest, byt);
+            i ++;
+        }
+        else if ((byt & 0xe0) == 0xc0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0x1f) <<6) | (GetByteValue(src + i + 1) & 0x3f));
+            i += 2;
+        }
+        else if ((byt & 0xf0) == 0xe0)
+        {
+            WriteAddressWordValue(dest, ((byt & 0xf) << 12) | ((GetByteValue(src + i + 1) & 0x3f) << 6) | (GetByteValue(src + i + 2) & 0x3f));
+            i += 3;
+        }
+        dest += 2;
+    }
+    WriteAddressWordValue(dest, 0);
+}
+
+void UniPrint(int sUnit, string sMsg)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link)
+        {
+            CancelTimer(FrameTimerWithArg(10, UniPrint, UniPrint));
+            link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        }
+        NoxUtf8ToUnicode(str, link + 8);
+        UniPrintCore(ptr, link + 8);
+    }
+}
+
+void UniChatMessage(int sUnit, string sMsg, int duration)
+{
+    int wDest[200];
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
+
+    if (ptr)
+    {
+        str = GetMemory(0x97bb40 + (str * 4));
+        if (!link)
+        {
+            CancelTimer(FrameTimerWithArg(10, UniChatMessage, UniChatMessage));
+            link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        }
+        NoxUtf8ToUnicode(str, link + 12);
+        UniChatCore(ptr, link + 12, duration);
+    }
+}
+
+void UniPrintToAll(string sMsg)
+{
+    int wDest[200];
+    int plrPtr = 0x62f9e0, link, str = SToInt(sMsg), i;
+
+    if (!link)
+    {
+        CancelTimer(FrameTimerWithArg(10, UniPrint, UniPrint));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c)) + 4;
+    }
+    str = GetMemory(0x97bb40 + (str * 4));
+    NoxUtf8ToUnicode(str, link);
+    for (i = 0 ; i < 32 ; i ++)
+    {
+        if (GetMemory(plrPtr))
+            UniPrintCore(GetMemory(plrPtr), link);
+        plrPtr += 0x12dc;
+    }
+}
+
+int MathAbs(int num)
+{
+    if (num < 0)
+        num = -num;
+    return num;
+}
+
+int CheckSignDelay(int sPtr, int gap)
+{
+    int cFps = GetMemory(0x84ea04);
+
+    if (MathAbs(cFps - GetMemory(sPtr)) > gap)
+    {
+        SetMemory(sPtr, cFps);
+        return 1;
+    }
+    return 0;
+}
+
+void SignNotification()
+{
+    int otPtr = GetMemory(0x979720), sePtr = GetMemory(0x979724);
+
+    if (otPtr && sePtr)
+    {
+        if (CheckSignDelay(GetMemory(sePtr + 0x2e0) + 100, 60))
+        {
+            UniPrint(other, ToStr(GetMemory(sePtr + 0x2f0)));
+            //UniPrintCore(otPtr, GetMemory(sePtr + 0x2e0));
+        }
+    }
+}
+
+void RegistSignMessage(int sUnit, string sMsg)
+{
+    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg);
+
+    if (ptr)
+    {
+        SetMemory(ptr + 0x2f0, str);
+        //str = GetMemory(0x97bb40 + (str * 4));
+        //NoxUtf8ToUnicode(str, GetMemory(ptr + 0x2e0));
+        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
+        CancelTimer(FrameTimerWithArg(10, SignNotification, SignNotification));
+        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+    }
+}
+
+int ImportUniBroadcast()
+{
+    int arr[6], link;
+
+    if (!link)
+    {
+        arr[0] = 0x4D9FD068; arr[1] = 0x72506800; arr[2] = 0x14FF0050; arr[3] = 0x106A5024;
+        arr[4] = 0x0C2454FF; arr[5] = 0xC310C483;
+        CancelTimer(FrameTimerWithArg(10, ImportUniBroadcast, ImportUniBroadcast));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void UniBroadcast(string sMsg)
+{
+    int wDest[100];
+    int temp = GetMemory(0x5c3108), link, str = GetMemory(0x97bb40 + (SToInt(sMsg) * 4));
+
+    if (!link)
+    {
+        CancelTimer(FrameTimerWithArg(10, UniBroadcast, UniBroadcast));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    NoxUtf8ToUnicode(str, link + 4);
+    SetMemory(0x5c3108, ImportUniBroadcast());
+    Unused1f(link + 4);
+    SetMemory(0x5c3108, temp);
+}
+
+int ImportUseItemFunc()
+{
+    int arr[10], link;
+    if (!link)
+    {
+        arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x1424748B; arr[3] = 0x18246C8B;
+        arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
+        arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
+        CancelTimer(FrameTimerWithArg(10, ImportUseItemFunc, ImportUseItemFunc));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+int ImportUnitCollideFunc()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x14246C8B; arr[3] = 0x1824748B;
+        arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
+        arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
+        CancelTimer(FrameTimerWithArg(10, ImportUnitCollideFunc, ImportUnitCollideFunc));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+int ImportPlaySoundAround()
+{
+	int arr[17], link;
+
+	if (!link)
+	{
+		arr[0] = 0x50196068; arr[1] = 0x72506800; arr[2] = 0x50560050; arr[3] = 0x082454FF;
+		arr[4] = 0x54FFF08B; arr[5] = 0x006A0824; arr[6] = 0x5650006A; arr[7] = 0x1C2454FF;
+		arr[8] = 0x5810C483; arr[9] = 0x08C4835E; arr[10] = 0x909090C3;
+		CancelTimer(FrameTimerWithArg(10, ImportPlaySoundAround, ImportPlaySoundAround));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+void PlaySoundAround(int sUnit, int sNumber)
+{
+	int unitPtr = UnitToPtr(sUnit), temp = GetMemory(0x5c325c);
+
+	if (unitPtr)
+	{
+		SetMemory(0x5c325c, ImportPlaySoundAround());
+		Unused74(unitPtr, sNumber);
+		SetMemory(0x5c325c, temp);
+	}
+}
+
+int PlayerGetItemTable(int plr)
+{
+    CancelTimer(FrameTimerWithArg(10, PlayerItemTable, HookPlayerDeathHandlerCode));
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c)) + (plr * 320);
+}
+
+void HookPlayerDeathHandlerInit()
+{
+    HookPlayerDeathHandlerPre();
+}
+
+void ReturnDropItem(int owner, int item)
+{
+    if (item)
+        Pickup(owner, item);
+}
+
+void AnotherGivePlayerItems(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit), table, i;
+
+    if (ptr)
+    {
+        table = GetMemory(ptr + 0x20);
+        for (i = 320 - 1 ; i >= 0 ; i --)
+        {
+            ReturnDropItem(plrUnit, GetMemory(table + (i * 4)));
+            SetMemory(table + (i * 4), 0);
+        }
+    }
+}
+
+void CancelPlayerDialogWithPTR(int plrPtr)
+{
+    if (GetMemory(GetMemory(plrPtr + 0x2ec)) + 0x11c)
+    {
+        SetMemory(GetMemory(plrPtr + 0x2ec) + 0x11c, 0);
+        SetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0xe60, 0x10);
+    }
+}
+
+void CancelPlayerDialog(int plrUnit)
+{
+    int temp = UnitToPtr(plrUnit);
+
+    if (temp)
+        CancelPlayerDialogWithPTR(temp);
+}
+
+int PlayerItemTable()
+{
+    int table[3200];
+}
+
+void HookPlayerDeathHandlerCode()
+{
+    int arr[19];
+
+    arr[0] = 0x8B515056; arr[1] = 0x57102474; arr[2] = 0x8B207E8B; arr[3] = 0x0001F886; arr[4] = 0x74C08500; arr[5] = 0x2C488B2A;
+    arr[6] = 0x8B570F89; arr[7] = 0x0001F088; arr[8] = 0x68505100; arr[9] = 0x004ED930; arr[10] = 0x54FF5650; arr[11] = 0xC4830824;
+    arr[12] = 0x5F59580C; arr[13] = 0x85047F8D; arr[14] = 0x8B0474C9; arr[15] = 0x5FD2EBC1; arr[16] = 0x685E5859; arr[17] = 0x0054D2B0; arr[18] = 0x909090C3;
+}
+
+int HookPlayerDeathHandlerPre()
+{
+    int link;
+
+    if (!link)
+    {
+        HookPlayerDeathHandlerCode();
+        CancelTimer(FrameTimerWithArg(10, HookPlayerDeathHandlerCode, HookPlayerDeathHandlerCode));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void HookPlayerDeathHandlerEntry(int plrUnit, int plr)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+    {
+        SetMemory(ptr + 0x20, PlayerGetItemTable(plr));
+        SetMemory(ptr + 0x2d4, HookPlayerDeathHandlerPre());
+    }
+}
+
+int ImportCheckSelfDamage()
+{
+    int arr[14], link;
+
+    if (!link)
+    {
+        arr[0] = 0x4C8B5651; arr[1] = 0xC9850C24; arr[2] = 0x748B2374; arr[3] = 0xF6851024; arr[4] = 0xF1391B74; arr[5] = 0x8B501374; arr[6] = 0x0001FC86;
+        arr[7] = 0x74C08500; arr[8] = 0x58F08B05; arr[9] = 0xEB58ECEB; arr[10] = 0xC3595E04; arr[11] = 0x68595E90; arr[12] = 0x004E17B0; arr[13] = 0x909090C3;
+        CancelTimer(FrameTimerWithArg(10, ImportCheckSelfDamage, ImportCheckSelfDamage));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void SelfDamageClassEntry(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+        SetMemory(ptr + 0x2cc, ImportCheckSelfDamage());
+}
+
+void SelfDamageClassMapExit()
+{
+    int pTable = 0x62f9e0, i;
+
+    for (i = 31 ; i >= 0 ; i --)
+    {
+        if (GetMemory(pTable))
+        {
+            SetMemory(GetMemory(pTable) + 0x2cc, 0x4e17b0);
+            SetMemory(GetMemory(pTable) + 0x2d4, 0x54d2b0);
+            CancelPlayerDialogWithPTR(GetMemory(pTable));
+        }
+        pTable += 0x12dc;
+    }
+}
+
+string StringOverflow(int t)
+{
+	return ToStr((t - 0x97bb40) / 4);
+}
+
+string EnchantList(int sNumber)
+{
+	return StringOverflow(0x596f24 + (sNumber * 4));
+}
+
+int UnitCheckEnchant(int sUnit, int sMagicFlag)
+{
+    int ptr = UnitToPtr(sUnit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x154) & sMagicFlag;
+    return 0;
+}
+
+int GetLShift(int sCount)
+{
+    return (1 << sCount);
+}
+
+void SetUnitEnchantCopy(int sUnit, int sMagicFlag)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		Enchant(sUnit, EnchantList(6), 0.0);
+		SetMemory(ptr + 0x154, GetMemory(ptr + 0x154) | sMagicFlag);
+	}
+}
+
+void UnitSetEnchantTime(int unit, int enchantNumber, int durateTime)
+{
+	int ptr = UnitToPtr(unit), temp, tempPtr;
+
+	if (ptr)
+	{
+		SetUnitEnchantCopy(unit, GetLShift(enchantNumber));
+		tempPtr = ptr + 0x158 + ((enchantNumber / 2) * 4);
+		temp = GetMemory(tempPtr);
+		if (enchantNumber % 2)
+		{
+			SetMemory(tempPtr, (GetMemory(tempPtr) & 0xffff) | (durateTime << 0x10));
+		}
+		else
+			SetMemory(tempPtr, ((GetMemory(tempPtr) >> 0x10) << 0x10) | durateTime);
+	}
+}
+
+int ImportMonsterStrikeFunc()
+{
+	int arr[14], link;
+
+	if (!link)
+	{
+		arr[0] = 0x448B5650; arr[1] = 0xC0850C24; arr[2] = 0xB08B2574; arr[3] = 0x000002EC; arr[4] = 0x1B74F685; arr[5] = 0x0830B68B; arr[6] = 0xFE830000;
+		arr[7] = 0x68107C00; arr[8] = 0x00507310; arr[9] = 0x56006A50; arr[10] = 0x0C2454FF; arr[11] = 0x5E10C483; arr[12] = 0x93806858; arr[13] = 0x90C30054;
+		CancelTimer(FrameTimerWithArg(10, ImportMonsterStrikeFunc, ImportMonsterStrikeFunc));
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+int GetVictimUnit()
+{
+	int ptr = GetMemory(0x834a40);
+
+	if (ptr)
+		return GetMemory(ptr + 0x2c);
+	return 0;
+}
+
+void RegistryUnitStrikeFunction(int sUnit, int sFunc)
+{
+    int ptr = UnitToPtr(sUnit), temp, binScrPtr;
+
+    if (ptr)
+    {
+        temp = GetMemory(ptr + 0x2ec);
+        if (temp)
+        {
+            binScrPtr = GetMemory(GetMemory(ptr + 0x2ec) + 0x1e4);
+            if (binScrPtr)
+            {
+                SetMemory(binScrPtr + 0xec, ImportMonsterStrikeFunc());
+                SetMemory(temp + 0x830, sFunc);
+            }
+        }
+    }
+}
+
+void MovingTestStart()
+{
+    int obj = CreateObject("BlueRain", 490);
+
+    FixCreateMover(obj, 487, 60.0);
+}
+
+int ImportChestCollide()
+{
+	int arr[14], link;
+
+	if (!link)
+	{
+		arr[0] = 0x50565551; arr[1] = 0x1824748B; arr[2] = 0x14246C8B; arr[3] = 0x02FC858B; arr[4] = 0x10680000; arr[5] = 0x55005073; arr[6] = 0x54FF5056;
+		arr[7] = 0x5E580C24; arr[8] = 0xF0858B5D; arr[9] = 0x83000002; arr[10] = 0xC08504C4; arr[11] = 0x595D5E58; arr[12] = 0x40680574; arr[13] = 0xC3004E9C;
+		CancelTimer(FrameTimerWithArg(10, ImportChestCollide, ImportChestCollide));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+int HiddenShopClassFind(string headerName)
+{
+    int pic;
+    int unit = Object(headerName + IntToString(pic + 1));
+
+    if (unit)
+    {
+        pic ++;
+        return unit;
+    }
+    return 0;
+}
+
+int PlacingStaticSprite(float sX, float sY, int thingId)
+{
+    int sprite = CreateObjectAt("AirshipBasketShadow", sX, sY);
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 4, thingId);
+    return sprite;
+}
+
+int PlacingStaticSpriteByVirtCoor(int coorPtr, float hardX, float hardY, int thingId)
+{
+    int sprite = CreateObjectAt(
+        "AirshipBasketShadow",
+        GetMemoryFloat(coorPtr) + hardX - GetMemoryFloat(coorPtr + 8),
+        GetMemoryFloat(coorPtr + 4) + hardY - GetMemoryFloat(coorPtr + 12));
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 4, thingId);
+    return sprite;
+}
+
+void PlaceShopDecoration(float sX, float sY)
+{
+    float virX = 1599.0, virY = 3391.0;
+    int zeroSet = PlacingStaticSprite(sX, sY, 1870), link;
+
+    CancelTimer(FrameTimerWithArg(10, PlaceShopDecoration, PlaceShopDecoration));
+	link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    PlacingStaticSpriteByVirtCoor(link, 1631.0, 3316.0, 1881);
+    PlacingStaticSpriteByVirtCoor(link, 1608.0, 3351.0, 1867);
+    PlacingStaticSpriteByVirtCoor(link, 1625.0, 3329.0, 1768);
+    PlacingStaticSpriteByVirtCoor(link, 1608.0, 3370.0, 1883);
+    PlacingStaticSpriteByVirtCoor(link, 1555.0, 3384.0, 1866);
+    PlacingStaticSpriteByVirtCoor(link, 1547.0, 3344.0, 1871);
+    PlacingStaticSpriteByVirtCoor(link, 1529.0, 3336.0, 1871);
+    PlacingStaticSpriteByVirtCoor(link, 1545.0, 3431.0, 1882);
+    PlacingStaticSpriteByVirtCoor(link, 1510.0, 3428.0, 1880);
+    PlacingStaticSpriteByVirtCoor(link, 1498.0, 3469.0, 1765);
+}
+
+void HiddenShopClassNotify(int mketUnit)
+{
+    string repMent =
+    "조아써! 오늘은 이곳이다!\n곧 바로 장사를 게시하겠다...";
+    "나이스! 오늘 왠지 천만원 이상 벌것 같은데?";
+    "초대형 로프록 마트! GRAND OPEN!";
+    "어서옵쇼!";
+
+    UniChatMessage(mketUnit, ToStr(SToInt(repMent) + Random(0, 3)), 180);
+    PlaceShopDecoration(GetObjectX(mketUnit) - 10.0, GetObjectY(mketUnit) - 10.0);
+    RepairShopCreate(GetObjectX(mketUnit) - 23.0, GetObjectY(mketUnit) + 23.0);
+}
+
+void HiddenShopClassTeleport(int sUnit)
+{
+    int mket = HiddenShopClassFind("HiddenMarket");
+
+    if (mket)
+    {
+        MoveObject(mket, GetObjectX(sUnit), GetObjectY(sUnit));
+        PlaySoundAround(mket, 486);
+        FrameTimerWithArg(15, mket, HiddenShopClassNotify);
+        Effect("SMOKE_BLAST", GetObjectX(mket), GetObjectY(mket), 0.0, 0.0);
+        Effect("JIGGLE", GetObjectX(mket), GetObjectY(mket), 12.0, 0.0);
+        Delete(sUnit);
+    }
+}
+
+int FindRubyKey(int unit)
+{
+	int inv = GetLastItem(unit);
+
+	while (inv)
+	{
+		if (GetUnitThingID(inv) == 240)
+			return inv;
+		inv = GetPreviousItem(inv);
+	}
+	return 0;
+}
+
+void ChestCollide()
+{
+	int cFps = GetMemory(0x84ea04);
+	int ptr = UnitToPtr(self), key, item;
+
+	if (ptr && HasClass(other, "PLAYER"))
+	{
+		if (MathAbs(cFps - GetMemory(ptr + 0x2e4)) > 30)
+		{
+			SetMemory(ptr + 0x2e4, cFps);
+			if (!GetMemory(ptr + 0x2f0))
+			{
+				if (FindRubyKey(other))
+				{
+					Delete(FindRubyKey(other));
+					item = CreateObjectAt("RewardMarker", GetObjectX(self) + UnitRatioX(other, self, 32.0), GetObjectY(self) + UnitRatioY(other, self, 32.0));
+                    SpecialUnitRewardMarker(item);
+					SetMemory(ptr + 0x2f0, 1);
+					UniPrint(other, "암흑의 소용돌이를 사용하여 잠긴 금고를 열었습니다");
+				}
+				else
+				{
+					PlaySoundAround(other, 1012);
+					UniPrint(other, "이 금고를 열려면 암흑의 소용돌이가 필요합니다");
+				}
+			}
+		}
+	}
+}
+
+void OgrePartChestCollide()
+{
+    int cFps = GetMemory(0x84ea04);
+	int ptr = UnitToPtr(self), key, item;
+
+	if (ptr && HasClass(other, "PLAYER"))
+	{
+		if (MathAbs(cFps - GetMemory(ptr + 0x2e4)) > 30)
+		{
+			SetMemory(ptr + 0x2e4, cFps);
+			if (!GetMemory(ptr + 0x2f0))
+			{
+                SetMemory(ptr + 0x2f0, 1);
+                item = CreateObjectAt("SilverKey", GetObjectX(self) + UnitRatioX(other, self, 32.0), GetObjectY(self) + UnitRatioY(other, self, 32.0));
+                PlaySoundAround(item, 821);
+                UniPrint(other, "금고를 열었습니다");
+			}
+		}
+	}
+}
+
+void RespectShopkeeper()
+{
+    int cFps = GetMemory(0x84ea04);
+	int ptr = UnitToPtr(self), key, item;
+
+	if (ptr && HasClass(other, "PLAYER"))
+	{
+		if (MathAbs(cFps - GetMemory(ptr + 0x2e4)) > 30)
+		{
+			SetMemory(ptr + 0x2e4, cFps);
+			if (!GetMemory(ptr + 0x2f0))
+			{
+				if (FindRubyKey(other))
+				{
+					Delete(FindRubyKey(other));
+					FrameTimerWithArg(18,
+                        CreateObjectAt("RewardMarkerPlus", GetObjectX(self) + UnitRatioX(other, self, 32.0), GetObjectY(self) + UnitRatioY(other, self, 32.0)),
+                        HiddenShopClassTeleport);
+					SetMemory(ptr + 0x2f0, 1);
+					UniPrint(other, "암흑의 소용돌이를 사용하여 잠긴 금고를 열었습니다");
+				}
+				else
+				{
+					PlaySoundAround(other, 1012);
+					UniPrint(other, "이 금고를 열려면 암흑의 소용돌이가 필요합니다");
+				}
+			}
+		}
+	}
+}
+
+int ChestCollideFuncNumber()
+{
+	StopScript(ChestCollide);
+}
+
+void ChangeChestHandler(int chestObj, int openFunction)
+{
+	int ptr = UnitToPtr(chestObj);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x2b8, ImportChestCollide());
+        if (openFunction)
+            SetMemory(ptr + 0x2fc, openFunction);
+        else
+		    SetMemory(ptr + 0x2fc, ChestCollideFuncNumber());
+	}
+}
+
+void AllChestInit(int multiple)
+{
+    string chestName = "MyChest";
+    int i;
+
+    multiple *= 10;
+    for (i = 0 ; i < 10 ; i ++)
+        ChangeChestHandler(Object(chestName + IntToString(multiple + i + 1)), 0);
+}
+
+void HiddenMarketChest(string chestName, int max)
+{
+    int i, openFunction;
+
+    CancelTimer(FrameTimerWithArg(10, RespectShopkeeper, RespectShopkeeper));
+    openFunction = GetMemory(GetMemory(0x83395c) + 8);
+    for (i = 0 ; i < max ; i ++)
+        ChangeChestHandler(Object(chestName + IntToString(i + 1)), openFunction);
+}
+
+void GoOgrePartBox(int chestObj)
+{
+    int openFunction;
+
+    CancelTimer(FrameTimerWithArg(10, OgrePartChestCollide, OgrePartChestCollide));
+    openFunction = GetMemory(GetMemory(0x83395c) + 8);
+    ChangeChestHandler(chestObj, openFunction);
+}
+
+int ImportTellStoryUniNamePartB()
+{
+    int arr[84], link;
+
+    if (!link)
+    {
+        arr[0] = 0x0424448B; arr[1] = 0x0824548B; arr[2] = 0x008CEC81; arr[3] = 0xC0850000; arr[4] = 0xEC9A8B53; arr[5] = 0x55000002; arr[6] = 0x02ECA88B;
+        arr[7] = 0x0F570000; arr[8] = 0x00012184; arr[9] = 0x0840F600; arr[10] = 0x17840F04; arr[11] = 0x8B000001; arr[12] = 0x00A824BC; arr[13] = 0xFF850000;
+        arr[14] = 0x0108840F; arr[15] = 0xC9830000; arr[16] = 0x89C033FF; arr[17] = 0x00011C95; arr[18] = 0xAEF25600; arr[19] = 0x748DD1F7; arr[20] = 0xF92B1624;
+        arr[21] = 0x7489C18B; arr[22] = 0xF78B1024; arr[23] = 0x10247C8B; arr[24] = 0xC602E9C1; arr[25] = 0xD0142444; arr[26] = 0x152444C6; arr[27] = 0x8BA5F303;
+        arr[28] = 0x5CC868C8; arr[29] = 0x1F6A0056; arr[30] = 0xF303E183; arr[31] = 0xC9C8B8A4; arr[32] = 0x4C8D0069; arr[33] = 0x51503E24; arr[34] = 0x0C2454FF;
+        arr[35] = 0xB824848B; arr[36] = 0x66000000; arr[37] = 0x842484C7; arr[38] = 0x00000000; arr[39] = 0x38938A00; arr[40] = 0x8D000008; arr[41] = 0x00083ABB;
+        arr[42] = 0x24948800; arr[43] = 0x000000AA; arr[44] = 0x86248489; arr[45] = 0x8A000000; arr[46] = 0x10C48307; arr[47] = 0x2374C084; arr[48] = 0x31FFC983;
+        arr[49] = 0xF7AEF2C0; arr[50] = 0x8DCF29D1; arr[51] = 0x8B7A2454; arr[52] = 0x8BF78BC1; arr[53] = 0x02E9C1FA; arr[54] = 0xC88BA5F3; arr[55] = 0xF303E183;
+        arr[56] = 0x8B2FEBA4; arr[57] = 0x5CD1640D; arr[58] = 0x68158B00; arr[59] = 0xA1005CD1; arr[60] = 0x005CD16C; arr[61] = 0x7A244C89; arr[62] = 0x700D8B66;
+        arr[63] = 0x89005CD1; arr[64] = 0x897E2454; arr[65] = 0x00822484; arr[66] = 0x89660000; arr[67] = 0x0086248C; arr[68] = 0x858B0000; arr[69] = 0x00000114;
+        arr[70] = 0x4E542068; arr[71] = 0x31016A00; arr[72] = 0x8A006AC9; arr[73] = 0x00081088; arr[74] = 0x24548D00; arr[75] = 0x00876820; arr[76] = 0x51520000;
+        arr[77] = 0x142454FF; arr[78] = 0xB424948B; arr[79] = 0x6A000000; arr[80] = 0xC4835200; arr[81] = 0x5D5F5E20; arr[82] = 0x8CC4815B; arr[83] = 0xC3000000;
+        CancelTimer(FrameTimerWithArg(10, ImportTellStoryUniNamePartB, ImportTellStoryUniNamePartB));
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+int ImportTellStoryUniNamePartA()
+{
+    int arr[19], link;
+
+    if (!link)
+    {
+        arr[0] = 0x8DE06856; arr[1] = 0x50680054; arr[2] = 0xFF005072; arr[3] = 0xF08B2414; arr[4] = 0x8B2414FF; 
+        arr[5] = 0xBB40B50C; arr[6] = 0x148B0097; arr[7] = 0x97BB4085; arr[8] = 0x50685100; arr[9] = 0x520040AF; 
+        arr[10] = 0x042454FF; arr[11] = 0x97200D8B; arr[12] = 0xC4830097; arr[13] = 0x24A15008; arr[14] = 0x50009797; 
+        arr[15] = 0x2454FF51; arr[16] = 0x10C48314; arr[17] = 0xC483C031; arr[18] = 0x90C35E08;
+        CancelTimer(FrameTimerWithArg(10, ImportTellStoryUniNamePartA, ImportTellStoryUniNamePartA));
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        SetMemory(link + 2, ImportTellStoryUniNamePartB());
+    }
+    return link;
+}
+
+void TellStoryUnitName(string sAudio, string sDesc, string sUnitName)
+{
+    int temp = GetMemory(0x5c3290), src = GetMemory(0x97bb40 + (SToInt(sUnitName) * 4));
+
+    SetMemory(0x5c3290, ImportTellStoryUniNamePartA());
+    NoxUtf8ToUnicode(src, 0x69C9C8);
+    TellStory(sAudio, sDesc);
+    SetMemory(0x5c3290, temp);
+}
+
+int GetPlayerIndex(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+        return GetMemory(GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x810);
+    return -1;
+}
+
+void UpdateRepairItem(int plrIndex, int item)
+{
+    int arr[9], link, temp = GetMemory(0x5c3108), ptr = UnitToPtr(item);
+
+    if (!link)
+    {
+        arr[0] = 0x50685056; arr[1] = 0xFF005072; arr[2] = 0x708B2414; arr[3] = 0x04C48304; arr[4] = 0x4D87A068; arr[5] = 0x30FF5600; arr[6] = 0x082454FF;
+        arr[7] = 0x580CC483; arr[8] = 0x9090C35E;
+        CancelTimer(FrameTimerWithArg(10, UpdateRepairItem, UpdateRepairItem));
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    if (ptr)
+    {
+        item = ptr;
+        SetMemory(0x5c3108, link + 8);
+        Unused1f(link);
+        SetMemory(0x5c3108, temp);
+    }
+}
+
+int RepairAll(int unit)
+{
+    int inv = GetLastItem(unit), rCount = 0, pIndex = GetPlayerIndex(unit);
+
+    if (pIndex < 0) return 0;
+    while (inv)
+    {
+        if (MaxHealth(inv) ^ CurrentHealth(inv))
+        {
+            RestoreHealth(inv, MaxHealth(inv) - CurrentHealth(inv));
+            UpdateRepairItem(pIndex, inv);
+            rCount ++;
+        }
+        inv = GetPreviousItem(inv);
+    }
+    return rCount;
+}
+
+void RepairShopDesc()
+{
+    TellStoryUnitName("aa", "GuiInv.c:ShopRepair", "인벤토리 전체 수리: 1,000");
+    UniPrint(other, "금화 1,000에 인벤토리를 전체 수리하시겠어요");
+}
+
+void RepairShopTrade()
+{
+    int res;
+
+    if (GetAnswer(self) ^ 1) return;
+    if (GetGold(other) >= 1000)
+    {
+        res = RepairAll(other);
+        if (res)
+        {
+            ChangeGold(other, -1000);
+            UniPrint(other, IntToString(res) + "개의 아이템이 수리되었습니다 (-1,000 골드 차감)");
+        }
+        else
+            UniPrint(other, "이미 모든 아이템이 수리된 상태입니다");
+    }
+    else
+        UniPrint(other, "거래가 취소되었습니다. 잔액이 부족합니다");
+}
+
+int RepairShopCreate(float sX, float sY)
+{
+    int repair = DummyUnitCreate("Archer", sX, sY);
+
+    SetDialog(repair, "YESNO", RepairShopDesc, RepairShopTrade);
+    return repair;
+}
+
+int MapWaypointTable(int idx)
+{
+    int table[600];
+
+    return table[idx - 1];
+}
+
+float LocationX(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 8));
+}
+
+float LocationY(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 12));
+}
+
+void MapWaypointFill(int wAddr, int tPtr)
+{
+    int num;
+
+    if (wAddr)
+    {
+        num = GetMemory(wAddr);
+        SetMemory(tPtr + (num * 4), wAddr);
+        MapWaypointFill(GetMemory(wAddr + 484), tPtr);
+    }
+}
+
+void MapWaypointInit()
+{
+    int tableLink;
+
+    CancelTimer(FrameTimerWithArg(10, MapWaypointTable, MapWaypointTable));
+    tableLink = GetMemory(GetMemory(0x75ae28) + ((0x30 * GetMemory(GetMemory(0x83395c) + 8)) + 0x1c));
+    MapWaypointFill(GetMemory(0x83c7fc), tableLink);
+}
+
+int WeaponClassCProperty1Code()
+{
+    int code[21], call1 = 0x4e0702, call2 = 0x4e0722, call3 = 0x4e0731, nop;
+    int link;
+
+    if (!link)
+    {
+        CancelTimer(FrameTimerWithArg(10, WeaponClassCProperty1Code, WeaponClassCProperty1Code));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        OpcodeCopies(link, link + (21 * 4), 0x4e06f0, 0x4e073c);
+
+        SetMemory(link + 46, 0x83);
+        SetMemory(link + 61, 97);
+    }
+    return link;
+}
+
+int WeaponClassCProperty1Table()
+{
+    int dat[36], link;
+
+    if (!link)
+    {
+        dat[0] = GetMemory(0x97bb40 + (SToInt("Fire4") * 4));
+        dat[1] = 0x61; dat[6] = 0xb40000; dat[5] = 0x4b0; dat[7] = 0x1b2ff2; dat[9] = 1;
+        //dat[13] = 0x4e04d0;
+        dat[13] = WeaponClassCProperty1Code();
+        dat[14] = ToInt(300.0); //dat[13] = 0x4e06f0; dat[13] = 0x4e0550;
+        CancelTimer(FrameTimerWithArg(10, WeaponClassCProperty1Table, WeaponClassCProperty1Table));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+    }
+    return link;
+}
+
+void WeaponClassCProperty1Entry(int wUnit, int slot)
+{
+    int ptr = UnitToPtr(wUnit), i;
+
+    if (ptr)
+    {
+        SetMemory(GetMemory(ptr + 0x2b4) + (slot * 4), WeaponClassCProperty1Table());
+        for (i = 31 ; i >= 0 ; i --)
+            SetMemory(ptr + 0x230 + (i * 4), 0x200);
+    }
+}
+
+void WeaponClassCProperty1TestCreate(int location)
+{
+    int wUnit = CreateObjectAt("GreatSword", LocationX(location), LocationY(location)), k;
+
+    WeaponClassCProperty1Entry(wUnit, 2);
+}
+
+void InitCProperty()
+{
+    WeaponClassCProperty1Table();
+    WeaponClassCProperty1TestCreate(492);
+}

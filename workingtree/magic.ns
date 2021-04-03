@@ -1,0 +1,487 @@
+//@ignore_object_type
+
+int EnableMemoryReadWriteFunction(int t)
+{
+	int addr = 0x97974c;
+	int arr[29];
+
+	arr[0] = 0x1090BE56; arr[1] = 0x06C70075; arr[2] = 0x50725068; arr[3] = 0x000446C7;
+	arr[4] = 0xC7723068; arr[5] = 0x00500846; arr[6] = 0x46C754FF; arr[7] = 0xFF04240C;
+	arr[8] = 0x1046C730; arr[9] = 0x042454FF; arr[10] = 0x831446C7; arr[11] = 0xC7310CC4;
+	arr[12] = 0xC3C01846; arr[13] = 0x46C79090; arr[14] = 0x5068561C; arr[15] = 0x2046C772;
+	arr[16] = 0x14FF0050; arr[17] = 0x242446C7; arr[18] = 0xC7FFF08B; arr[19] = 0x24142846;
+	arr[20] = 0x46C73089; arr[21] = 0x04C4832C; arr[22] = 0x3046C75E; arr[23] = 0x909090C3;
+	arr[24] = 0x33703589; arr[25] = 0x05C7005C; arr[26] = 0x005C31F0; arr[27] = 0x007510ac;
+	arr[28] = 0x9090C35E; 
+	//0xed9af
+	return GetScore(t);
+}
+
+int ImportCreateAtFunc()
+{
+    int arr[20], ptr, link;
+    if (!ptr)
+    {
+        arr[0] = 0xAA506856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xFF502414; arr[4] = 0x50042454;
+        arr[5] = 0x082454FF; arr[6] = 0x4085048B; arr[7] = 0x680097BB; arr[8] = 0x004E3810; arr[9] = 0x2454FF50;
+        arr[10] = 0x08C48304; arr[11] = 0xF685F08B; arr[12] = 0x006A0A74; arr[13] = 0x2454FF56; arr[14] = 0x08C48314;
+        arr[15] = 0x50723068; arr[16] = 0x54FF5600; arr[17] = 0xC4830424; arr[18] = 0x5EC03118; arr[19] = 0x909090C3; 
+        if (GetMemory(0x83c7fc))
+        {
+            ptr = CreateObject("AmbBeachBirds", GetMemory(GetMemory(0x83c7fc)));
+            Raise(ptr, ImportCreateAtFunc);
+            link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x1c));
+            Delete(ptr);
+        }
+    }
+    return link;
+}
+
+int CreateObjectAt(string name, float x, float y)
+{
+    int temp = GetMemory(0x5c3160), res;
+
+    SetMemory(0x5c3160, ImportCreateAtFunc());
+    res = CreateMover(SToInt(name), ToInt(x), y);
+    SetMemory(0x5c3160, temp);
+    if (res) return GetMemory(res + 0x2c);
+    else return 0;
+}
+
+int GetOwner(int unit)
+{
+    int ptr = UnitToPtr(unit), res;
+
+    if (ptr)
+    {
+        res = GetMemory(ptr + 0x1fc);
+        if (res)
+            return GetMemory(res + 0x2c);
+    }
+    return 0;
+}
+
+int GetMemory(int addr)
+{
+    return Unknownb9(addr);
+}
+
+void SetMemory(int addr, int value)
+{
+    Unused59(addr, value);
+}
+
+int ImportUnitToPtrFunc()
+{
+    int arr[10], ptr, link;
+    if (!arr[0])
+    {
+        arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
+        arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3; 
+        ptr = CreateObject("AmbBeachBirds", 1);
+        Raise(ptr, ImportUnitToPtrFunc);
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x1c));
+        Delete(ptr);
+    }
+    return link;
+}
+
+int UnitToPtr(int unit)
+{
+    int temp = GetMemory(0x5c336c), res;
+    SetMemory(0x5c336c, ImportUnitToPtrFunc());
+    res = Unknownb8(unit);
+    SetMemory(0x5c336c, temp);
+	return res;
+}
+
+int GetUnitThingID(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x4);
+    return 0;
+}
+
+void MapInitialize()
+{
+    int k = EnableMemoryReadWriteFunction(0);
+
+    ImportUnitToPtrFunc();
+    ImportCreateAtFunc();
+    MathSine(0, 0.0);
+    SpawnPotion(9);
+    SpawnPotion(10);
+    SpawnPotion(11);
+    FrameTimerWithArg(1, 12, SpawnPotion);
+    FrameTimerWithArg(1, 13, SpawnPotion);
+    FrameTimerWithArg(2, 14, SpawnPotion);
+    FrameTimerWithArg(2, 15, SpawnPotion);
+    FrameTimerWithArg(2, 16, SpawnPotion);
+    FrameTimerWithArg(3, SpawnFanchakram, PutWeapons);
+}
+
+void SpawnPotion(int wp)
+{
+    int unit = CreateObject("RedPotion", wp);
+    
+    CreateObject("InvisibleLightBlueHigh", wp);
+    LookWithAngle(unit + 1, wp);
+    FrameTimerWithArg(1, unit, RespawnPotions);
+}
+
+void RespawnPotions(int unit)
+{
+    int wp;
+
+    if (!IsObjectOn(unit))
+    {
+        wp = GetDirection(unit + 1);
+        Delete(unit + 1);
+        unit = CreateObject("RedPotion", wp);
+        CreateObject("InvisibleLightBlueLow", wp);
+        LookWithAngle(unit + 1, wp);
+        Effect("VIOLET_SPARKS", GetWaypointX(wp), GetWaypointY(wp), 0.0, 0.0);
+        AudioEvent("ManaClick", wp);
+    }
+    SecondTimerWithArg(30, unit, RespawnPotions);
+}
+
+void PlayerRelease()
+{
+    int rnd;
+    if (CurrentHealth(other))
+    {
+        rnd = Random(1, 4);
+        Enchant(other, "ENCHANT_ANCHORED", 0.0);
+        MoveObject(other, GetWaypointX(rnd), GetWaypointY(rnd));
+        DeleteObjectTimer(CreateObject("VortexSource", rnd), 35);
+        AudioEvent("ShellClick", rnd);
+    }
+}
+
+void PutWeapons(int func)
+{
+    int row;
+    int k;
+
+    if (row < 15)
+    {
+        MoveWaypoint(8, GetWaypointX(7), GetWaypointY(7));
+        for (k = 12 ; k >= 0 ; k --)
+        {
+            FrameTimerWithArg(1, 8, func + Random(0, 4));
+            FrameTimerWithArg(1, 8, LocationMoving);
+        }
+        MoveWaypoint(7, GetWaypointX(7) - 23.0, GetWaypointY(7) + 23.0);
+        row ++;
+        FrameTimerWithArg(2, func, PutWeapons);
+    }
+    else
+        LoopSearchIndex();
+}
+
+void LocationMoving(int wp)
+{
+    MoveWaypoint(wp, GetWaypointX(wp) + 23.0, GetWaypointY(wp) + 23.0);
+}
+
+void SpawnFanchakram(int wp)
+{
+    int unit = CreateObject("FanChakram", wp);
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(GetMemory(ptr + 0x2e0), 0x6464);
+}
+
+void SpawnChakram(int wp)
+{
+    CreateObject("RoundChakram", wp);
+}
+
+void SpawnFlareWand(int wp)
+{
+    CreateObject("SulphorousFlareWand", wp);
+}
+
+void SpawnBowSet(int wp)
+{
+    CreateObject("Quiver", wp);
+    SetMemory(GetMemory(GetMemory(0x750710) + 0x2e0), 0x6464);
+    CreateObject("Bow", wp);
+}
+
+void SpawnFireballStaff(int wp)
+{
+    CreateObject("LesserFireballWand", wp);
+}
+
+void LoopSearchIndex()
+{
+    int cur, last = CreateObject("InvisibleLightBlueHigh", 1), thingID;
+
+    if (cur)
+    {
+        while (cur < last)
+        {
+            if (HasClass(cur, "MISSILE"))
+            {
+                thingID = GetUnitThingID(cur);
+                if (thingID == 709)
+                {
+                    MagicMisWand(GetOwner(cur));
+                    Delete(cur);
+                }
+                else if (HasSubclass(cur, "SHURIKEN"))
+                {
+                    ShurikenEvent(GetOwner(cur));
+                    Delete(cur);
+                }
+                else if (thingID == 526)
+                {
+                    HarpoonEvent(GetOwner(cur));
+                    Delete(cur);
+                }
+                else if (thingID == 527)
+                {
+                    ArrowShot(GetOwner(cur));
+                    Delete(cur);
+                }
+                else if (HasSubclass(cur, "CHAKRAM"))
+                {
+                    CheckChakramTracking(GetOwner(cur), cur);
+                    Delete(cur);
+                }
+                else if (thingID == 695)
+                {
+                    LightningBoltThrowing(GetOwner(cur));
+                    Delete(cur);
+                }
+            }
+            cur ++;
+        }
+    }
+    else
+        cur = last;
+    Delete(last);
+    FrameTimer(1, LoopSearchIndex);
+}
+
+void MagicMisWand(int owner)
+{
+    int ptr;
+
+    if (CurrentHealth(owner))
+    {
+        ptr = CreateObject("InvisibleLightBlueHigh", 6);
+        CastSpellObjectLocation("SPELL_MAGIC_MISSILE", owner, GetObjectX(owner) + UnitAngleCos(owner, 20.0), GetObjectY(owner) + UnitAngleSin(owner, 20.0));
+        Delete(ptr);
+        Delete(ptr + 2);
+        Delete(ptr + 3);
+        Delete(ptr + 4);
+    }
+}
+
+void ShurikenEvent(int owner)
+{
+    int mis;
+
+    if (CurrentHealth(owner))
+    {
+        MoveWaypoint(6, GetObjectX(owner) + UnitAngleCos(owner, 18.0), GetObjectY(owner) + UnitAngleSin(owner, 18.0));
+        mis = CreateObject("DeathBallFragment", 6);
+        SetOwner(owner, mis);
+        DeleteObjectTimer(mis, 16);
+        PushObjectTo(mis, UnitAngleCos(owner, 46.0), UnitAngleSin(owner, 46.0));
+    }
+}
+
+void HarpoonEvent(int owner)
+{
+    int mis;
+
+    if (CurrentHealth(owner))
+    {
+        MoveWaypoint(6, GetObjectX(owner) + UnitAngleCos(owner, 17.0), GetObjectY(owner) + UnitAngleSin(owner, 17.0));
+        mis = CreateObject("ArcherBolt", 6);
+        SetOwner(owner, mis);
+        LookWithAngle(mis, GetDirection(owner));
+        PushObject(mis, 53.0, GetObjectX(owner), GetObjectY(owner));
+    }
+}
+
+void ArrowShot(int owner)
+{
+    int mis;
+
+    if (CurrentHealth(owner))
+    {
+        MoveWaypoint(6, GetObjectX(owner) + UnitAngleCos(owner, 17.0), GetObjectY(owner) + UnitAngleSin(owner, 17.0));
+        mis = CreateObject("Fireball", 6);
+        Enchant(mis, "ENCHANT_FREEZE", 0.0);
+        Enchant(mis, "ENCHANT_RUN", 0.0);
+        LookWithAngle(mis, GetDirection(owner));
+        SetOwner(owner, mis);
+        PushObjectTo(mis, UnitAngleCos(owner, 50.0), UnitAngleSin(owner, 50.0));
+    }
+}
+
+void ChakramThrowing(int cur)
+{
+    int owner = GetOwner(cur);
+    int mis = CreateObjectAt("ThrowingStone", GetObjectX(owner) + UnitRatioX(cur, owner, 9.0), GetObjectY(owner) + UnitRatioY(cur, owner, 9.0));
+
+    SetOwner(owner, CreateObjectAt("WeakFireball", GetObjectX(mis), GetObjectY(mis)));
+    SetOwner(owner, mis);
+    PushObjectTo(mis, UnitRatioX(cur, owner, 31.0), UnitRatioY(cur, owner, 31.0));
+    PushObjectTo(mis + 1, UnitRatioX(cur, owner, 31.0), UnitRatioY(cur, owner, 31.0));
+}
+
+void LightningBoltThrowing(int owner)
+{
+    int mis;
+    float pos_x;
+    float pos_y;
+
+    if (CurrentHealth(owner))
+    {
+        pos_x = UnitAngleCos(owner, 13.0);
+        pos_y = UnitAngleSin(owner, 13.0);
+        MoveWaypoint(6, GetObjectX(owner) + pos_x, GetObjectY(owner) + pos_y);
+        mis = CreateObject("LightningBolt", 6);
+        CreateObject("LightningBolt", 6);
+        CreateObject("LightningBolt", 6);
+        Enchant(mis, "ENCHANT_HASTED", 0.0);
+        SetOwner(owner, mis);
+        SetOwner(owner, mis + 1);
+        SetOwner(owner, mis + 2);
+        LookWithAngle(mis, GetDirection(owner));
+        LookWithAngle(mis + 1, GetDirection(owner));
+        LookWithAngle(mis + 2, GetDirection(owner));
+        PushObjectTo(mis, pos_x * 4.0, pos_y * 4.0);
+        PushObjectTo(mis + 1, pos_x * 4.0, pos_y * 4.0);
+        PushObjectTo(mis + 2, pos_x * 4.0, pos_y * 4.0);
+    }
+}
+
+void DelayGiveUnit(int ptr)
+{
+    int inv = ToInt(GetObjectZ(ptr)), owner = GetOwner(ptr);
+
+    if (CurrentHealth(owner) && IsObjectOn(inv))
+    {
+        Pickup(owner, inv);
+        ChakramThrowing(ptr);
+    }
+    Delete(ptr);
+}
+
+void CheckChakramTracking(int owner, int cur)
+{
+    int inv = GetLastItem(cur), ptr = CreateObjectAt("InvisibleLightBlueHigh", GetObjectX(cur), GetObjectY(cur));
+
+    Delete(cur);
+    SetOwner(owner, ptr);
+    Raise(ptr, ToFloat(inv));
+    FrameTimerWithArg(2, ptr, DelayGiveUnit);
+}
+
+float MathSine(int angle, float size)
+{
+    float var_0[91];
+    int i;
+    int k;
+ 
+    if (var_0[90] == 0.0)
+    {
+        k = MathRingCore(5);
+        Delete(k);
+        for (i = 0 ; i <= 90 ; i ++)
+        {
+            var_0[i] = GetObjectZ(k + i + 1);
+            Delete(k + i + 1);
+        }
+        return var_0[0];
+    }
+
+    k = angle / 90;
+    i = angle - (k * 90);
+ 
+    k %= 2;
+    if (k == 1)
+        i = 90 - i;
+    if ((angle / 180) % 2 == 1)
+        return -var_0[i] * size;
+	else
+		return var_0[i] * size;
+}
+
+int MathRingCore(int wp)
+{
+    float x_ratio;
+    float y_ratio;
+    string name = "InvisibleLightBlueHigh";
+    int unit = CreateObject(name, wp);
+    int i;
+
+    MoveWaypoint(wp + 1, GetWaypointX(wp), GetWaypointY(wp) - 1.0);
+    for (i = 0 ; i <= 90 ; i ++)
+    {
+        x_ratio = WayRatioXY(wp, wp + 1, 0);
+        y_ratio = WayRatioXY(wp, wp + 1, 1);
+        MoveWaypoint(wp + 1, GetWaypointX(wp) - x_ratio, GetWaypointY(wp) - y_ratio);
+        CreateObject(name, wp + 1);
+        Raise(unit + i + 1, GetWaypointX(wp) - GetWaypointX(wp + 1));
+        MoveWaypoint(wp + 1, GetWaypointX(wp) - (1.0 / 57.3 * y_ratio) - x_ratio, GetWaypointY(wp) + (1.0 / 57.3 * x_ratio) - y_ratio);
+    }
+    return unit;
+}
+
+float WayRatioXY(int wp1, int wp2, int mode)
+{
+    if (!mode)
+        return (GetWaypointX(wp1) - GetWaypointX(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
+    else
+        return (GetWaypointY(wp1) - GetWaypointY(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
+}
+
+float UnitAngleCos(int unit, float size)
+{
+    return MathSine((GetDirection(unit) * 45 / 32) + 90, size);
+}
+
+float UnitAngleSin(int unit, float size)
+{
+    return MathSine(GetDirection(unit) * 45 / 32, size);
+}
+
+int ToInt(float x)
+{
+    StopScript(x);
+}
+
+float ToFloat(int x)
+{
+    StopScript(x);
+}
+
+string ToStr(int x)
+{
+    StopScript(x);
+}
+
+int SToInt(string x)
+{
+    StopScript(x);
+}
+
+float UnitRatioX(int unit, int target, float size)
+{
+    return (GetObjectX(unit) - GetObjectX(target)) * size / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target));
+}
+
+float UnitRatioY(int unit, int target, float size)
+{
+    return (GetObjectY(unit) - GetObjectY(target)) * size / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target));
+}
