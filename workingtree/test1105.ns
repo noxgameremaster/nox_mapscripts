@@ -385,6 +385,10 @@ void TestFunction()
 
     SetOwner(testNpc, armor);
     FrameTimerWithArg(1, armor, PickupAndEquip);
+
+    int ptr = GetScrDataField(RedrawOnRespawn);
+
+    Print(IntToString(ptr));
 }
 
 void MapExit()
@@ -439,4 +443,5 @@ void MapInitialize()
     PlayerUpdate4f8100();
     PlayerClassDieHandlerInit(913);
     ImportItemEquip();
+    RedrawOnRespawn();
 }

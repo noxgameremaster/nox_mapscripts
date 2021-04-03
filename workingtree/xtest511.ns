@@ -452,8 +452,8 @@ int PlayerRespawn004f7ef0()     //@brief. 유저 리스폰 복사본
         link = GetScrDataField(PlayerRespawn004f7ef0);
         OpcodeCopiesAdvance(link, Callnode004f7ef0(), 0x4f7ef0, 0x4f80b4);
         SetMemory(link + 0x62, 0x16a9090);
-        // SetMemory(link + 0x94, (GetMemory(link + 0x94) & (~0xffff)) ^ 0x9090);
-        // FixCallOpcode(link + 0x9b, RedrawOnRespawn());
+        SetMemory(link + 0x94, (GetMemory(link + 0x94) & (~0xffff)) ^ 0x9090);  //here  //원래 코멘트 처리
+        FixCallOpcode(link + 0x9b, RedrawOnRespawn());      //here //원래 코멘트 처리
     }
     return link;
 }
@@ -487,14 +487,15 @@ int PlayerUpdate4f8460()
 
 int RedrawOnRespawn()
 {
-    int arr[15], link;
+    int arr[16], link;
 
     if (!link)
     {
-        arr[0] = 0x50EC8B55; arr[1] = 0x758B5651; arr[2] = 0xF88E8B08; arr[3] = 0x85000001; arr[4] = 0x8B2474C9; arr[5] = 0x00251041; arr[6] = 0x85000001; arr[7] = 0x6A1074C0;
-        arr[8] = 0x51016A01; arr[9] = 0x9116E856; arr[10] = 0x595EFFDE; arr[11] = 0x8B08C483; arr[12] = 0x0001F089; arr[13] = 0x5ED8EB00; arr[14] = 0xC35D5859;
+        arr[0] = 0x50EC8B55; arr[1] = 0x758B5651; arr[2] = 0xF88E8B08; arr[3] = 0x85000001; arr[4] = 0x8B2674C9; arr[5] = 0x00251041; arr[6] = 0x85000001; arr[7] = 0x511274C0;
+        arr[8] = 0x1F8AE856; arr[9] = 0x595EFFDA; arr[10] = 0x41E85651; arr[11] = 0x5EFFDA1F; arr[12] = 0xF0898B59; arr[13] = 0xEB000001; arr[14] = 0x58595ED6; arr[15] = 0x9090C35D;
         link = GetScrDataField(RedrawOnRespawn);
-        FixCallOpcode(link + 0x25, 0x53a140);
+        FixCallOpcode(link + 0x21, 0x4f2fb0);
+        FixCallOpcode(link + 0x2a, 0x4f2f70);
     }
     return link;
 }
@@ -3212,7 +3213,7 @@ void PlayerJoin(int plr)
 {
     if (PlayerClassCheckDeathFlag(plr))
     {
-        EquipFix(player[plr]);  //@brief. 28th march 2021 23:04 추가
+        // EquipFix(player[plr]);  //@brief. 28th march 2021 23:04 추가
         PlayerClassSetDeathFlag(plr);
     }
     MoveObject(player[plr], LocationX(12), LocationY(12));
