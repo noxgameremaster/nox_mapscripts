@@ -2159,7 +2159,6 @@ void MapInitialize()
 void DelayInitRun()
 {
     CallFunctionWithArg(0, 0);
-    CallFunctionWithArgInt(0, 0);
     ReventBerserker(0);
     GetItemColors(0);
     PlayerExperienceTable(5);
