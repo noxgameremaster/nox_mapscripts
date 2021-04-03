@@ -1,0 +1,3 @@
+
+TARGET = "C:\Program Files (x86)\Nox\maps\gollest\gollestout.obj"
+ResourceBGMdata "bgmData\메이플-카니발 브금 16hz 32mono.mp3"
