@@ -3335,48 +3335,6 @@ void PlayerClassStatusCheck(int plr)
         RestoreHealth(pUnit, 1);
 }
 
-int PlayerClassItemTable()
-{
-    int itemTable[8000];
-}
-
-int PlayerClassItemIndexTable(int arg0)
-{
-    int pIndex = arg0 & 0xff, isSave = (arg0 >> 0x8) & 0xff, table[32];
-
-    if (isSave)
-        table[pIndex] = arg0 >> 0x10;
-    return table[pIndex];
-}
-
-int PlayerClassPickAll(int pUnit, int tablePtr, int count)
-{
-    int i;
-
-    if (count >= 250) count = 250;
-    for (i = count - 1 ; i >= 0 ; i --)
-    {
-        Pickup(pUnit, GetMemory(tablePtr + (i * 4)));
-        //ItemResetPickHandlerAndPickup(pUnit, GetMemory(tablePtr4 + (((startIndex + i) % 3000) * 4)));
-    }
-    return 1;
-}
-
-void ItemResetPickHandlerAndPickup(int holder, int inv)
-{
-    int ptr = UnitToPtr(inv);
-
-    if (ptr)
-    {
-        if (GetMemory(ptr + 0x1c))
-        {
-            SetMemory(ptr + 0x2c4, GetMemory(ptr + 0x1c));
-            SetMemory(ptr + 0x1c, 0);
-        }
-        Pickup(holder, inv);
-    }
-}
-
 void ProtectItemTryPick()
 {
     int cFps, ptr;
@@ -3409,24 +3367,6 @@ void ProtectItemTryPick()
     }
 }
 
-int ProtectPickFunction()
-{
-    StopScript(ProtectItemTryPick);
-}
-
-void ItemSetDontPick(int inv)
-{
-    int ptr = UnitToPtr(inv);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x1c, GetMemory(ptr + 0x2c4));
-        SetMemory(ptr + 0x228, ProtectPickFunction());
-        SetMemory(ptr + 0x2c4, ImportUnitPickupFunc());
-        SetMemory(ptr + 0x2f4, 0);
-    }
-}
-
 int ImportUnitPickupFunc()
 {
     int arr[10], link;
@@ -3449,8 +3389,7 @@ int ImportRemoveSneakDelay()
     if (!link)
     {
         arr[0] = 0x72506850; arr[1] = 0x14FF0050; arr[2] = 0xC3006824; arr[3] = 0x046A004F; arr[4] = 0x2454FF50; arr[5] = 0x10C48308; arr[6] = 0x9090C358;
-        CancelTimer(FrameTimerWithArg(10, ImportRemoveSneakDelay, ImportRemoveSneakDelay));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ImportRemoveSneakDelay) + 0x1c);
     }
     return link;
 }
@@ -3563,32 +3502,10 @@ void PlayerClassOnFree(int plr)
     player[plr] = 0;
 }
 
-int PlayerClassDropAll(int pUnit, int tablePtr, int pIndex)
-{
-    int curPtr = tablePtr + (pIndex * 250 * 4), inv = GetLastItem(pUnit), count = 0;
-
-    while (inv)
-    {
-        SetMemory(curPtr + (count * 4), inv);
-        Drop(pUnit, inv);
-        ItemSetDontPick(inv); //added
-        SetOwner(pUnit, inv);
-        inv = GetLastItem(pUnit);
-        count ++;
-        if (count == 250)
-            break;
-    }
-    return count;
-}
-
 void PlayerClassOnDeath(int plr)
 {
     int ptr, plrUnit = player[plr];
-    // int pIndex = GetPlayerIndex(plrUnit);
 
-    // CancelTimer(FrameTimerWithArg(10, PlayerClassItemTable, PlayerClassItemTable));
-    // ptr = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-    // PlayerClassItemIndexTable((PlayerClassDropAll(plrUnit, ptr, pIndex) << 0x10) | (1 << 0x08) | pIndex);
     if (PlayerClassOnMapFlagCheck(plr))
         PlayerClassOnMapFlagSet(plr);
     UniPrintToAll(PlayerIngameNick(plrUnit) + " 님께서 적에게 격추되었습니다");
@@ -5476,9 +5393,8 @@ int HecubahOrbBinTable()
 		arr[21] = 1065353216; arr[23] = 65536; arr[24] = 1065353216; arr[26] = 4; arr[27] = 5; 
 		arr[37] = 1952539972; arr[38] = 1818313320; arr[39] = 1634879084; arr[40] = 1852140903; arr[41] = 116; 
 		arr[53] = 1133903872; arr[55] = 26; arr[56] = 36; arr[57] = 5547984; arr[58] = 5545616; 
-		arr[60] = 1384; arr[61] = 46914560; 
-		CancelTimer(FrameTimerWithArg(10, HecubahOrbBinTable, HecubahOrbBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		arr[60] = 1384; arr[61] = 46914560;
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * HecubahOrbBinTable) + 0x1c);
 	}
 	return link;
 }
@@ -5509,9 +5425,8 @@ int LichBinTable()
 		arr[0] = 1751345484; arr[17] = 375; arr[19] = 60; arr[21] = 1065353216; arr[23] = 2048; 
 		arr[24] = 1067869798; arr[26] = 4; arr[27] = 4; arr[28] = 1106771968; arr[29] = 80; 
 		arr[31] = 10; arr[32] = 8; arr[33] = 11; arr[53] = 1128792064; arr[54] = 4; 
-		arr[59] = 5542784; arr[60] = 1342; arr[61] = 46909440; 
-		CancelTimer(FrameTimerWithArg(10, LichBinTable, LichBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		arr[59] = 5542784; arr[60] = 1342; arr[61] = 46909440;
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * LichBinTable) + 0x1c);
 	}
 	return link;
 }
@@ -5663,8 +5578,8 @@ int ImportUnitDropFunc()
         arr[0] = 0x50731068; arr[1] = 0x55565300; arr[2] = 0x14245C8B; arr[3] = 0x1824748B;
         arr[4] = 0x02FCAE8B; arr[5] = 0x53560000; arr[6] = 0x2454FF55; arr[7] = 0x0CC48318;
         arr[8] = 0x835B5E5D; arr[9] = 0x90C304C4;
-        CancelTimer(FrameTimerWithArg(10, ImportUnitDropFunc, ImportUnitDropFunc));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ImportUnitDropFunc) + 0x1c);
     }
     return link;
 }
@@ -5696,7 +5611,7 @@ void SupplyItemToPlayer(int pUnit, int item)
 int RingHecubahImageTable()
 {
     int imgCount = 24;
-    int arr[24], fNumb;
+    int arr[24];
 
     arr[0] = ImagePtrFromID(137042); arr[1] = ImagePtrFromID(137043); arr[2] = ImagePtrFromID(137044); arr[3] = ImagePtrFromID(137046);
     arr[4] = ImagePtrFromID(137047); arr[5] = ImagePtrFromID(137048); arr[6] = ImagePtrFromID(137049); arr[7] = ImagePtrFromID(137050);
@@ -5704,8 +5619,7 @@ int RingHecubahImageTable()
     arr[12] = ImagePtrFromID(137055); arr[13] = ImagePtrFromID(137056); arr[14] = ImagePtrFromID(137057); arr[15] = ImagePtrFromID(137058);
     arr[16] = ImagePtrFromID(137059); arr[17] = ImagePtrFromID(137060); arr[18] = ImagePtrFromID(137061); arr[19] = ImagePtrFromID(137062);
     arr[20] = ImagePtrFromID(137063); arr[21] = ImagePtrFromID(137064); arr[22] = ImagePtrFromID(137065); arr[23] = ImagePtrFromID(137066);
-    RingHecubahImageTable;
-    fNumb = GetMemory(0x979740 + ((GetMemory(0x75ae40) - 4) * 4));
-    return GetMemory(GetMemory(0x75ae28) + ((0x30 * fNumb) + 0x1c));
+    
+    return GetMemory(GetMemory(0x75ae28) + ((0x30 * RingHecubahImageTable) + 0x1c));
 }
 
