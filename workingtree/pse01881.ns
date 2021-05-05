@@ -2058,6 +2058,11 @@ int PlaceLastSavedTeleport(object location)
     return telpo;
 }
 
+void TestingFunction()  //!RemoveMe!//
+{
+    SummonMobHorrendous(Object("MapSign1"));
+}
+
 void DelayMapInit()
 {
     g_userLastSavedLocation = 51;
@@ -2082,6 +2087,8 @@ void DelayMapInit()
     Enchant(g_ternnelSwitch, EnchantList(0), 0.0);
     FrameTimer(30, LoopSearchIndex);
     FrameTimer(60, InitBlocks);
+
+    // FrameTimer(10, TestingFunction);        //!RemoveMe!// Test only//
 }
 
 void EntryArea1()
@@ -2267,9 +2274,9 @@ int SummonMobScorpion(int posUnit)
     return mob;
 }
 
-int SummonMobSkeletonLord(int posUnit)
+int SummonMobHorrendous(int posUnit)
 {
-    int mob = CreateObjectAtUnit("SkeletonLord", posUnit);
+    int mob = CreateObjectAtUnit("Horrendous", posUnit);
 
     SetUnitMaxHealth(mob, 325);
     RegistUnitStrikeHook(mob);
@@ -2291,7 +2298,7 @@ void EntryArea5()
 
     MobMakerStartSummon(3, PlaceMobMaker(72, 15, SummonMobScorpion));
     MobMakerStartSummon(3, PlaceMobMaker(73, 15, SummonMobScorpion));
-    MobMakerStartSummon(3, PlaceMobMaker(74, 23, SummonMobSkeletonLord));
+    MobMakerStartSummon(3, PlaceMobMaker(74, 23, SummonMobHorrendous));
     SetNextFunction(EndArea5);
 }
 
@@ -3176,9 +3183,9 @@ void BlockPressRight()
     }
 }
 
-void SkullLordStrike()
+void HorrendousElectricStrike()
 {
-    Damage(other, self, 50, 9);
+    Damage(other, self, 30, 9);
     Effect("LIGHTNING", GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other));
     Effect("RICOCHET", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
 }
@@ -3254,8 +3261,8 @@ void MonsterStrikeCallback()
 
     if (CurrentHealth(other))
     {
-        if (thingId == 1315)
-            SkullLordStrike();
+        if (thingId == 1386)
+            HorrendousElectricStrike();
     }
 }
 
