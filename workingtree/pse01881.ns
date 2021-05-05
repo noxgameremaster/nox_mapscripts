@@ -3,10 +3,17 @@
 int player[20];
 int g_dropItemFunctions[8];
 object g_userLastSavedLocation;
+
 object g_blockLeftUp;
 object g_blockLeftDown;
 object g_blockRightLeft;
 object g_blockRightRight;
+
+int g_mixGenPuzzle[10];
+object g_genPuzzleBeacon[9];
+int g_puzzleGens = 0;
+
+object g_ternnelSwitch;
 
 int EnableMemoryReadWriteFunction(int t) { }
 float ToFloat(int arg) { StopScript(arg); }
@@ -101,6 +108,14 @@ void SetUnitSpeed(int unit, float amount)
 
     if (ptr)
         SetMemory(ptr + 0x224, ToInt(amount));
+}
+
+void SetUnitMass(int unit, float ms)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        SetMemory(ptr + 0x78, ToInt(ms));
 }
 
 void SetUnitMaxHealth(int unit, int amount)
@@ -2058,6 +2073,15 @@ void DelayMapInit()
     RegistSignMessage(Object("MapSign2"), "-이곳은 이마트 편의점의 입구입니다- 거래를 하려면 문을열고 안으로 오세요");
     RegistSignMessage(Object("MapSign3"), "특수 무기를 판매하고 있어요");
     RegistSignMessage(Object("MapSign4"), "이 워프게이트는 사용자가 마지막으로 탐험한 위치로 이동합니다");
+
+    MonsterStrikeHandlerCopiedCode(MonsterStrikeCallback);
+    InitializeGenerators();      //FIXME. ERROR
+
+    g_ternnelSwitch = Object("TernnelSwitch");
+    ObjectOff(g_ternnelSwitch);
+    Enchant(g_ternnelSwitch, EnchantList(0), 0.0);
+    FrameTimer(30, LoopSearchIndex);
+    FrameTimer(60, InitBlocks);
 }
 
 void EntryArea1()
@@ -2146,8 +2170,8 @@ int SummonUrchin(int posUnit)
 {
     int unit = CreateObjectAtUnit("Urchin", posUnit);
 
-    //powerupUrchin
     UnitZeroFleeRange(unit);
+    SetUnitMaxHealth(unit, 130);
     return unit;
 }
 
@@ -2175,6 +2199,7 @@ void ClearMinesWalls()
 void EndArea3()
 {
     FrameTimer(10, ClearMinesWalls);
+    FrameTimer(20, EntryArea4);
 }
 
 void EntryArea3()
@@ -2183,6 +2208,99 @@ void EntryArea3()
     MobMakerStartSummon(3, PlaceMobMaker(40, 20, SummonMobGoon));
     MobMakerStartSummon(3, PlaceMobMaker(41, 20, SummonUrchin));
     SetNextFunction(EndArea3);
+}
+
+int SummonMobStoneGiant(int posUnit)
+{
+    int giant = CreateObjectAtUnit("StoneGolem", posUnit);
+
+    SetUnitMaxHealth(giant, 750);
+    Enchant(giant, EnchantList(9), 0.0);
+    return giant;
+}
+
+int SummonMobImp(int posUnit)
+{
+    int fairy = CreateObjectAtUnit("Imp", posUnit);
+
+    ImpSubProcess(fairy);
+    return fairy;
+}
+
+int SummonMobShade(int posUnit)
+{
+    int shade = CreateObjectAtUnit("Shade", posUnit);
+
+    SetUnitMaxHealth(shade, 225);
+    return shade;
+}
+
+void EndArea4()
+{
+    ClearWallAtWaypointPos(68);
+    ClearWallAtWaypointPos(69);
+    ClearWallAtWaypointPos(70);
+    FrameTimer(30, EntryArea5);
+}
+
+void EntryArea4()
+{
+    MobMakerStartSummon(1, PlaceMobMaker(42, 32, SummonMobStoneGiant));
+    MobMakerStartSummon(1, PlaceMobMaker(43, 20, SummonMobImp));
+    MobMakerStartSummon(1, PlaceMobMaker(44, 32, SummonMobShade));
+    SetNextFunction(EndArea4);
+}
+
+int SummonMobWasp(int posUnit)
+{
+    int honey = CreateObjectAtUnit("Wasp", posUnit);
+
+    WaspSubProcess(honey);
+    return honey;
+}
+
+int SummonMobScorpion(int posUnit)
+{
+    int mob = CreateObjectAtUnit("Scorpion", posUnit);
+
+    ScorpionSubProcess(mob);
+    return mob;
+}
+
+int SummonMobSkeletonLord(int posUnit)
+{
+    int mob = CreateObjectAtUnit("SkeletonLord", posUnit);
+
+    SetUnitMaxHealth(mob, 325);
+    RegistUnitStrikeHook(mob);
+    return mob;
+}
+
+void EndArea5()
+{
+    UnlockDoor(Object("ExitLocker1"));
+    UnlockDoor(Object("ExitLocker2"));
+    UniPrintToAll("출입문이 열렸습니다");
+    FrameTimer(30, EntryArea6);
+}
+
+void EntryArea5()
+{
+    MobMakerStartSummon(1, PlaceMobMaker(75, 6, SummonMobWasp));
+    MobMakerStartSummon(1, PlaceMobMaker(76, 6, SummonMobWasp));
+
+    MobMakerStartSummon(3, PlaceMobMaker(72, 15, SummonMobScorpion));
+    MobMakerStartSummon(3, PlaceMobMaker(73, 15, SummonMobScorpion));
+    MobMakerStartSummon(3, PlaceMobMaker(74, 23, SummonMobSkeletonLord));
+    SetNextFunction(EndArea5);
+}
+
+void EndArea6()
+{ }
+
+void EntryArea6()
+{
+    SetNextFunction(EndArea6);
 }
 
 void Callee()
@@ -2715,9 +2833,10 @@ int ShopClassAllEnchantMarketCreate(int location)
 
 void LightningShotCollide()
 {
-    if (GetTrigger())
+    if (GetTrigger() && GetCaller())
     {
         Damage(other, 0, 50, 9);
+        Enchant(other, EnchantList(25), 2.0);
         Delete(self);
     }
 }
@@ -2732,12 +2851,11 @@ int LightningShotSingle(float posX, float posY)
     return mis;
 }
 
-int LightningShooter(object baseUnit, int shotDirection, float force)
+int LightningShooter(object baseUnit, float shotVectX, float shotVectY, float xVect, float yVect)
 {
-    int mis = LightningShotSingle(GetObjectX(baseUnit), GetObjectY(baseUnit));
+    int mis = LightningShotSingle(GetObjectX(baseUnit) + xVect, GetObjectY(baseUnit) + yVect);
 
-    LookWithAngle(mis, shotDirection);
-    PushObjectTo(mis, UnitAngleCos(mis, -force), UnitAngleSin(mis, -force));
+    PushObjectTo(mis, shotVectX, shotVectY);
     return mis;
 }
 
@@ -2746,7 +2864,8 @@ void LightningShotGunTrapArea1()
     int i, trpBase = CreateObjectAt("ImaginaryCaster", LocationX(52), LocationY(52));
 
     for (i = 0 ; i < 10 ; i ++)
-        LightningShooter(trpBase + i, 92, 38.0);
+        LightningShooter(trpBase + i, -32.0, 32.0, 13.0, 13.0);
+    Delete(trpBase);
 }
 
 void UnitHealingHandler(int healing)
@@ -2787,6 +2906,106 @@ void WellRefreshing()
 /*********
 * monsterbin script section
 *********/
+
+int ScorpionBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1919902547; arr[1] = 1852795248; arr[17] = 275; arr[18] = 75; arr[19] = 75; 
+		arr[21] = 1065353216; arr[24] = 1067869798; arr[25] = 1; arr[26] = 5; arr[27] = 5; 
+		arr[28] = 1112014848; arr[29] = 30; arr[30] = 1101004800; arr[31] = 3; arr[32] = 22; 
+		arr[33] = 30; arr[34] = 3; arr[35] = 5; arr[36] = 30; arr[59] = 5543344; 
+		arr[60] = 1373; arr[61] = 46895952; 
+		CancelTimer(FrameTimerWithArg(10, ScorpionBinTable, ScorpionBinTable));
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+void ScorpionSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1074790400);
+		SetMemory(ptr + 0x224, 1074790400);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 0);
+		SetMemory(GetMemory(ptr + 0x22c), 275);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 275);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, ScorpionBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int WaspBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1886609751; arr[17] = 98; arr[18] = 1; arr[19] = 120; arr[21] = 1065353216; 
+		arr[23] = 1; arr[24] = 1067869798; arr[27] = 5; arr[28] = 1097859072; arr[29] = 20; 
+		arr[31] = 3; arr[34] = 2; arr[35] = 3; arr[36] = 20; arr[59] = 5544320; 
+		arr[60] = 1331; arr[61] = 46900736; 
+		CancelTimer(FrameTimerWithArg(10, WaspBinTable, WaspBinTable));
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+void WaspSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1080452710);
+		SetMemory(ptr + 0x224, 1080452710);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 1);
+		SetMemory(GetMemory(ptr + 0x22c), 98);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 98);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, WaspBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int ImpBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 7368009; arr[17] = 180; arr[18] = 1; arr[19] = 110; arr[21] = 1065353216; 
+		arr[24] = 1065353216; arr[25] = 1; arr[26] = 5; arr[37] = 1769236816; arr[38] = 1181513062; 
+		arr[39] = 1650815593; arr[40] = 7105633; arr[53] = 1128792064; arr[54] = 1; arr[55] = 9; 
+		arr[56] = 17; arr[60] = 1328; arr[61] = 46904064; 
+		CancelTimer(FrameTimerWithArg(10, ImpBinTable, ImpBinTable));
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+	}
+	return link;
+}
+
+void ImpSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1079194419);
+		SetMemory(ptr + 0x224, 1079194419);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 0);
+		SetMemory(GetMemory(ptr + 0x22c), 180);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 180);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, ImpBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
 
 int GoonBinTable()
 {
@@ -2846,7 +3065,7 @@ int DisposeBlockGroup(int baseLocation)
     CreateObjectAtUnit("ImaginaryCaster", blocks);
     Frozen(CreateObjectAt("SpikeBlock", LocationX(baseLocation), LocationY(baseLocation)), true);
     Frozen(CreateObjectAt("SpikeBlock", LocationX(baseLocation + 1), LocationY(baseLocation + 1)), true);
-    Frozen(CreateObjectAt("SpikeBlock", LocationX(baseLocation + 1), LocationY(baseLocation + 1)), true);
+    Frozen(CreateObjectAt("SpikeBlock", LocationX(baseLocation + 2), LocationY(baseLocation + 2)), true);
 
     return blocks;
 }
@@ -2868,10 +3087,10 @@ void InitBlocks()
     g_blockRightLeft = DisposeBlockGroup(61);
     g_blockRightRight = DisposeBlockGroup(64);
 
-    SetBlockParams(g_blockLeftUp, 2.0, 2.0, 46);
-    SetBlockParams(g_blockLeftDown, 2.0, -2.0, 46);
-    SetBlockParams(g_blockRightLeft, 2.0, -2.0, 46);
-    SetBlockParams(g_blockRightRight, -2.0, -2.0, 46);
+    SetBlockParams(g_blockLeftUp, 2.0, 2.0, 57);
+    SetBlockParams(g_blockLeftDown, 2.0, -2.0, 57);
+    SetBlockParams(g_blockRightLeft, 2.0, -2.0, 57);
+    SetBlockParams(g_blockRightRight, -2.0, -2.0, 57);
 }
 
 void MoveObjectVector(int unit, float vectX, float vectY)
@@ -2905,14 +3124,16 @@ void BlockMovingCommon(int blocks)
     }
     else
     {
-        Raise(blocks, -GetObjectZ(blocks));
-        Raise(blocks + 1, -GetObjectZ(blocks + 1));
-        LookWithAngle(blocks, GetDirection(blocks) ^ true);
-        if (GetDirection(blocks) == false)
+        Raise(blocks, -GetObjectZ(blocks)); //direction swapping
+        Raise(blocks + 1, -GetObjectZ(blocks + 1)); //direction swapping
+        // LookWithAngle(blocks, GetDirection(blocks) ^ true);
+        ObjectToggle(blocks + 1);
+        if (!IsObjectOn(blocks + 1))
         {
             FrameTimerWithArg(30, blocks, BlockMovingCommon);
-            LookWithAngle(blocks, GetDirection(blocks));
-            Effect("JIGGLE", GetObjectX(obstacle), GetObjectY(obstacle), 0.0, 0.0);
+            LookWithAngle(blocks, GetDirection(blocks + 1));
+            PlaySoundAround(obstacle, 882);
+            Effect("JIGGLE", GetObjectX(obstacle), GetObjectY(obstacle), 17.0, 0.0);
         }
         else
             FrameTimerWithArg(30, blocks, BlockReset);
@@ -2923,8 +3144,8 @@ void StartBlockMoving(int blocks)
 {
     if (IsObjectOn(blocks))
     {
-        ObjectOff(blocks);
-        LookWithAngle(blocks, GetDirection(blocks + 1));
+        ObjectOff(blocks);  //Lock
+        LookWithAngle(blocks, GetDirection(blocks + 1));    //setCounter
         FrameTimerWithArg(1, blocks, BlockMovingCommon);
     }
 }
@@ -2955,7 +3176,343 @@ void BlockPressRight()
     }
 }
 
+void SkullLordStrike()
+{
+    Damage(other, self, 50, 9);
+    Effect("LIGHTNING", GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other));
+    Effect("RICOCHET", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
+}
 
+int CallNode00549380()
+{
+    int link, node[4];
 
+    if (!link)
+    {
+        node[0] = 0x549394;
+        node[1] = 0x5493d0;
+        node[2] = 0x52df80;
+        node[3] = 0;    //nullptr
+        link = GetScrDataField(CallNode00549380) + 4;
+    }
+    return link;
+}
 
+int MonsterStrikeHookSub()
+{
+    int arr[8], link;
 
+    if (!link)
+    {
+        arr[0] = 0x02CC96FF; arr[1] = 0x51500000; arr[2] = 0x0000FFB8; arr[3] = 0x50565700; arr[4] = 0xDB623BE8; arr[5] = 0x0CC483FF; arr[6] = 0xFB685859; arr[7] = 0xC3005493;
+
+        link = GetScrDataField(MonsterStrikeHookSub);
+    }
+    return link;
+}
+
+int MonsterStrikeHandlerCopiedCode(int callback)
+{
+    int code[48], link;
+    int subPart;
+
+    if (!link)
+    {
+        link = GetScrDataField(MonsterStrikeHandlerCopiedCode) + 4;
+        OpcodeCopiesAdvance(link, CallNode00549380(), 0x549380, 0x549434);
+        subPart = MonsterStrikeHookSub();
+        SetMemory(subPart + 27, link + 0x7b);
+        SetMemory(subPart + 9, callback);
+        FixCallOpcode(subPart + 16, 0x507310);
+
+        SetMemory(link + 0x75, (GetMemory(link + 0x75) & (~0xff)) ^ 0x68);  //e8 xx xx xx xx
+        SetMemory(link + 0x7a, (GetMemory(link + 0x7a) & (~0xff)) ^ 0xc3);
+        SetMemory(link + 0x76, subPart);
+    }
+    return link;
+}
+
+void RegistUnitStrikeHook(int sUnit)
+{
+    int ptr = UnitToPtr(sUnit), temp, binScrPtr;
+
+    if (ptr)
+    {
+        temp = GetMemory(ptr + 0x2ec);
+        if (temp)
+        {
+            binScrPtr = GetMemory(GetMemory(ptr + 0x2ec) + 0x1e4);
+            if (binScrPtr)
+                SetMemory(binScrPtr + 0xec, MonsterStrikeHandlerCopiedCode(0));
+        }
+    }
+}
+
+void MonsterStrikeCallback()
+{
+    int thingId = GetUnitThingID(self);
+
+    if (CurrentHealth(other))
+    {
+        if (thingId == 1315)
+            SkullLordStrike();
+    }
+}
+
+void UrchinStoneCollide()
+{
+    int owner = GetOwner(self);
+
+    if (GetTrigger())
+    {
+        if (CurrentHealth(other) && IsAttackedBy(other, owner))
+        {
+            Damage(other, self, 30, 9);
+            Effect("RICOCHET", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
+            Delete(self);
+        }
+    }
+}
+
+void SpiderWebMissileCollide()
+{
+    int owner = GetOwner(self);
+
+    if (GetTrigger())
+    {
+        if (CurrentHealth(other) && IsAttackedBy(other, owner))
+        {
+            Damage(other, self, 55, 5);
+            DeleteObjectTimer(CreateObjectAt("GreenSmoke", GetObjectX(other), GetObjectY(other)), 9);
+            Delete(self);
+        }
+    }
+}
+
+void UrchinStone(int missile)
+{
+    int ptr = UnitToPtr(missile);
+
+    if (ptr)
+    {
+        SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
+        SetMemory(ptr + 0x2fc, UrchinStoneCollide);
+    }
+    Enchant(missile, EnchantList(21), 0.0);
+}
+
+void SpiderWebMissile(int missile)
+{
+    int ptr = UnitToPtr(missile);
+
+    if (ptr)
+    {
+        SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
+        SetMemory(ptr + 0x2fc, SpiderWebMissileCollide);
+    }
+}
+
+void HarpoonEvent(int missile)
+{
+    int ptr = UnitToPtr(missile);
+
+    Enchant(missile, EnchantList(21), 0.0);
+}
+
+void DetectedSpecificIndex(int curId)
+{
+    int thingId = GetUnitThingID(curId);
+
+    if (thingId == 524)
+        SpiderWebMissile(curId);
+    else if (thingId == 525)     //@brief. ThrowingStone
+        UrchinStone(curId);
+    else if (thingId == 526)
+        HarpoonEvent(curId);
+}
+
+void LoopSearchIndex()
+{
+    int curId, tempId;
+    int link;
+
+    if (!link)
+        link = GetScrDataField(LoopSearchIndex);
+    while (Unknownb9(0x750710))
+    {
+        Unused59(link + 4, Unknownb9(Unknownb9(0x750710) + 0x2c));
+        if (curId)
+        {
+            while (curId < tempId)
+            {
+                Unused59(link, curId + 1);
+                DetectedSpecificIndex(curId);
+            }
+            break;
+        }
+        curId = tempId;
+        break;
+    }
+    FrameTimer(1, LoopSearchIndex);
+}
+
+void RemoveMinesExitWalls()
+{
+    ObjectOff(self);
+
+    int i;
+
+    for (i = 0 ; i < 6 ; i ++)
+    {
+        ClearWallAtWaypointPos(71);
+        TeleportLocationVector(71, 23.0, 23.0);
+    }
+    UniPrint(other, "우측 울타리가 낮아졌습니다");
+}
+
+string GeneratorUnitList()
+{
+    string units = {
+        "WizardGreen", "Bear", "Imp", "Horrendous",
+        "Archer", "Wizard", "Mimic", "UrchinShaman", "Demon"
+    };
+    return units;
+}
+
+int CreateGenerator(int index, int location)
+{
+    string genName = ToStr(SToInt(GeneratorUnitList()) + (index % 9)) + "Generator";
+    int gen = CreateObjectAt(genName, LocationX(location), LocationY(location));
+
+    if (gen)
+    {
+        SetUnitMass(gen, 25.0);
+        ObjectOff(gen);
+        Enchant(gen, EnchantList(23), 0.0);
+    }
+    return gen;
+}
+
+string GetGeneratorUnitname(int index)
+{
+    return ToStr(SToInt(GeneratorUnitList()) + (index % 9));
+}
+
+void AfterInitPuzzle()
+{
+    int i;
+
+    for (i = 0 ; i < 9 ; i ++)
+    {
+        int index = g_mixGenPuzzle[i + 1];
+
+        DummyUnitCreate(GetGeneratorUnitname(index), LocationX(77 + i), LocationY(77 + i));
+        g_genPuzzleBeacon[index] = Object("PuzBeacon" + IntToString(i + 1));
+    }
+}
+
+void GenPuzzleMix()
+{
+    int i, pic, max = g_mixGenPuzzle[0], temp;
+
+    for (i = 1 ; i <= max ; i ++)
+    {
+        pic = Random(1, max);
+        if (i ^ pic)
+        {
+            temp = g_mixGenPuzzle[i];
+            g_mixGenPuzzle[i] = g_mixGenPuzzle[pic];
+            g_mixGenPuzzle[pic] = temp;
+        }
+    }
+}
+
+void InitializeGenerators()
+{
+    int gen = CreateObjectAt("ImaginaryCaster", LocationX(86), LocationY(86));
+    int i;
+
+    g_mixGenPuzzle[0] = 9;  //@brief. set pad count
+    for (i = 0 ; i < 9 ; i ++)
+    {
+        CreateGenerator(i, i + 86);
+        g_mixGenPuzzle[i + 1] = i;
+    }
+    GenPuzzleMix();
+    GenPuzzleMix();
+    GenPuzzleMix();
+
+    g_puzzleGens = gen + 1;
+    FrameTimer(1, AfterInitPuzzle);
+}
+
+int CheckPuzzleSolved()
+{
+    int i, result = 0;
+
+    for (i = 0 ; i < 9 ; i ++)
+    {
+        if (DistanceUnitToUnit(g_puzzleGens + i, g_genPuzzleBeacon[i]) < 46.0)
+            result ++;
+    }
+    UniPrintToAll("!RemoveMe! int CheckPuzzleSolved()" + IntToString(result));
+    return result;
+}
+
+void RemoveSouthWalls()
+{
+    int i;
+
+    for (i = 21 ; i ; i --)
+    {
+        ClearWallAtWaypointPos(95);
+        TeleportLocationVector(95, -23.0, 23.0);
+    }
+}
+
+void PuzzleGenHolding(int i)
+{
+    ObjectOff(g_genPuzzleBeacon[i]);
+    MoveObject(g_puzzleGens + i, GetObjectX(g_genPuzzleBeacon[i]), GetObjectY(g_genPuzzleBeacon[i]));
+    Frozen(g_puzzleGens + i, true);
+}
+
+void PuzzleSolved() //21, 95
+{
+    int i;
+
+    for (i = 0 ; i < 9 ; i ++)
+        PuzzleGenHolding(i);
+    FrameTimer(15, RemoveSouthWalls);
+    Effect("WHITE_FLASH", GetObjectX(self), GetObjectY(self), 0.0, 0.0);
+    PlaySoundAround(self, 795);
+    UniPrintToAll("모든 비밀이 풀렸습니다. 남쪽 벽이 개방되었습니다");
+    ObjectOn(g_ternnelSwitch);
+    EnchantOff(g_ternnelSwitch, EnchantList(0));
+}
+
+void PressedGenPuzzleBeacon()
+{
+    if (HasClass(other, "MONSTERGENERATOR"))
+    {
+        if (CheckPuzzleSolved() ^ g_mixGenPuzzle[0])
+            Effect("YELLOW_SPARKS", GetObjectX(self), GetObjectY(self), 0.0, 0.0);
+        else
+            PuzzleSolved();
+    }
+}
+
+void ClearTernnelWalls()
+{
+    ObjectOff(self);
+
+    int i;
+
+    for (i = 11 ; i ; i --)
+    {
+        ClearWallAtWaypointPos(96);
+        ClearWallAtWaypointPos(97);
+        TeleportLocationVector(96, -23.0, 23.0);
+        TeleportLocationVector(97, -23.0, 23.0);
+    }
+}
