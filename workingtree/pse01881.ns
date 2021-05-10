@@ -118,6 +118,31 @@ void SetUnitMass(int unit, float ms)
         SetMemory(ptr + 0x78, ToInt(ms));
 }
 
+int GetUnitStatus(int unit)
+{
+    int temp, ptr = UnitToPtr(unit);
+
+    if (ptr)
+    {
+        temp = GetMemory(ptr + 0x2ec);
+        if (temp)
+            return GetMemory(temp + 0x5a0);
+    }
+    return 0;
+}
+
+void SetUnitStatus(int unit, int stat)
+{
+    int temp, ptr = UnitToPtr(unit);
+
+    if (ptr)
+    {
+        temp = GetMemory(ptr + 0x2ec);
+        if (temp)
+            SetMemory(temp + 0x5a0, stat);
+    }
+}
+
 void SetUnitMaxHealth(int unit, int amount)
 {
     int ptr = UnitToPtr(unit);
@@ -166,6 +191,29 @@ int VoiceList(int num)
         }
     }
     return list[num];
+}
+
+int ImportGetSpellNumber()
+{
+	int arr[11], link;
+
+	if (!link)
+	{
+		arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x4085048B; arr[3] = 0x680097BB; arr[4] = 0x004243F0; arr[5] = 0x2454FF50;
+		arr[6] = 0x08C48304; arr[7] = 0x50723068; arr[8] = 0x54FF5000; arr[9] = 0xC4830424; arr[10] = 0xC3C0310C;
+        link = GetScrDataField(ImportGetSpellNumber);
+	}
+	return link;
+}
+
+int GetSpellNumber(string spell)
+{
+	int temp = GetMemory(0x5c3204), res;
+
+	SetMemory(0x5c3204, ImportGetSpellNumber());
+	res = Unused5e(spell);
+	SetMemory(0x5c3204, temp);
+	return res * 4;
 }
 
 int GetUnit1C(int sUnit)
@@ -274,6 +322,7 @@ void MapExit()
     MusicEvent();
     RemoveCoopTeamMode();
     SelfDamageClassMapExit();
+    ResetHostileCritter();
 }
 
 int ImportUnitToPtrFunc()
@@ -1802,6 +1851,16 @@ void WindBooster(int plrUnit)
     }
 }
 
+float UnitRatioX(int unit, int target, float size)
+{
+    return (GetObjectX(unit) - GetObjectX(target)) * size / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target));
+}
+
+float UnitRatioY(int unit, int target, float size)
+{
+    return (GetObjectY(unit) - GetObjectY(target)) * size / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target));
+}
+
 float UnitAngleCos(int unit, float size)
 {
     return MathSine((GetDirection(unit) * 45 / 32) + 90, size);
@@ -2060,7 +2119,13 @@ int PlaceLastSavedTeleport(object location)
 
 void TestingFunction()  //!RemoveMe!//
 {
-    SummonMobHorrendous(Object("MapSign1"));
+    SummonBigFish(Object("MapSign1"));
+}
+
+void MonStrikeBuffInit()
+{
+    MonsterStrikeHandlerCopiedCode(MonsterStrikeCallback);
+    UniPrintToAll("!RemoveMe! void MonStrikeBuffInit()");
 }
 
 void DelayMapInit()
@@ -2079,16 +2144,18 @@ void DelayMapInit()
     RegistSignMessage(Object("MapSign3"), "특수 무기를 판매하고 있어요");
     RegistSignMessage(Object("MapSign4"), "이 워프게이트는 사용자가 마지막으로 탐험한 위치로 이동합니다");
 
-    MonsterStrikeHandlerCopiedCode(MonsterStrikeCallback);
-    InitializeGenerators();      //FIXME. ERROR
-
     g_ternnelSwitch = Object("TernnelSwitch");
     ObjectOff(g_ternnelSwitch);
     Enchant(g_ternnelSwitch, EnchantList(0), 0.0);
     FrameTimer(30, LoopSearchIndex);
     FrameTimer(60, InitBlocks);
+    FrameTimer(20, InitWeaponContainer);
+    FrameTimer(1, InitializeGenerators);
+    FrameTimer(80, MonStrikeBuffInit);
 
     // FrameTimer(10, TestingFunction);        //!RemoveMe!// Test only//
+
+    SetHostileCritter();
 }
 
 void EntryArea1()
@@ -2283,6 +2350,23 @@ int SummonMobHorrendous(int posUnit)
     return mob;
 }
 
+int SummonBigFish(int posUnit)
+{
+    int mob = CreateObjectAtUnit("FishBig", posUnit);
+
+    FishBigSubProcess(mob);
+    RegistUnitStrikeHook(mob);
+    return mob;
+}
+
+int SummonLichMaster(int posUnit)
+{
+    int master = CreateObjectAtUnit("LichLord", posUnit);
+
+    LichLordSubProcess(master);
+    return master;
+}
+
 void EndArea5()
 {
     UnlockDoor(Object("ExitLocker1"));
@@ -2302,12 +2386,99 @@ void EntryArea5()
     SetNextFunction(EndArea5);
 }
 
+int SummonMobStrongWizard(int sUnit)
+{
+    int unit = CreateObjectAtUnit("StrongWizardWhite", sUnit);
+
+    UnitLinkBinScript(unit, StrongWizardWhiteBinTable());
+    SetUnitMaxHealth(unit, 320);
+    RetreatLevel(unit, 0.0);
+    ResumeLevel(unit, 1.0);
+    return unit;
+}
+
+void WizRunAway()
+{
+	if (UnitCheckEnchant(self, GetLShift(29)))
+		EnchantOff(self, EnchantList(29));
+}
+
+int SummonMobRedWizard(int sUnit)
+{
+    int redWiz = CreateObjectAtUnit("WizardRed", sUnit);
+    int uec = GetMemory(GetMemory(0x750710) + 0x2ec);
+
+    UnitLinkBinScript(redWiz, WizardRedBinTable());
+    SetUnitMaxHealth(redWiz, 411);
+    SetCallback(redWiz, 8, WizRunAway);
+    SetUnitStatus(redWiz, GetUnitStatus(redWiz) ^ 0x20);
+    if (uec)
+    {
+        SetMemory(uec + 0x528, ToInt(1.0));
+        SetMemory(uec + 0x520, ToInt(400.0));
+        uec += 0x5d0;
+        SetMemory(uec + GetSpellNumber("SPELL_LIGHTNING"), 0x40000000);
+		SetMemory(uec + GetSpellNumber("SPELL_SHIELD"), 0x10000000);
+        SetMemory(uec + GetSpellNumber("SPELL_SLOW"), 0x20000000);
+		SetMemory(uec + GetSpellNumber("SPELL_INVISIBILITY"), 0x10000000);
+		SetMemory(uec + GetSpellNumber("SPELL_FIREBALL"), 0x40000000);
+        SetMemory(uec + GetSpellNumber("SPELL_INVERSION"), 0x8000000);
+        SetMemory(uec + GetSpellNumber("SPELL_COUNTERSPELL"), 0x8000000);
+    }
+    return redWiz;
+}
+
+int SummonMobPlant(int sUnit)
+{
+    int mob = CreateObjectAtUnit("CarnivorousPlant", sUnit);
+
+    UnitZeroFleeRange(mob);
+    SetUnitSpeed(mob, 2.5);
+    SetUnitMaxHealth(mob, 325);
+    AggressionLevel(mob, 1.0);
+    RetreatLevel(mob, 0.0);
+    ResumeLevel(mob, 1.0);
+    return mob;
+}
+
 void EndArea6()
-{ }
+{
+    ClearWallAtWaypointPos(103);
+    ClearWallAtWaypointPos(104);
+    ClearWallAtWaypointPos(105);
+    UniPrintToAll("좌측상단의 비밀벽 하나가 열렸습니다");
+}
 
 void EntryArea6()
 {
+    //100, 101// (98, 99)
+    MobMakerStartSummon(1, PlaceMobMaker(100, 20, SummonMobStrongWizard));
+    MobMakerStartSummon(1, PlaceMobMaker(101, 20, SummonBigFish));
+    MobMakerStartSummon(10, PlaceMobMaker(98, 20, SummonLichMaster));
+    MobMakerStartSummon(11, PlaceMobMaker(99, 20, SummonMobRedWizard));
+    // MobMakerStartSummon(1, PlaceMobMaker(101, 20, Summon))
     SetNextFunction(EndArea6);
+}
+
+int SummonMobLich(int sUnit)
+{
+    int lich = CreateObjectAtUnit("Lich", sUnit);
+
+    SetUnitMaxHealth(lich, 325);
+    return lich;
+}
+
+void EndArea7()
+{ }
+
+void EntryArea7()
+{
+    MobMakerStartSummon(1, PlaceMobMaker(106, 20, SummonBigFish));
+    MobMakerStartSummon(3, PlaceMobMaker(107, 20, SummonMobPlant));
+    MobMakerStartSummon(5, PlaceMobMaker(108, 30, SummonMobGoon));
+    MobMakerStartSummon(9, PlaceMobMaker(109, 30, SummonMobLich));
+
+    SetNextFunction(EndArea7);
 }
 
 void Callee()
@@ -2712,48 +2883,154 @@ int PlaceSuperPowerSword(int location)
     return super;
 }
 
-//@brief. 아이템 품명을 가지는 테이블임
-string MagicWeaponDesc(int weaponIndex)
+int MagicWeaponContainer()
 {
-    int count = 5;
-    string desc = 
-    "에로우 서드";
-    "트리플 슈리켄 해머";
-    "에너지파 엑스칼리버";
-    "수정구 서드";
-    "데미지 존나쎈 서드";
+    int count;
+    int array[20];
 
-    return ToStr(SToInt(desc) + weaponIndex);
+    return GetScrDataField(MagicWeaponContainer);
 }
 
-//@brief. 아이템 품명 테이블 길이를 반환함
-int GetWeaponDescCountConst()
+//@brief. 컨테이너가 포함한 노드 수를 반환합니다
+int WeaponContainerCount()
 {
-    return GetMemory(GetScrDataField(MagicWeaponDesc) + 4);
+    return GetMemory(MagicWeaponContainer());
 }
 
-int MagicWeaponPay(int weaponIndex)
+//@brief. 인덱스에 해당하는 노드를 컨테이너로 부터 얻습니다
+object WeaponContainerNode(int index)
 {
-    int pay[5];
-
-    if (!pay[0])
+    if (index < 20)
     {
-        pay[0] = 20000;
-        pay[1] = 25000;
-        pay[2] = 30000;
-        pay[3] = 25000;
-        pay[4] = 30000;
+        int ptr = MagicWeaponContainer() + 4;
+        object functionId = GetMemory(ptr + (index * 4));
+
+        if (functionId)
+            return functionId;
     }
-    return pay[weaponIndex % GetWeaponDescCountConst()];
+    return 0;   //@brief. nullptr;
+}
+
+//@brief. 입력된 인덱스에 해당하는 설명 데이터를 가져옵니다
+string WeaponContainerDesc(int index)
+{
+    object nodeId = WeaponContainerNode(index);
+
+    if (nodeId > 0)
+    {
+        int ptr = GetScrDataField(nodeId);
+
+        return ToStr(GetMemory(ptr));
+    }
+    return "null";
+}
+
+//@brief. 입력된 인덱스에 해당하는 가격 데이터를 가져옵니다
+int WeaponContainerPay(int index)
+{
+    object nodeId = WeaponContainerNode(index);
+
+    if (nodeId > 0)
+    {
+        int ptr = GetScrDataField(nodeId);
+
+        return GetMemory(ptr + 4);
+    }
+    return -1;
+}
+
+//@brief. 입력된 인덱스에 해당하는 생성함수 객체를 가져옵니다
+object WeaponContainerFunction(int index)
+{
+    object nodeId = WeaponContainerNode(index);
+
+    if (nodeId > 0)
+    {
+        int ptr = GetScrDataField(nodeId);
+
+        return GetMemory(ptr + 8);
+    }
+    return -1;
+}
+
+void WeaponContainerPushback(object function)
+{
+    int ptr = MagicWeaponContainer();
+    int count = GetMemory(ptr);
+
+    if (count < 20)
+    {
+        CallFunction(function);
+        SetMemory(ptr, count + 1);
+        SetMemory(ptr + 4 + (count * 4), function);
+    }
+}
+
+int MagicWeaponClassArrowSword()
+{
+    string name = "에로우 서드";
+    int pay = 20000;
+    object createFunction = PlaceArrowSword;
+
+    return GetScrDataField(MagicWeaponClassArrowSword);
+}
+
+int MagicWeaponClassTripleHammer()
+{
+    string name = "트리플 슈리켄 해머";
+    int pay = 25500;
+    object createFunction = PlaceTripleShurikenSword;
+
+    return GetScrDataField(MagicWeaponClassTripleHammer);
+}
+
+int MagicWeaponClassEnergyparSword()
+{
+    string name = "에너지파 엑스칼리버";
+    int pay = 28350;
+    object createFunction = PlaceEnergyparAxe;
+
+    return GetScrDataField(MagicWeaponClassEnergyparSword);
+}
+
+int MagicWeaponClassCrystalSword()
+{
+    string name = "지랄발광 수정구 서드";
+    int pay = 26533;
+    object createFunction = PlaceAngelCrystalSword;
+
+    return GetScrDataField(MagicWeaponClassCrystalSword);
+}
+
+int MagicWeaponClassPowerfulSword()
+{
+    string name = "데미지 존나 쎈 서드";
+    int pay = 24000;
+    object createFunction = PlaceSuperPowerSword;
+
+    return GetScrDataField(MagicWeaponClassPowerfulSword);
+}
+
+void InitWeaponContainer()
+{
+    WeaponContainerPushback(MagicWeaponClassArrowSword);
+    WeaponContainerPushback(MagicWeaponClassCrystalSword);
+    WeaponContainerPushback(MagicWeaponClassEnergyparSword);
+    WeaponContainerPushback(MagicWeaponClassPowerfulSword);
+    WeaponContainerPushback(MagicWeaponClassTripleHammer);
 }
 
 void ShopClassMagicWeaponDesc()
 {
     int curIndex = GetDirection(self);
+    string desc = WeaponContainerDesc(curIndex);
 
-    UniPrint(other, MagicWeaponDesc(curIndex) + " 을 구입하시겠어요? 가격은 3만골드 입니다");
-    UniPrint(other, "구입하시려면 '예' 를 누르시고, 다른 아이템을 보시려면 '아니오'를 누르세요. 거래를 취소하려면 '떠나기'를 누릅니다");
-    TellStoryUnitName("AA", "thing.db:IdentifyDescription", MagicWeaponDesc(curIndex));
+    if (desc != "null")
+    {
+        UniPrint(other, desc + " 을 구입하시겠어요? 가격은 " + IntToString(WeaponContainerPay(curIndex)) + " 골드 입니다");
+        UniPrint(other, "구입하시려면 '예' 를 누르시고, 다른 아이템을 보시려면 '아니오'를 누르세요. 거래를 취소하려면 '떠나기'를 누릅니다");
+        TellStoryUnitName("AA", "thing.db:IdentifyDescription", desc);
+    }
 }
 
 void ShopClassMagicWeaponTrade()
@@ -2762,14 +3039,23 @@ void ShopClassMagicWeaponTrade()
 
     if (dlgResult == 1)     //@brief. YES
     {
-        if (GetGold(other) >= 30000)
-        {
-            ChangeGold(other, -30000);
-            int resultItem;
+        int pay = WeaponContainerPay(curIndex);
 
+        if (pay < 0)
+            return;
+        if (GetGold(other) >= pay)
+        {
+            ChangeGold(other, -pay);
+            object resultFunction = WeaponContainerFunction(curIndex);
+
+            if (resultFunction >= 0)
+            {
+                TeleportLocation(110, GetObjectX(other), GetObjectY(other));
+                CallFunctionWithArgInt(resultFunction, 110);
+            }
             // FrameTimerWithArg(1, resultItem, DelayForcePickItemToOwner);
             PlaySoundAround(other, 308);
-            UniPrint(other, MagicWeaponDesc(curIndex) + " 거래가 완료되었습니다");
+            UniPrint(other, WeaponContainerDesc(curIndex) + " 거래가 완료되었습니다");
         }
         else
             UniPrint(other, "거래가 취소되었습니다. 잔액이 부족합니다");
@@ -2777,7 +3063,7 @@ void ShopClassMagicWeaponTrade()
     else if (dlgResult == 2)    //@brief. NO
     {
         UniPrint(other, "'아니오'를 누르셨습니다. 다음 판매 품목을 보여드립니다");
-        LookWithAngle(self, (curIndex + 1) % GetWeaponDescCountConst());
+        LookWithAngle(self, (curIndex + 1) % WeaponContainerCount());
         ShopClassMagicWeaponDesc();
     }
 }
@@ -2913,6 +3199,96 @@ void WellRefreshing()
 /*********
 * monsterbin script section
 *********/
+
+int WizardRedBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1635412311; arr[1] = 1699898482; arr[2] = 100; arr[16] = 80000; arr[17] = 300; 
+		arr[18] = 100; arr[19] = 50; arr[21] = 1065353216; arr[24] = 1067869798; arr[26] = 4; 
+		arr[27] = 4; arr[53] = 1128792064; arr[54] = 4;
+		link = GetScrDataField(WizardRedBinTable);
+	}
+	return link;
+}
+
+int LichLordBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1751345484; arr[1] = 1685221196; arr[17] = 473; arr[19] = 100; arr[21] = 1065353216; 
+		arr[23] = 2048; arr[24] = 1065353216; arr[25] = 1; arr[26] = 4; arr[27] = 7; 
+		arr[28] = 1108082688; arr[29] = 50; arr[30] = 1092616192; arr[32] = 19; arr[33] = 27; 
+		arr[57] = 5548288; arr[59] = 5542784;
+		link = GetScrDataField(LichLordBinTable);
+	}
+	return link;
+}
+
+void LichLordSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1077936128);
+		SetMemory(ptr + 0x224, 1077936128);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 2048);
+		//SetMemory(GetMemory(ptr + 0x22c), 300);
+		//SetMemory(GetMemory(ptr + 0x22c) + 0x4, 300);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, LichLordBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int FishBigBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1752394054; arr[1] = 6777154; arr[17] = 237; arr[18] = 1; arr[19] = 55; 
+		arr[21] = 1065353216; arr[23] = 34816; arr[24] = 1073741824; arr[27] = 1; arr[28] = 1112014848; 
+		arr[29] = 30; arr[31] = 8; arr[32] = 3; arr[33] = 7; arr[59] = 5542784; 
+		arr[60] = 1329; arr[61] = 46905600; 
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * FishBigBinTable + 0x1c));
+	}
+	return link;
+}
+
+void FishBigSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1070805811);
+		SetMemory(ptr + 0x224, 1070805811);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 34816);
+		SetMemory(GetMemory(ptr + 0x22c), 237);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 237);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, FishBigBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int StrongWizardWhiteBinTable()
+{
+	int arr[62], link;
+	if (!link)
+	{
+		arr[0] = 1869771859; arr[1] = 1767335790; arr[2] = 1685217658; arr[3] = 1953065047; arr[4] = 101; 
+		arr[19] = 1; arr[24] = 1065772646; arr[37] = 1701996870; arr[38] = 1819042146; arr[53] = 1128792064; 
+		arr[55] = 20; arr[56] = 30; arr[57] = 5547984;
+        link = GetScrDataField(StrongWizardWhiteBinTable);
+	}
+	return link;
+}
 
 int ScorpionBinTable()
 {
@@ -3190,6 +3566,12 @@ void HorrendousElectricStrike()
     Effect("RICOCHET", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
 }
 
+void FishBiteStrike()
+{
+    LinearOrbMove(CreateObjectAt("CharmOrb", GetObjectX(self), GetObjectY(self)), UnitRatioX(self, other, -1.0), UnitRatioY(self, other, -1.0), 3.0, 3);
+    Damage(other, self, 6, 10);
+}
+
 int CallNode00549380()
 {
     int link, node[4];
@@ -3220,7 +3602,7 @@ int MonsterStrikeHookSub()
 
 int MonsterStrikeHandlerCopiedCode(int callback)
 {
-    int code[48], link;
+    int code[48], link; //192Bytes 0xc0
     int subPart;
 
     if (!link)
@@ -3263,6 +3645,8 @@ void MonsterStrikeCallback()
     {
         if (thingId == 1386)
             HorrendousElectricStrike();
+        else if (thingId == 1329)
+            FishBiteStrike();
     }
 }
 
@@ -3462,7 +3846,6 @@ int CheckPuzzleSolved()
         if (DistanceUnitToUnit(g_puzzleGens + i, g_genPuzzleBeacon[i]) < 46.0)
             result ++;
     }
-    UniPrintToAll("!RemoveMe! int CheckPuzzleSolved()" + IntToString(result));
     return result;
 }
 
@@ -3522,4 +3905,50 @@ void ClearTernnelWalls()
         TeleportLocationVector(96, -23.0, 23.0);
         TeleportLocationVector(97, -23.0, 23.0);
     }
+}
+
+void ResetHostileCritter()
+{
+	SetMemory(0x833e64, 0x55b);		//CarnivorousPlant
+	SetMemory(0x833e70, 1329);		//FishBig
+	SetMemory(0x833e74, 1330);		//FishSmall
+	SetMemory(0x833e78, 1359);		//Rat
+	SetMemory(0x833e7c, 1313);		//GreenFrog
+}
+
+void SetHostileCritter()
+{
+	SetMemory(0x833e64, 0x540);		//CarnivorousPlant
+	SetMemory(0x833e70, 0x540);		//FishBig
+	SetMemory(0x833e74, 0x540);		//FishSmall
+	SetMemory(0x833e78, 0x540);		//Rat
+	SetMemory(0x833e7c, 0x540);		//GreenFrog
+}
+
+int ImportOrbMoveFunc()
+{
+	int arr[6], link;
+
+	if (!link)
+	{
+		arr[0] = 0x52353068; arr[1] = 0x72506800; arr[2] = 0x14FF0050; arr[3] = 0x54FF5024; arr[4] = 0xC4830824; arr[5] = 0x9090C30C;
+		link = GetScrDataField(ImportOrbMoveFunc);
+	}
+	return link;
+}
+
+void LinearOrbMove(int unit, float x_vect, float y_vect, float speed, int time)
+{
+	int ptr = UnitToPtr(unit), temp = GetMemory(0x5c336c);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x50, ToInt(x_vect));
+		SetMemory(ptr + 0x54, ToInt(y_vect));
+		SetMemory(ptr + 0x70, ToInt(speed));
+		SetMemory(0x5c336c, ImportOrbMoveFunc());
+		Unknownb8(ptr);
+		SetMemory(0x5c336c, temp);
+		DeleteObjectTimer(unit, time);
+	}
 }
