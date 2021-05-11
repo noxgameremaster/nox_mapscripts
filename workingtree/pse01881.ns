@@ -2669,7 +2669,7 @@ void SplashDamageAt(int owner, int dam, float x, float y, float range)
 */
 void XBowShot()     //@brief. WeaponProperty -3-
 {
-    int xbow = CreateObjectAt("ArcherBolt", GetObjectX(other) + UnitAngleCos(other, 8.0), GetObjectY(other) + UnitAngleSin(other, 8.0));
+    int xbow = CreateObjectAt("ArcherArrow", GetObjectX(other) + UnitAngleCos(other, 8.0), GetObjectY(other) + UnitAngleSin(other, 8.0));
 
     SetOwner(other, xbow);
     LookWithAngle(xbow, GetDirection(other));
@@ -3946,5 +3946,6 @@ void LinearOrbMove(int unit, float x_vect, float y_vect, float speed, int time)
 
 void TestFunction()
 {
-    Effect("SENTRY_RAY", GetObjectX(other), GetObjectY(other), GetObjectX(other) + UnitAngleCos(other, 100.0), GetObjectY(other) + UnitAngleSin(other, 100.0));
+    ObjectOff(self);
+    FrameTimer(30, EntryArea6);
 }

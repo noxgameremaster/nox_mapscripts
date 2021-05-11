@@ -1089,7 +1089,7 @@ void PlayNPC_Voice(string voiceFilename)
 
 void MakeBlackBook()
 {
-    PlayNPC_Voice("C2GD108K");
+    CastSpellObjectObject("SPELL_SUMMON_IMP", other, other);
 }
 
 void CallNode4e9ac0()
