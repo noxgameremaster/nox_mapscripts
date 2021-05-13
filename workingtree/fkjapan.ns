@@ -10,7 +10,29 @@ int player[20];
 int MyBlock2, FireTrp1;
 int EnableMemoryReadWriteFunction(int t) {}
 
+int GetMemory(int addr) { return Unknownb9(addr); }
+void SetMemory(int addr, int value) { Unused59(addr, value); }
 
+void OpcodeCopiesAdvance(int destPtr, int callNodePtr, int startAddr, int endAddr)
+{
+    int destBase = destPtr, curAddr = startAddr;
+    int vptr = GetScrDataField(OpcodeCopiesAdvance);
+
+    while (curAddr <= endAddr)
+    {
+        Unused59(destPtr, Unknownb9(curAddr));
+        if (Unknownb9(callNodePtr))
+        {
+            if (Unknownb9(callNodePtr) + 1 <= curAddr)
+            {
+                OpcodeLoadEffectiveAddr(destBase, startAddr, Unknownb9(callNodePtr) - startAddr);
+                Unused59(vptr + 4, Unknownb9(vptr + 4) + 4);
+            }
+        }
+        Unused59(vptr + 0x14, Unknownb9(vptr + 0x14) + 4);
+        Unused59(vptr, Unknownb9(vptr) + 4);
+    }
+}
 
 int GetWordValue(int num)
 {
@@ -189,8 +211,7 @@ int ImportAllowAllDrop()
 		arr[0] = 0x550CEC83; arr[1] = 0x14246C8B; arr[2] = 0x24748B56; arr[3] = 0xECAE391C; arr[4] = 0x74000001; arr[5] = 0xC0315E08; arr[6] = 0x0CC4835D;
 		arr[7] = 0x0845F6C3; arr[8] = 0x68207404; arr[9] = 0x0053EBF0; arr[10] = 0x2454FF56; arr[11] = 0x08C48304; arr[12] = 0x0F74C085; arr[13] = 0x53EC8068;
 		arr[14] = 0x56016A00; arr[15] = 0x082454FF; arr[16] = 0x680CC483; arr[17] = 0x004ED301; arr[18] = 0x909090C3;
-		CancelTimer(FrameTimerWithArg(10, ImportAllowAllDrop, ImportAllowAllDrop));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportAllowAllDrop);
 	}
 	return link;
 }
@@ -421,8 +442,7 @@ int ImportAbsoluteWPickup()
         arr[78] = 0x8AC931D2; arr[79] = 0x01488A10; arr[80] = 0x4D82B068; arr[81] = 0x548B5200; arr[82] = 0x31511C24; arr[83] = 0x828B57C9; arr[84] = 0x00000114;
         arr[85] = 0x0810888A; arr[86] = 0xFF510000; arr[87] = 0x83102454; arr[88] = 0xF06814C4; arr[89] = 0x68005116; arr[90] = 0x0053A6C0; arr[91] = 0x54FF5657;
         arr[92] = 0xFF570824; arr[93] = 0x83102454; arr[94] = 0x01B814C4; arr[95] = 0x5F000000; arr[96] = 0xC35B5D5E; arr[97] = 0x315D5E5F; arr[98] = 0x90C35BC0;
-        CancelTimer(FrameTimerWithArg(10, ImportAbsoluteWPickup, ImportAbsoluteWPickup));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportAbsoluteWPickup);
     }
     return link;
 }
@@ -435,8 +455,7 @@ int ImportAbsoluteWRun()
     {
         arr[0] = 0x90909068; arr[1] = 0x72506890; arr[2] = 0x016A0050; arr[3] = 0x54FF016A; arr[4] = 0xFF500824;
         arr[5] = 0x500C2454; arr[6] = 0x142454FF; arr[7] = 0xC318C483; arr[8] = 0x90909090;
-        CancelTimer(FrameTimerWithArg(10, ImportAbsoluteWRun, ImportAbsoluteWRun));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportAbsoluteWRun);
         SetMemory(link + 1, ImportAbsoluteWPickup());
     }
     return link;
@@ -487,8 +506,7 @@ int ImportEquipWeapon()
         arr[161] = 0x0D7407FF; arr[162] = 0x53A3D068; arr[163] = 0x54FF5700; arr[164] = 0xC4830424; arr[165] = 0x5D5E5F08; arr[166] = 0x000001B8; arr[167] = 0x90C35B00;
         
         arr[39] = 0x683aebc0;
-        CancelTimer(FrameTimerWithArg(10, ImportEquipWeapon, ImportEquipWeapon));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportEquipWeapon);
     }
     return link;
 }
@@ -501,8 +519,7 @@ int ImportEquipWeaponRun()
     {
         arr[0] = 0x90909068; arr[1] = 0x72506890; arr[2] = 0x016A0050; arr[3] = 0x54FF016A; arr[4] = 0xFF500824;
         arr[5] = 0x500C2454; arr[6] = 0x142454FF; arr[7] = 0xC318C483; arr[8] = 0x90909090;
-        CancelTimer(FrameTimerWithArg(10, ImportEquipWeaponRun, ImportEquipWeaponRun));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportEquipWeaponRun);
         SetMemory(link + 1, ImportEquipWeapon());
     }
     return link;
@@ -548,15 +565,9 @@ int Bear2BinTable()
 		arr[15] = 0; arr[16] = 20000; arr[17] = 90; arr[18] = 100; arr[19] = 40; 
 		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 65545; arr[24] = 1067450368; 
 		arr[25] = 0; arr[26] = 0; arr[27] = 1; arr[28] = 1106247680; arr[29] = 50; 
-		arr[30] = 1103626240; arr[31] = 2; arr[32] = 20; arr[33] = 30; arr[34] = 0; 
-		arr[35] = 0; arr[36] = 0; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 0; arr[54] = 0; 
+		arr[30] = 1103626240; arr[31] = 2; arr[32] = 20; arr[33] = 30;
 		arr[55] = 0; arr[56] = 0; arr[57] = 0; arr[58] = 5547856; arr[59] = 5542784; 
-		arr[60] = 0; arr[61] = 0; 
-		CancelTimer(FrameTimerWithArg(10, Bear2BinTable, Bear2BinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(Bear2BinTable);
 	}
 	return link;
 }
@@ -582,7 +593,8 @@ void ChangeColorMaiden(int red, int grn, int blue, int unit)
 
 int WizardRedBinTable()
 {
-	int arr[62], link, unit;
+	int arr[62], link;
+
 	if (!link)
 	{
 		arr[0] = 1635412311; arr[1] = 1699898482; arr[2] = 100; arr[3] = 0; arr[4] = 0; 
@@ -590,18 +602,9 @@ int WizardRedBinTable()
 		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
 		arr[15] = 0; arr[16] = 80000; arr[17] = 300; arr[18] = 100; arr[19] = 50; 
 		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 40; arr[24] = 1067869798; 
-		arr[25] = 0; arr[26] = 4; arr[27] = 4; arr[28] = 0; arr[29] = 0; 
-		arr[30] = 0; arr[31] = 0; arr[32] = 0; arr[33] = 0; arr[34] = 0; 
-		arr[35] = 0; arr[36] = 0; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
+		arr[25] = 0; arr[26] = 4; arr[27] = 4;
 		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 1128792064; arr[54] = 4; 
-		arr[55] = 0; arr[56] = 0; arr[57] = 0; arr[58] = 0; arr[59] = 0; 
-		arr[60] = 0; arr[61] = 0; 
-		unit = CreateObject("AmbBeachBirds", GetMemory(GetMemory(0x83c7fc)));
-		Raise(unit, WizardRedBinTable);
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(unit)) + 0x1c));
-		Delete(unit);
+        link = GetScrDataField(WizardRedBinTable);
 	}
 	return link;
 }
@@ -617,17 +620,9 @@ int MaidenBinTable()
 		arr[15] = 0; arr[16] = 0; arr[17] = 30; arr[18] = 92; arr[19] = 60; 
 		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 32776; arr[24] = 1065688760; 
 		arr[25] = 0; arr[26] = 0; arr[27] = 1; arr[28] = 1106247680; arr[29] = 22; 
-		arr[30] = 1101004800; arr[31] = 2; arr[32] = 22; arr[33] = 30; arr[34] = 0; 
-		arr[35] = 0; arr[36] = 0; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 0; arr[54] = 0; 
+		arr[30] = 1101004800; arr[31] = 2; arr[32] = 22; arr[33] = 30;
 		arr[55] = 0; arr[56] = 0; arr[57] = 0; arr[58] = 5546320; arr[59] = 5542784; 
-		arr[60] = 0; arr[61] = 0; 
-		unit = CreateObject("AmbBeachBirds", GetMemory(GetMemory(0x83c7fc)));
-		Raise(unit, MaidenBinTable);
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(unit)) + 0x1c));
-		Delete(unit);
+		link = GetScrDataField(MaidenBinTable);
 	}
 	return link;
 }
@@ -644,16 +639,9 @@ int GoonBinTable()
 		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 32776; arr[24] = 1066192077; 
 		arr[25] = 0; arr[26] = 4; arr[27] = 0; arr[28] = 1106247680; arr[29] = 25; 
 		arr[30] = 1092616192; arr[31] = 4; arr[32] = 20; arr[33] = 28; arr[34] = 2; 
-		arr[35] = 3; arr[36] = 20; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 0; arr[54] = 0; 
-		arr[55] = 0; arr[56] = 0; arr[57] = 5548176; arr[58] = 5546608; arr[59] = 5543680; 
-		arr[60] = 0; arr[61] = 0; 
-		unit = CreateObject("AmbBeachBirds", GetMemory(GetMemory(0x83c7fc)));
-		Raise(unit, GoonBinTable);
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(unit)) + 0x1c));
-		Delete(unit);
+		arr[35] = 3; arr[36] = 20;
+		arr[55] = 0; arr[56] = 0; arr[57] = 5548176; arr[58] = 5546608; arr[59] = 5543680;
+        link = GetScrDataField(GoonBinTable);
 	}
 	return link;
 }
@@ -674,12 +662,8 @@ int StrongWizardWhiteBinTable()
 		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
 		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
 		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 1128792064; arr[54] = 4; 
-		arr[55] = 20; arr[56] = 30; arr[57] = 5547984; arr[58] = 0; arr[59] = 0; 
-		arr[60] = 0; arr[61] = 0; 
-		unit = CreateObject("AmbBeachBirds", GetMemory(GetMemory(0x83c7fc)));
-		Raise(unit, StrongWizardWhiteBinTable);
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(unit)) + 0x1c));
-		Delete(unit);
+		arr[55] = 20; arr[56] = 30; arr[57] = 5547984;
+        link = GetScrDataField(StrongWizardWhiteBinTable);
 	}
 	return link;
 }
@@ -695,17 +679,9 @@ int WeirdlingBeastBinTable()
 		arr[15] = 0; arr[16] = 0; arr[17] = 85; arr[18] = 50; arr[19] = 55; 
 		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 32776; arr[24] = 1068708659; 
 		arr[25] = 0; arr[26] = 4; arr[27] = 0; arr[28] = 1082130432; arr[29] = 20; 
-		arr[30] = 0; arr[31] = 2; arr[32] = 8; arr[33] = 16; arr[34] = 0; 
-		arr[35] = 0; arr[36] = 0; arr[37] = 0; arr[38] = 0; arr[39] = 0; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 0; arr[54] = 0; 
-		arr[55] = 0; arr[56] = 0; arr[57] = 5548112; arr[58] = 0; arr[59] = 5542784; 
-		arr[60] = 0; arr[61] = 0; 
-		unit = CreateObject("AmbBeachBirds", GetMemory(GetMemory(0x83c7fc)));
-		Raise(unit, WeirdlingBeastBinTable);
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(unit)) + 0x1c));
-		Delete(unit);
+		arr[30] = 0; arr[31] = 2; arr[32] = 8; arr[33] = 16;
+		arr[55] = 0; arr[56] = 0; arr[57] = 5548112; arr[58] = 0; arr[59] = 5542784;
+        link = GetScrDataField(WeirdlingBeastBinTable);
 	}
 	return link;
 }
@@ -727,11 +703,8 @@ int BlackWidowBinTable()
 		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
 		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 1128792064; arr[54] = 0; 
 		arr[55] = 20; arr[56] = 28; arr[57] = 0; arr[58] = 0; arr[59] = 5544896; 
-		arr[60] = 0; arr[61] = 45071360; 
-		unit = CreateObject("AmbBeachBirds", GetMemory(GetMemory(0x83c7fc)));
-		Raise(unit, BlackWidowBinTable);
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(unit)) + 0x1c));
-		Delete(unit);
+		arr[60] = 0; arr[61] = 45071360;
+        link = GetScrDataField(BlackWidowBinTable);
 	}
 	return link;
 }
@@ -784,11 +757,7 @@ int WoundedApprenticeBinTable()
 		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
 		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 0; arr[54] = 0; 
 		arr[55] = 0; arr[56] = 0; arr[57] = 5548112; arr[58] = 0; arr[59] = 5542784; 
-		arr[60] = 0; arr[61] = 0; 
-		unit = CreateObject("AmbBeachBirds", GetMemory(GetMemory(0x83c7fc)));
-		Raise(unit, WoundedApprenticeBinTable);
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(unit)) + 0x1c));
-		Delete(unit);
+		link = GetScrDataField(WoundedApprenticeBinTable);
 	}
 	return link;
 }
@@ -1006,16 +975,6 @@ int CheckPotionThingID(int unit)
     return x;
 }
 
-int GetMemory(int addr)
-{
-    return Unknownb9(addr);
-}
-
-void SetMemory(int addr, int value)
-{
-    Unused59(addr, value);
-}
-
 int GetOwner(int unit)
 {
     int ptr = UnitToPtr(unit), res;
@@ -1027,12 +986,6 @@ int GetOwner(int unit)
             return GetMemory(res + 0x2c);
     }
     return 0;
-}
-
-int PlayerClassItemTable()
-{
-    int picker;
-    int itemTable[1300];
 }
 
 void PlayerFastJoin()
@@ -1051,32 +1004,6 @@ void PlayerFastJoin()
     }
 }
 
-void ShirtAndPantDrop(int unit)
-{
-    int inv = GetLastItem(unit);
-
-    while (IsObjectOn(inv))
-    {
-        if (HasClass(inv, "ARMOR"))
-        {
-            if (HasSubclass(inv, "PANTS") || HasSubclass(inv, "SHIRT"))
-                Drop(unit, inv);
-        }
-        inv = GetPreviousItem(inv);
-    }
-}
-
-void EmptyAll(int unit)
-{
-    while (GetLastItem(unit))
-        Delete(GetLastItem(unit));
-}
-
-void ChangePlayerDeathSound(int handle, int soundNumber)
-{
-    SetMemory(handle + 0x258, soundNumber);
-}
-
 int OpcodeGetTargetAddr(int curAddr)
 {
     return GetMemory(curAddr + 1) + curAddr + 5;
@@ -1087,99 +1014,6 @@ void OpcodeLoadEffectiveAddr(int loadAddr, int codeAddr, int offset)
     int targetAddr = OpcodeGetTargetAddr(codeAddr + offset);
 
     SetMemory(loadAddr + offset + 1, targetAddr - (loadAddr + offset) - 5);
-}
-
-void OpcodeCopies(int destPtr, int callNodePtr, int startAddr, int endAddr)
-{
-    int destBase = destPtr;
-    int curAddr = startAddr;
-
-    while (curAddr <= endAddr)
-    {
-        SetMemory(destPtr, GetMemory(curAddr));
-        if (GetMemory(callNodePtr))
-        {
-            if (GetMemory(callNodePtr) + 1 <= curAddr)
-            {
-                OpcodeLoadEffectiveAddr(destBase, startAddr, GetMemory(callNodePtr) - startAddr);
-                callNodePtr += 4;
-            }
-        }
-        curAddr += 4;
-        destPtr += 4;
-    }
-}
-
-int DiePlayerHandlerCopiedCode()
-{
-    int arr[314], link, callNode;
-
-    if (!link)
-    {
-        CallNode54d2b0();
-        CancelTimer(FrameTimerWithArg(10, DiePlayerHandlerCopiedCode, DiePlayerHandlerCopiedCode));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-        CancelTimer(FrameTimerWithArg(10, CallNode54d2b0, CallNode54d2b0));
-        callNode = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-        OpcodeCopies(link, callNode, 0x54d2b0, 0x54d794);
-    }
-    return link;
-}
-
-void DiePlayerHandlerEntry(int plrUnit)
-{
-    int ptr = UnitToPtr(plrUnit);
-
-    if (ptr)
-        SetMemory(ptr + 0x2d4, DiePlayerHandlerCopiedCode());
-}
-
-void CallNode54d2b0()
-{
-    int arr[40];
-
-    if (!arr[0])
-    {
-        arr[0] = 0x54d2d1;
-        arr[1] = 0x54d2e3;
-        arr[2] = 0x54d2f3;
-        arr[3] = 0x54d30a;
-        arr[4] = 0x54d348;
-        arr[5] = 0x54d375;
-        arr[6] = 0x54d3aa;
-        arr[7] = 0x54d45c;
-        arr[8] = 0x54d47b;
-        arr[9] = 0x54d513;
-        arr[10] = 0x54d527;
-        arr[11] = 0x54d566;
-        arr[12] = 0x54d574;
-        arr[13] = 0x54d588;
-        arr[14] = 0x54d594;
-        arr[15] = 0x54d5a6;
-        arr[16] = 0x54d5b2;
-        arr[17] = 0x54d5c4;
-        arr[18] = 0x54d5d1;
-        arr[19] = 0x54d5e2;
-        arr[20] = 0x54d5f4;
-        arr[21] = 0x54d610;
-        arr[22] = 0x54d622;
-        arr[23] = 0x54d62c;
-        arr[24] = 0x54d639;
-        arr[25] = 0x54d642;
-        arr[26] = 0x54d65b;
-        arr[27] = 0x54d662;
-        arr[28] = 0x54d668;
-        arr[29] = 0x54d67a;
-        arr[30] = 0x54d680;
-        arr[31] = 0x54d693;
-        arr[32] = 0x54d6a6;
-        arr[33] = 0x54d727;
-        arr[34] = 0x54d72d;
-        arr[35] = 0x54d733;
-        arr[36] = 0x54d73d;
-        arr[37] = 0x54d749;
-        arr[38] = 0x54d782;
-    }
 }
 
 void MapExit()
@@ -1747,18 +1581,13 @@ void SetUnitScanRange(int unit, float range)
 
 int ImportGetSpellNumber()
 {
-	int arr[11], ptr, link;
-	if (!ptr)
+	int arr[11], link;
+
+	if (!link)
 	{
 		arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x4085048B; arr[3] = 0x680097BB; arr[4] = 0x004243F0; arr[5] = 0x2454FF50;
 		arr[6] = 0x08C48304; arr[7] = 0x50723068; arr[8] = 0x54FF5000; arr[9] = 0xC4830424; arr[10] = 0xC3C0310C;
-		if (GetMemory(0x83c7fc))
-        {
-            ptr = CreateObject("AmbBeachBirds", GetMemory(GetMemory(0x83c7fc)));
-            Raise(ptr, ImportGetSpellNumber);
-            link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x1c));
-            Delete(ptr);
-        }
+		link = GetScrDataField(ImportGetSpellNumber);
 	}
 	return link;
 }
@@ -1783,10 +1612,10 @@ void SetUnitSpeed(int unit, float amount)
 
 void GreenSparkFx(float x, float y)
 {
-    int ptr = CreateObjectAt("MonsterGenerator", x, y);
+    int fxUnit = CreateObjectAt("MonsterGenerator", x, y);
 
-    Damage(ptr, 0, 10, 100);
-    Delete(ptr);
+    Damage(fxUnit, 0, 10, 100);
+    Delete(fxUnit);
 }
 
 int GetUnitStatus(int unit)
@@ -1850,10 +1679,7 @@ int CallFunctionWithArgInt(int func, int arg)
 
     if (!link)
     {
-        ptr = CreateObject("RedPotion", 1);
-        Raise(ptr, CalleeArgInt);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x20));
-        Delete(ptr);
+        link = GetScrCodeField(CalleeArgInt);
         return 0;
     }
     else
@@ -1908,15 +1734,10 @@ int VoiceList(int num)
 
 void CallFunction(int func)
 {
-    int link, ptr;
+    int link;
 
     if (!link)
-    {
-        ptr = CreateObject("RedPotion", 1);
-        Raise(ptr, Callee);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x20));
-        Delete(ptr);
-    }
+        link = GetScrCodeField(Callee);
     else
     {
         SetMemory(link + 4, func);
@@ -1936,15 +1757,10 @@ void UnitNoCollide(int unit)
 
 void CallFunctionWithArg(int func, int arg)
 {
-    int link, ptr;
+    int link;
 
     if (!link)
-    {
-        ptr = CreateObject("RedPotion", 1);
-        Raise(ptr, CalleeArg);
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * ToInt(GetObjectZ(ptr)) + 0x20));
-        Delete(ptr);
-    }
+        link = GetScrCodeField(CalleeArg);
     else
     {
         SetMemory(link + 0x10, func);
@@ -1955,13 +1771,6 @@ void CallFunctionWithArg(int func, int arg)
 void CalleeArg(int arg)
 {
     CalleeArg(arg);
-}
-
-void SetUnitHealth(int unit, int amount)
-{
-    Damage(unit, 0, CurrentHealth(unit) - 1, -1);
-    Pickup(unit, CreateObjectAt("RottenMeat", GetObjectX(unit), GetObjectY(unit)));
-    Damage(unit, 0, CurrentHealth(unit) - amount, -1);
 }
 
 void SetUnitMaxHealth(int unit, int amount)
@@ -1991,6 +1800,16 @@ int GetUnitFlags(int unit)
     return 0;
 }
 
+void DelayGiveItemToOwner(int sItem)
+{
+    int owner = GetOwner(sItem);
+
+    if (CurrentHealth(owner))
+        Pickup(owner, sItem);
+    else
+        ClearOwner(sItem);
+}
+
 int CheckPlayer()
 {
     int i;
@@ -2017,49 +1836,8 @@ void ImportLibrary()
     ImportUseItemFunc();
 }
 
-int PlayerClassItemIndexTable(int arg0)
-{
-    int plr = arg0 & 0xff, isSave = (arg0 >> 0x8) & 0xff, table[10];
-
-    if (isSave)
-        table[plr] = arg0 >> 0x10;
-    return table[plr];
-}
-
-int PlayerClassPickAll(int pUnit, int tablePtr4, int startIndex)
-{
-    int count = GetMemory(tablePtr4 + (startIndex * 4)), i;
-
-    if (count > GetHost()) return 0;
-    for (i = count ; i ; i --)
-        Pickup(pUnit, GetMemory(tablePtr4 + (((startIndex + i) % 1300) * 4)));
-    return 1;
-}
-
-int PlayerClassDropAll(int pUnit, int tablePtr)
-{
-    int cntPtr = tablePtr, inv = GetLastItem(pUnit), headIndex = GetMemory(tablePtr), count = 0;
-
-    tablePtr += 4;
-    while (inv)
-    {
-        count ++;
-        SetMemory(cntPtr, (GetMemory(cntPtr) + 1) % 1300);
-        SetMemory(tablePtr + (GetMemory(cntPtr) * 4), inv);
-        Drop(pUnit, inv);
-        inv = GetLastItem(pUnit);
-    }
-    SetMemory(tablePtr + (headIndex * 4), count);
-    return headIndex;
-}
-
 void PlayerClassOnDeath(int plr)
 {
-    int ptr;
-
-    CancelTimer(FrameTimerWithArg(10, PlayerClassItemTable, PlayerClassItemTable));
-    ptr = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-    PlayerClassItemIndexTable((PlayerClassDropAll(player[plr], ptr) << 0x10) | (1 << 0x08) | plr);
     UniPrintToAll(PlayerIngameNick(player[plr]) + " 님께서 적에게 격추되었습니다");
 }
 
@@ -2092,19 +1870,13 @@ void AlwaysAllEnchantments(int sPlr)
 
 void JoinPlayer(int plr, int destination)
 {
-    int pUnit = player[plr], ptr;
+    int pUnit = player[plr];
 
-    EmptyAll(pUnit);
     if (PlayerClassCheckDeathFlag(plr))
-    {
-        CancelTimer(FrameTimerWithArg(10, PlayerClassItemTable, PlayerClassItemTable));
-        ptr = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-        PlayerClassPickAll(player[plr], ptr + 4, PlayerClassItemIndexTable(plr));
         PlayerClassSetDeathFlag(plr);
-    }
     if (PlayerClassGetFlag2(plr))
         AlwaysAllEnchantments(plr);
-    MoveObject(pUnit, GetWaypointX(destination), GetWaypointY(destination));
+    MoveObject(pUnit, LocationX(destination), LocationY(destination));
     DeleteObjectTimer(CreateObjectAt("OblivionUp", GetObjectX(pUnit), GetObjectY(pUnit)), 18);
     PlaySoundAround(pUnit, 6);
 }
@@ -2188,148 +1960,6 @@ void FreePlayer(int plr)
     player[plr + 10] = 0;
     if (plrName != "NULL")
         UniPrintToAll(plrName + MessageDesc(67));
-}
-
-void GiveHideInventory(int unit, int headNode)
-{
-    int curNode = headNode, delNode;
-
-    while (IsObjectOn(curNode))
-    {
-        if (IsObjectOn(ToInt(GetObjectZ(curNode))))
-            Pickup(unit, ToInt(GetObjectZ(curNode)));
-        delNode = curNode;
-        curNode = GetOwner(curNode);
-        Delete(delNode);
-    }
-}
-
-int AddMyInvenList(int inv, int prevNode)
-{
-    int unit = CreateObjectAt("InvisibleLightBlueLow", GetObjectX(inv), GetObjectY(inv));
-
-    if (IsObjectOn(prevNode))
-    {
-        SetOwner(prevNode, unit);
-    }
-    Raise(unit, inv);
-    return unit;
-}
-
-void ClearInvenNodes(int headNode)
-{
-    int curNode = headNode, delNode;
-
-    while (IsObjectOn(curNode))
-    {
-        curNode = GetOwner(curNode);
-        if (ToInt(GetObjectZ(delNode)))
-            Delete(ToInt(GetObjectZ(delNode)));
-        Delete(delNode);
-    }
-}
-
-int HideInventoryOnPlayerDeath(int cur, int tempLocation)
-{
-    int inv = cur, prevNode = 0;
-
-    if (IsObjectOn(inv))
-    {
-        while (inv)
-        {
-            MoveObject(inv, GetWaypointX(tempLocation), GetWaypointY(tempLocation));
-            prevNode = AddMyInvenList(inv, prevNode);
-            inv = GetPreviousItem(inv);
-        }
-    }
-    return prevNode;
-}
-
-void DelayGiveItemToOwner(int sItem)
-{
-    int owner = GetOwner(sItem);
-
-    if (CurrentHealth(owner))
-        Pickup(owner, sItem);
-    else
-        ClearOwner(sItem);
-}
-
-void DelayGiveItem(int ptr)
-{
-	int owner = GetOwner(ptr), item = ToInt(GetObjectZ(ptr));
-
-	if (CurrentHealth(owner) && IsObjectOn(item))
-		Pickup(owner, item);
-	Delete(ptr);
-}
-
-void DelayPickup(int owner, int item)
-{
-	int unit = CreateObjectAt("InvisibleLightBlueLow", GetObjectX(owner), GetObjectY(owner));
-
-	Raise(unit, item);
-	SetOwner(owner, unit);
-	FrameTimerWithArg(1, unit, DelayGiveItem);
-}
-
-int ShirtAndPantSorting(int inv, int unit)
-{
-	int cur = inv, resUnit = 0;
-
-	while (cur)
-	{
-		if (HasClass(cur, "ARMOR"))
-		{
-			if (HasSubclass(cur, "PANTS") || HasSubclass(cur, "SHIRT"))
-			{
-				Drop(unit, cur);
-				DelayPickup(unit, cur);
-				resUnit = cur;
-			}
-		}
-		cur = GetPreviousItem(cur);
-	}
-	return resUnit;
-}
-
-int ShirtAndPantDropMakeNode(int unit, int prevNode, int tempLocation)
-{
-    int inv = GetLastItem(unit);
-
-    while (inv)
-    {
-        if (HasClass(inv, "ARMOR"))
-        {
-            if (HasSubclass(inv, "PANTS") || HasSubclass(inv, "SHIRT"))
-            {
-                Drop(unit, inv);
-                MoveObject(inv, GetWaypointX(tempLocation), GetWaypointY(tempLocation));
-                prevNode = AddMyInvenList(inv, prevNode);
-            }
-        }
-        inv = GetPreviousItem(inv);
-    }
-    return prevNode;
-}
-
-int FirstNormalItemPtr(int unit)
-{
-    int inv = GetLastItem(unit);
-
-    while (inv)
-    {
-        if (HasClass(inv, "ARMOR"))
-        {
-            if (HasSubclass(inv, "PANTS") || HasSubclass(inv, "SHIRT"))
-            {
-                inv = GetPreviousItem(inv);
-                continue;
-            }
-        }
-        break;
-    }
-    return inv;
 }
 
 int PlayerClassGetFlag2(int sPlr)
@@ -2446,11 +2076,8 @@ void BloodSpreadingFx(int sUnit)
 
 void PlayerOnDeath(int sPlr)
 {
-    int plrUnit = player[sPlr], ptr;
+    int plrUnit = player[sPlr];
 
-    CancelTimer(FrameTimerWithArg(10, PlayerClassItemTable, PlayerClassItemTable));
-    ptr = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-    PlayerClassItemIndexTable((PlayerClassDropAll(player[sPlr], ptr) << 0x10) | (1 << 0x08) | sPlr);
     UniChatMessage(plrUnit, MessageDesc(23), 100);
     UniPrintToAll(PlayerIngameNick(plrUnit) + MessageDesc(24));
 }
@@ -2991,11 +2618,9 @@ int SpawnNewBullet(int sOwner, float sX, float sY)
     {
         SetMemory(ptr + 0x2e8, 5483536); //projectile update
         SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-        CancelTimer(FrameTimerWithArg(10, EnemyWarHarpoonCollide, EnemyWarHarpoonCollide));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, EnemyWarHarpoonCollide);
         LookAtObject(unit, sOwner);
         LookWithAngle(unit, GetDirection(unit) + 128);
-        //PushObjectTo(unit, UnitRatioX(unit, sOwner, sForce), UnitRatioY(unit, sOwner, sForce));
         SetOwner(sOwner, unit);
     }
     return unit;
@@ -3336,14 +2961,13 @@ void PlayerHarpoonHandler(int sCur)
         if (CurrentHealth(owner) && PlayerClassGetHarpoonFlag(plr))
         {
             SetMemory(hPtr + 0x2b8, ImportUnitCollideFunc());
-            CancelTimer(FrameTimerWithArg(10, WarHarpoonCollide, WarHarpoonCollide));
-            SetMemory(hPtr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+            SetMemory(hPtr + 0x2fc, WarHarpoonCollide);
             Enchant(hPtr, "ENCHANT_SHOCK", 0.0);
         }
     }
 }
 
-void DetectedSpecficIndex(int curId)
+void DetectedSpecificIndex(int curId)
 {
     int thingID = GetUnitThingID(curId);
 
@@ -3358,20 +2982,24 @@ void DetectedSpecficIndex(int curId)
 void LoopSearchIndex()
 {
     int curId, tempId;
+    int link;
 
-    if (GetMemory(0x750710))
+    if (!link)
+        link = GetScrDataField(LoopSearchIndex);
+    while (Unknownb9(0x750710))
     {
-        tempId = GetMemory(GetMemory(0x750710) + 0x2c);
+        Unused59(link + 4, Unknownb9(Unknownb9(0x750710) + 0x2c));
         if (curId)
         {
             while (curId < tempId)
             {
-                curId ++;
-                DetectedSpecficIndex(curId);
+                Unused59(link, curId + 1);
+                DetectedSpecificIndex(curId);
             }
+            break;
         }
-        else
-            curId = tempId;
+        curId = tempId;
+        break;
     }
     FrameTimer(1, LoopSearchIndex);
 }
@@ -3813,7 +3441,6 @@ void MapDecorations()
     Frozen(CreateObject("IronBlock", 50), 1);
     Frozen(CreateObject("IronBlock", 51), 1);
     Frozen(MyBlock2, 1);
-    MakeCoopTeam();
     PlayerAutoTeamSign();
     FrameTimerWithArg(1, CheckGameKorLanguage(), MapSignInit);
     FrameTimer(94, PlacingSpecialMarketBeacon);
@@ -3826,6 +3453,7 @@ void MapDecorations()
     DrawImageAt(LocationX(248), LocationY(248), 1426);
     //DrawImageAt(LocationX(249), LocationY(249), 1430);
     DrawImageAt(LocationX(250), LocationY(250), 1440);
+    FrameTimer(1, SetGameTypeCoopMode);
 }
 
 void ImportBinTable()
@@ -3849,7 +3477,7 @@ void UserMapSetting()
 
 void MapInitialize()
 {
-    int var0 = EnableMemoryReadWriteFunction(0), ptr;
+    int var0 = EnableMemoryReadWriteFunction(0);
 
     MusicEvent();
     LastUnitPtr = CreateObject("RedPotion", 1);
@@ -3859,10 +3487,12 @@ void MapInitialize()
     ImportAbsoluteWPickup();
     ImportEquipWeapon();
     ImportCheckSelfDamage();
-    ptr = DiePlayerHandlerCopiedCode();
+
+    int ptr = DiePlayerHandlerCopiedCode();
     ChangePlayerDeathSound(ptr, 913);
+    PlayerUpdate4f8100();
     SetMemory(ptr + 0x386, (GetMemory(ptr + 0x386) & 0xffff0000) | 0x9eb);
-    //HookPlayerDeathHandlerInit();
+
     CheckMonsterThing(0);
     MathSine(1, 1.0 / 57.3);
     ImportLibrary();
@@ -4154,8 +3784,7 @@ int LichLordSkillFON(int sOwner, float sX, float sY)
     {
         SetMemory(ptr + 0x2e8, 5483536); //projectile update
         SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-        CancelTimer(FrameTimerWithArg(10, LichLordFONCollide, LichLordFONCollide));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, LichLordFONCollide);
         SetOwner(sOwner, fon);
     }
     return fon;
@@ -5209,11 +4838,8 @@ void RegistSignMessage(int sUnit, string sMsg)
     if (ptr)
     {
         SetMemory(ptr + 0x2f0, str);
-        //str = GetMemory(0x97bb40 + (str * 4));
-        //NoxUtf8ToUnicode(str, GetMemory(ptr + 0x2e0));
         SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        CancelTimer(FrameTimerWithArg(10, SignNotification, SignNotification));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, SignNotification);
     }
 }
 
@@ -5364,8 +4990,7 @@ int MissilePixie(float sX, float sY, int sOwner)
 
     SetMemory(ptr + 0x2e8, 5483536); //projectile update
     SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    CancelTimer(FrameTimerWithArg(10, PixieCollide, PixieCollide));
-    SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+    SetMemory(ptr + 0x2fc, PixieCollide);
     SetOwner(sOwner, mis);
     return mis;
 }
@@ -5400,8 +5025,7 @@ int SummonMagicOrbStaff1(float sX, float sY, int sOwner)
     if (ptr)
     {
         SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        CancelTimer(FrameTimerWithArg(10, Wand1UseHandler, Wand1UseHandler));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, Wand1UseHandler);
         SetMemory(ptr + 0x2c4, 0x53a720);
         SetMemory(ptr + 0x2c8, ImportAllowAllDrop());
         SetOwner(sOwner, staff);
@@ -5618,8 +5242,7 @@ int PowerHammerPlacing(int sOwner)
     if (ptr)
     {
         SetMemory(ptr + 0x2d0, ImportWeaponHitFunc());
-        CancelTimer(FrameTimerWithArg(10, HammerHitting, HammerHitting));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, HammerHitting);
         SetOwner(sOwner, unit);
         LookWithAngle(unit, 255);
         UnitSetEnchantTime(unit, 11, 0);
@@ -5700,8 +5323,7 @@ int SingleRingArrow(float sX, float sY, int sOwner)
     {
         SetMemory(ptr + 0x2e8, 5483536); //projectile update
         SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-        CancelTimer(FrameTimerWithArg(10, ChakramCollide, ChakramCollide));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, ChakramCollide);
         SetOwner(sOwner, unit);
     }
     return unit;
@@ -5745,8 +5367,7 @@ int SummonKingsAmulet(int sOwner)
     if (ptr)
     {
         SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        CancelTimer(FrameTimerWithArg(10, UseKingsAmulet, UseKingsAmulet));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, UseKingsAmulet);
         Enchant(unit, "ENCHANT_INFRAVISION", 0.0);
         SetOwner(sOwner, unit);
     }
@@ -5944,19 +5565,18 @@ int ImportPlayerAutoTeamSign()
         arr[5] = 0x8B492774; arr[6] = 0x12DC0530; arr[7] = 0xF6850000; arr[8] = 0x5150F074; arr[9] = 0x8D24468B;
         arr[10] = 0x016A304E; arr[11] = 0x51016A50; arr[12] = 0x54FF016A; arr[13] = 0xC4832824; arr[14] = 0xEB585914;
         arr[15] = 0x5E5958D5; arr[16] = 0xC304C483;
-        CancelTimer(FrameTimerWithArg(10, ImportPlayerAutoTeamSign, ImportPlayerAutoTeamSign));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportPlayerAutoTeamSign);
     }
     return link;
 }
 
 void PlayerAutoTeamSign()
 {
-    int temp = GetMemory(0x5c3178);
+    int temp = GetMemory(0x5c31cc);
 
-    SetMemory(0x5c3178, ImportPlayerAutoTeamSign());
-    GetHost();
-    SetMemory(0x5c3178, temp);
+    SetMemory(0x5c31cc, ImportPlayerAutoTeamSign());
+    Unused50();
+    SetMemory(0x5c31cc, temp);
 }
 
 void MakeCoopTeam()
@@ -5967,12 +5587,11 @@ void MakeCoopTeam()
     if (!teamCount && !link)
     {
         arr[0] = 0x417E1068; arr[1] = 0x2414FF00; arr[2] = 0xC304C483;
-        CancelTimer(FrameTimerWithArg(10, MakeCoopTeam, MakeCoopTeam));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-        temp = GetMemory(0x5c3178);
-        SetMemory(0x5c3178, link);
-        GetHost();
-        SetMemory(0x5c3178, temp);
+        link = GetScrDataField(MakeCoopTeam);
+        temp = GetMemory(0x5c31cc);
+        SetMemory(0x5c31cc, link);
+        Unused50();
+        SetMemory(0x5c31cc, temp);
         SetMemory(0x5d53a4, 268640519);
     }
 }
@@ -5984,13 +5603,18 @@ void RemoveCoopTeamMode()
     if (!link && GetMemory(0x654d5c) == 1)
     {
         arr[0] = 0x4DB8BE56; arr[1] = 0x20680065; arr[2] = 0x6A00418F; arr[3] = 0x54FF5600; arr[4] = 0xC4830824; arr[5] = 0x90C35E0C;
-        CancelTimer(FrameTimerWithArg(10, RemoveCoopTeamMode, RemoveCoopTeamMode));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-        temp = GetMemory(0x5c3178);
-        SetMemory(0x5c3178, link);
-        GetHost();
-        SetMemory(0x5c3178, temp);
+        link = GetScrDataField(RemoveCoopTeamMode);
+        temp = GetMemory(0x5c31cc);
+        SetMemory(0x5c31cc, link);
+        Unused50();
+        SetMemory(0x5c31cc, temp);
     }
+}
+
+void SetGameTypeCoopMode()
+{
+    MakeCoopTeam();
+    PlayerAutoTeamSign();
 }
 
 int WizardBinTable()
@@ -6212,11 +5836,9 @@ int MagicStaffClassCreate(int sUnit)
     if (ptr)
     {
         SetMemory(ptr + 0x2c4, ImportUnitPickupFunc());
-        CancelTimer(FrameTimerWithArg(10, MagicStaffClassPick, MagicStaffClassPick));
-        SetMemory(ptr + 0x2e4, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2e4, MagicStaffClassPick);
         SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        CancelTimer(FrameTimerWithArg(10, MagicStaffClassUse, MagicStaffClassUse));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, MagicStaffClassUse);
     }
     return unit;
 }
@@ -6280,11 +5902,9 @@ int MeteorWandClassCreate(int sUnit)
     if (ptr)
     {
         SetMemory(ptr + 0x2c4, ImportUnitPickupFunc());
-        CancelTimer(FrameTimerWithArg(10, MagicStaffClassPick, MagicStaffClassPick));
-        SetMemory(ptr + 0x2e4, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2e4, MagicStaffClassPick);
         SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        CancelTimer(FrameTimerWithArg(10, MeteorWandClassUse, MeteorWandClassUse));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, MeteorWandClassUse);
     }
     return unit;
 }
@@ -6314,61 +5934,11 @@ int ForceOfNatureStaffCreate(int sUnit)
     if (ptr)
     {
         SetMemory(ptr + 0x2c4, ImportUnitPickupFunc());
-        CancelTimer(FrameTimerWithArg(10, MagicStaffClassPick, MagicStaffClassPick));
-        SetMemory(ptr + 0x2e4, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2e4, MagicStaffClassPick);
         SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        CancelTimer(FrameTimerWithArg(10, ForceOfNatueStaffClassUse, ForceOfNatueStaffClassUse));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, ForceOfNatueStaffClassUse);
     }
     return unit;
-}
-
-int ImportCheckSelfDamage()
-{
-    int arr[14], link;
-
-    if (!link)
-    {
-        arr[0] = 0x4C8B5651; arr[1] = 0xC9850C24; arr[2] = 0x748B2374; arr[3] = 0xF6851024; arr[4] = 0xF1391B74; arr[5] = 0x8B501374; arr[6] = 0x0001FC86;
-        arr[7] = 0x74C08500; arr[8] = 0x58F08B05; arr[9] = 0xEB58ECEB; arr[10] = 0xC3595E04; arr[11] = 0x68595E90; arr[12] = 0x004E17B0; arr[13] = 0x909090C3;
-        CancelTimer(FrameTimerWithArg(10, ImportCheckSelfDamage, ImportCheckSelfDamage));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-    }
-    return link;
-}
-
-void HookPlayerDeathHandlerEntry(int plrUnit, int plr)
-{
-    int ptr = UnitToPtr(plrUnit);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x20, PlayerGetItemTable(plr));
-        SetMemory(ptr + 0x2d4, HookPlayerDeathHandlerPre(0));
-    }
-}
-
-void SelfDamageClassEntry(int plrUnit)
-{
-    int ptr = UnitToPtr(plrUnit);
-
-    if (ptr)
-        SetMemory(ptr + 0x2cc, ImportCheckSelfDamage());
-}
-
-void SelfDamageClassMapExit()
-{
-    int pTable = 0x62f9e0, i;
-
-    for (i = 31 ; i >= 0 ; i --)
-    {
-        if (GetMemory(pTable))
-        {
-            SetMemory(GetMemory(pTable) + 0x2cc, 0x4e17b0);
-            SetMemory(GetMemory(pTable) + 0x2d4, 0x54d2b0);
-        }
-        pTable += 0x12dc;
-    }
 }
 
 void AirshipCaptainSubProcess(int sUnit)
@@ -6471,8 +6041,7 @@ int LibraryHiddenBook()
     if (ptr)
     {
         SetMemory(ptr + 0x2c4, ImportUnitPickupFunc());
-        CancelTimer(FrameTimerWithArg(10, HiddenBookPick, HiddenBookPick));
-        SetMemory(ptr + 0x2e4, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2e4, HiddenBookPick);
     }
     return book;
 }
@@ -6712,178 +6281,12 @@ int MobClassCandleSoul(int sLocation, string sCandleName)
     return mob;
 }
 
-void SetNoDecayDropHandler(int sUnit)
-{
-    int arr[17], link, ptr = UnitToPtr(sUnit);
-
-    if (!link)
-    {
-        arr[0] = 0x0C24448B; arr[1] = 0x04244C8B; arr[2] = 0x24748B56; arr[3] = 0xD290680C; arr[4] = 0x5650004E; arr[5] = 0x2454FF51;
-        arr[6] = 0x10C4830C; arr[7] = 0x1C74C085; arr[8] = 0x50196068; arr[9] = 0x6A006A00; arr[10] = 0x41685600; arr[11] = 0xFF000003;
-        arr[12] = 0x83102454; arr[13] = 0x426814C4; arr[14] = 0xC3004EDE; arr[15] = 0x4EDE4968; arr[16] = 0x9090C300;
-        CancelTimer(FrameTimerWithArg(10, SetNoDecayDropHandler, SetNoDecayDropHandler));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-    }
-    if (ptr)
-        SetMemory(ptr + 0x2c8, link + 4);
-}
-
-void ReturnDropItem(int owner, int item)
-{
-    if (item)
-        Pickup(owner, item);
-}
-
-void AnotherGivePlayerItems(int plrUnit)
-{
-    int ptr = UnitToPtr(plrUnit), table, i;
-
-    if (ptr)
-    {
-        table = GetMemory(ptr + 0x20);
-        for (i = 320 - 1 ; i >= 0 ; i --)
-        {
-            ReturnDropItem(plrUnit, GetMemory(table + (i * 4)));
-            SetMemory(table + (i * 4), 0);
-        }
-    }
-}
-
-int PlayerItemTable()
-{
-    int table[3200];
-}
-
-void HookPlayerDeathHandlerCode()
-{
-    int arr[19];
-
-    arr[0] = 0x8B515056; arr[1] = 0x57102474; arr[2] = 0x8B207E8B; arr[3] = 0x0001F886; arr[4] = 0x74C08500; arr[5] = 0x2C488B2A;
-    arr[6] = 0x8B570F89; arr[7] = 0x0001F088; arr[8] = 0x68505100; arr[9] = 0x004ED930; arr[10] = 0x54FF5650; arr[11] = 0xC4830824;
-    arr[12] = 0x5F59580C; arr[13] = 0x85047F8D; arr[14] = 0x8B0474C9; arr[15] = 0x5FD2EBC1; arr[16] = 0x685E5859; arr[17] = 0x0054D2B0; arr[18] = 0x909090C3;
-}
-
-int HookPlayerDeathHandlerPre(int varTablePtr)
-{
-    int link;
-
-    if (!link)
-    {
-        HookPlayerDeathHandlerCode();
-        CancelTimer(FrameTimerWithArg(10, HookPlayerDeathHandlerCode, HookPlayerDeathHandlerCode));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-    }
-    return link;
-}
-
-void DelayUnitPick(int sUnit)
-{
-    int owner = GetOwner(sUnit), item = ToInt(GetObjectZ(sUnit));
-
-    if (MaxHealth(owner))
-    {
-        Pickup(owner, item);
-    }
-    Delete(sUnit);
-}
-
-void GivePlayerItems(int tempUnit)
-{
-    int owner = GetOwner(tempUnit), i;
-    int startIndex = ToInt(GetObjectZ(tempUnit)), amount = GetDirection(tempUnit);
-
-    if (CurrentHealth(owner))
-    {
-        for (i = amount - 1 ; i >= 0 ; i --)
-            Pickup(owner, UserInventoryStore(0, (startIndex + i) % 3200));
-    }
-    Delete(tempUnit);
-}
-
-void DelayCheckoutItems(int sUnit)
-{
-    int owner = GetOwner(sUnit);
-
-    while (IsObjectOn(sUnit))
-    {
-        if (CurrentHealth(owner))
-        {
-            FrameTimerWithArg(1, sUnit, GivePlayerItems);
-            break;
-        }
-        else if (MaxHealth(owner))
-        {
-            FrameTimerWithArg(1, sUnit, DelayCheckoutItems);
-            break;
-        }
-        Delete(sUnit);
-        Delete(sUnit + 1);
-        break;
-    }
-}
-
-int UserInventoryStore(int sItem, int sIndex)
-{
-    int arr[3200];
-
-    if (sItem)
-        arr[sIndex] = sItem;
-    return arr[sIndex];
-}
-
-int StoreUserItemWhenDead(int user, int startIndex)
-{
-    int inv = GetLastItem(user), res = 0, temp;
-
-    while (inv)
-    {
-        temp = inv;
-        UserInventoryStore(inv, (startIndex + res) % 3200);
-        res ++;
-        inv = GetPreviousItem(inv);
-        Drop(user, temp);
-    }
-    return res;
-}
-
-void HookPlayerDeathHandlerFunction()
-{
-    int invIndex, invCount;
-    int buff = CreateObjectAt("InvisibleLightBlueLow", GetObjectX(self), GetObjectY(self));
-
-    Raise(buff, invIndex);
-    invCount = StoreUserItemWhenDead(self, invIndex);
-    invIndex = (invIndex + invCount) % 3200;
-    LookWithAngle(buff, invCount);
-    SetOwner(self, buff);
-    UniChatMessage(self, MessageDesc(23), 120);
-    FrameTimerWithArg(1, buff, DelayCheckoutItems);
-    BloodSpreadingFx(self);
-    UniPrintToAll(PlayerName(self) + MessageDesc(24));
-}
-
-int PlayerGetItemTable(int plr)
-{
-    CancelTimer(FrameTimerWithArg(10, PlayerItemTable, HookPlayerDeathHandlerCode));
-    return GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c)) + (plr * 320);
-}
-
-void HookPlayerDeathHandlerInit()
-{
-    int functionNumber;
-
-    CancelTimer(FrameTimerWithArg(10, HookPlayerDeathHandlerFunction, HookPlayerDeathHandlerFunction));
-    HookPlayerDeathHandlerPre(0);
-}
-
 int NetClientExec()
 {
-    int arr[2], link;
+    int arr[3];
 
     arr[0] = 0xdf;
-    CancelTimer(FrameTimerWithArg(10, NetClientExec, NetClientExec));
-    link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-    return link;
+    return GetScrDataField(NetClientExec);
 }
 
 void ClientSetMemory(int user, int targetAddr, int byte)
@@ -7528,20 +6931,9 @@ void StreamCopy(int src, int dst, int len)
     SetMemory(0x5c3320, temp);
 }
 
-void ResourceImageData1()
-{
-    return;
-}
-
-void ResourceImageBuilding()
-{
-    return;
-}
-
-void ResourceImageData2()
-{
-    return;
-}
+void ResourceImageData1() { }
+void ResourceImageBuilding() { }
+void ResourceImageData2() { }
 
 void UserImageInit()
 {
@@ -7550,4 +6942,266 @@ void UserImageInit()
     ApplyImageResource(363, GetScrCodeField(ResourceImageData1) + 4, f);
     ApplyImageResource(1442, GetScrCodeField(ResourceImageBuilding) + 4, f);
     ApplyImageResource(770, GetScrCodeField(ResourceImageData2) + 4, f);
+}
+
+void CancelPlayerDialogWithPTR(int plrPtr)
+{
+    if (GetMemory(GetMemory(plrPtr + 0x2ec) + 0x11c))
+    {
+        SetMemory(GetMemory(plrPtr + 0x2ec) + 0x11c, 0);
+        SetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0xe60, 0x10);
+    }
+}
+
+int ImportCheckSelfDamage()
+{
+    int arr[14], link;
+
+    if (!link)
+    {
+        arr[0] = 0x4C8B5651; arr[1] = 0xC9850C24; arr[2] = 0x748B2374; arr[3] = 0xF6851024; arr[4] = 0xF1391B74; arr[5] = 0x8B501374; arr[6] = 0x0001FC86;
+        arr[7] = 0x74C08500; arr[8] = 0x58F08B05; arr[9] = 0xEB58ECEB; arr[10] = 0xC3595E04; arr[11] = 0x68595E90; arr[12] = 0x004E17B0; arr[13] = 0x909090C3;
+        link = GetScrDataField(ImportCheckSelfDamage);
+    }
+    return link;
+}
+
+void SelfDamageClassEntry(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+        SetMemory(ptr + 0x2cc, ImportCheckSelfDamage());
+}
+
+void SelfDamageClassMapExit()
+{
+    int i, pTable = 0x62f9e0, ptr;
+    int link = GetScrDataField(SelfDamageClassMapExit);
+
+    for (i = 31 ; i >= 0 ; Unused59(link, Unknownb9(link) - 1))
+    {
+        SetMemory(link + 8, GetMemory(pTable));
+        if (ptr)
+        {
+            SetMemory(ptr + 0x2cc, 0x4e17b0);
+            SetMemory(ptr + 0x2d4, 0x54d2b0);
+            if (GetMemory(ptr + 0x2e8) ^ 0x4E62F0)      //@brief. 관객모드가 아닐 경우에만 되돌립니다//
+                SetMemory(GetMemory(pTable) + 0x2e8, 0x4f8100);     //@brief. 업데이트 되돌리기//
+            CancelPlayerDialogWithPTR(GetMemory(pTable));
+        }
+        Unused59(link + 4, Unknownb9(link + 4) + 0x12dc);
+    }
+}
+
+void ChangePlayerDeathSound(int handle, int soundNumber) //@brief. 유저가 죽었을 때 효과음을 변경합니다
+{
+    SetMemory(handle + 0x258, soundNumber);  //@brief. SoundList.txt 파일을 참고하세요
+}
+
+int CallNode54d2b0()
+{
+    int arr[40];
+
+    if (!arr[0])
+    {
+        arr[0] = 0x54d2d1;
+        arr[1] = 0x54d2e3;
+        arr[2] = 0x54d2f3;
+        arr[3] = 0x54d30a;
+        arr[4] = 0x54d348;
+        arr[5] = 0x54d375;
+        arr[6] = 0x54d3aa;
+        arr[7] = 0x54d45c;
+        arr[8] = 0x54d47b;
+        arr[9] = 0x54d513;
+        arr[10] = 0x54d527;
+        arr[11] = 0x54d566;
+        arr[12] = 0x54d574;
+        arr[13] = 0x54d588;
+        arr[14] = 0x54d594;
+        arr[15] = 0x54d5a6;
+        arr[16] = 0x54d5b2;
+        arr[17] = 0x54d5c4;
+        arr[18] = 0x54d5d1;
+        arr[19] = 0x54d5e2;
+        arr[20] = 0x54d5f4;
+        arr[21] = 0x54d610;
+        arr[22] = 0x54d622;
+        arr[23] = 0x54d62c;
+        arr[24] = 0x54d639;
+        arr[25] = 0x54d642;
+        arr[26] = 0x54d65b;
+        arr[27] = 0x54d662;
+        arr[28] = 0x54d668;
+        arr[29] = 0x54d67a;
+        arr[30] = 0x54d680;
+        arr[31] = 0x54d693;
+        arr[32] = 0x54d6a6;
+        arr[33] = 0x54d727;
+        arr[34] = 0x54d72d;
+        arr[35] = 0x54d733;
+        arr[36] = 0x54d73d;
+        arr[37] = 0x54d749;
+        arr[38] = 0x54d782;
+    }
+    return GetScrDataField(CallNode54d2b0);
+}
+
+int DiePlayerHandlerCopiedCode()
+{
+    int arr[314], link;
+
+    if (!link)
+    {
+        link = GetScrDataField(DiePlayerHandlerCopiedCode);
+        OpcodeCopiesAdvance(link, CallNode54d2b0(), 0x54d2b0, 0x54d794);
+    }
+    return link;
+}
+
+void DiePlayerHandlerEntry(int plrUnit)  //@brief. 해당 유저를 재정의된 시스템에 등록합니다
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+    {
+        SetMemory(ptr + 0x2d4, DiePlayerHandlerCopiedCode());  //@brief. 플레이어 데스 재정의 핸들러 등록!
+        SetMemory(ptr + 0x2e8, PlayerUpdate4f8100());       //@brief. 플레이어 업데이트 재정의 핸들러 등록!
+    }
+}
+
+int Callnode4f8100()
+{
+    int node[20], link;
+
+    if (!link)
+    {
+        node[0] = 0x4f8145;
+        node[1] = 0x4f816e;
+        node[2] = 0x4f81ad;
+        node[3] = 0x4f820b;
+        node[4] = 0x4f8218;
+        node[5] = 0x4f8221;
+        node[6] = 0x4f826b;
+        node[7] = 0x4f8326;
+        node[8] = 0x4f836e;
+        node[9] = 0x4f8381;
+        node[10] = 0x4f8387;
+        node[11] = 0x4f838f;
+        node[12] = 0x4f83a3;
+        node[13] = 0x4f83ac;
+        node[14] = 0x4f83c3;
+        node[15] = 0x4f83dc;
+        node[16] = 0x4f83eb;
+        node[17] = 0x4f8407;
+        node[18] = 0; //nullptr
+        link = GetScrDataField(Callnode4f8100);
+    }
+    return link;
+}
+
+int PlayerUpdate4f8100()    //@brief. 유저 업데이트 복사본
+{
+    int codes[200], link;
+
+    if (!link)
+    {
+        link = GetScrDataField(PlayerUpdate4f8100);
+        OpcodeCopiesAdvance(link, Callnode4f8100(), 0x4f8100, 0x4f8414);
+        FixCallOpcode(link + 0x287, PlayerUpdate4f8460());  //@brief. 4f8460으로 링크
+    }
+    return link;
+}
+
+int PlayerUpdate4f8460()
+{
+    int arr[75], link;
+
+    if (!link)
+    {
+        arr[0] = 0x530CEC83; arr[1] = 0x748B5655; arr[2] = 0x31571C24; arr[3] = 0xECBE8BC0; arr[4] = 0x89000002; arr[5] = 0x89202444; arr[6] = 0x8A142444;
+        arr[7] = 0xF8835847; arr[8] = 0x83427721; arr[9] = 0x077404F8; arr[10] = 0x8C8524FF; arr[11] = 0x8B004F99; arr[12] = 0x84EA0415; arr[13] = 0x88AE8B00;
+        arr[14] = 0xA1000000; arr[15] = 0x0085B3FC; arr[16] = 0xE8D1EA29; arr[17] = 0x1776C239; arr[18] = 0x00040068; arr[19] = 0x4CDEE800; arr[20] = 0xC483F28D;
+        arr[21] = 0x74C08504; arr[22] = 0x90806812; arr[23] = 0x68C3004F; arr[24] = 0x004F9983; arr[25] = 0x850B68C3; arr[26] = 0x68C3004F; arr[27] = 0x00002000;
+        arr[28] = 0x8D4CBBE8; arr[29] = 0x04C483F2; arr[30] = 0x4A74C085; arr[31] = 0x0114878B; arr[32] = 0x80F60000; arr[33] = 0x00000E60; arr[34] = 0x313B7501;
+        arr[35] = 0x10888AC9; arr[36] = 0x51000008; arr[37] = 0x9E5227E8; arr[38] = 0x04C483F2; arr[39] = 0x2674C085; arr[40] = 0x000006BB; arr[41] = 0x08583900;
+        arr[42] = 0x978B3A74; arr[43] = 0x00000114; arr[44] = 0x8AC03150; arr[45] = 0x00081082; arr[46] = 0x71E85000; arr[47] = 0x83F29E52; arr[48] = 0xC08508C4;
+        arr[49] = 0x95E8DF74; arr[50] = 0x85F28D4C; arr[51] = 0x560F74C0; arr[52] = 0x00011BE8; arr[53] = 0x04C48300; arr[54] = 0x4F850B68; arr[55] = 0x8368C300;
+        arr[56] = 0xC3004F99; arr[57] = 0x01148F8B; arr[58] = 0xD2310000; arr[59] = 0x0810918A; arr[60] = 0xE8520000; arr[61] = 0xF29E52A8; arr[62] = 0x5604C483;
+        arr[63] = 0x9C255FE8; arr[64] = 0x04C483F2; arr[65] = 0x4F850B68; arr[66] = 0x9090C300;
+        link = GetScrDataField(PlayerUpdate4f8460);
+        FixCallOpcode(link + 0x4d, 0x40a5c0);
+        FixCallOpcode(link + 0x70, 0x40a5c0);
+        FixCallOpcode(link + 0x94, 0x51ab50);
+        FixCallOpcode(link + 0xba, 0x51abc0);
+        FixCallOpcode(link + 0xc6, 0x40a5f0);
+        // FixCallOpcode(link + 0xd0, 0x4f7ef0);       //@todo. 여기를 서브클래싱 해줘야 한다!
+        FixCallOpcode(link + 0xd0, PlayerRespawn004f7ef0());       //@brief. 서브클래싱 링크
+        FixCallOpcode(link + 0xf3, 0x51ac30);
+        // FixCallOpcode(link + 0xfc, 0x4f7ef0);           //@brief. todo
+        FixCallOpcode(link + 0xfc, PlayerRespawn004f7ef0());           //@brief. todo
+    }
+    return link;
+}
+
+int Callnode004f7ef0()
+{
+    int node[21], link;
+
+    if (!link)
+    {
+        node[0] = 0x4f7ef7;
+        node[1] = 0x4f7f1b;
+        node[2] = 0x4f7f48;
+        node[3] = 0x4f7f59;
+        node[4] = 0x4f7f7c;
+        node[5] = 0x4f7f8b;
+        node[6] = 0x4f7f98;
+        node[7] = 0x4f7fb5;
+        node[8] = 0x4f7fd6;
+        node[9] = 0x4f7ff1;
+        node[10] = 0x4f800d;
+        node[11] = 0x4f801a;
+        node[12] = 0x4f8028;
+        node[13] = 0x4f802f;
+        node[14] = 0x4f803d;
+        node[15] = 0x4f8055;
+        node[16] = 0x4f807a;
+        node[17] = 0x4f8087;
+        node[18] = 0x4f80a1;
+        node[19] = 0; //nullptr
+        link = GetScrDataField(Callnode004f7ef0);
+    }
+    return link;
+}
+
+int PlayerRespawn004f7ef0()     //@brief. 유저 리스폰 복사본
+{
+    int codes[115], link;
+
+    if (!link)
+    {
+        link = GetScrDataField(PlayerRespawn004f7ef0);
+        OpcodeCopiesAdvance(link, Callnode004f7ef0(), 0x4f7ef0, 0x4f80b4);
+        SetMemory(link + 0x62, 0x16a9090);
+        SetMemory(link + 0x94, (GetMemory(link + 0x94) & (~0xffff)) ^ 0x9090);
+        FixCallOpcode(link + 0x9b, RedrawOnRespawn());
+    }
+    return link;
+}
+
+int RedrawOnRespawn()
+{
+    int arr[16], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50EC8B55; arr[1] = 0x758B5651; arr[2] = 0xF88E8B08; arr[3] = 0x85000001; arr[4] = 0x8B2674C9; arr[5] = 0x00251041; arr[6] = 0x85000001; arr[7] = 0x511274C0;
+        arr[8] = 0x1F8AE856; arr[9] = 0x595EFFDA; arr[10] = 0x41E85651; arr[11] = 0x5EFFDA1F; arr[12] = 0xF0898B59; arr[13] = 0xEB000001; arr[14] = 0x58595ED6; arr[15] = 0x9090C35D;
+        link = GetScrDataField(RedrawOnRespawn);
+        FixCallOpcode(link + 0x21, 0x4f2fb0);
+        FixCallOpcode(link + 0x2a, 0x4f2f70);
+    }
+    return link;
 }
