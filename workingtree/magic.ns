@@ -511,7 +511,7 @@ void GreenTeaCollide()
     {
         if (CurrentHealth(other) && IsAttackedBy(other, owner))
         {
-            Damage(other, owner, 40, 1);
+            Damage(other, owner, 21, 1);
             GreenSparkFx(GetObjectX(self), GetObjectY(self));
         }
         else if (!GetCaller())
@@ -530,7 +530,7 @@ void ChakramExplosion()
     while (owner && GetTrigger())
     {
         if (CurrentHealth(other) && IsAttackedBy(other, owner))
-            Damage(other, owner, 80, 1);
+            Damage(other, owner, 60, 1);
         else if (!GetCaller())
             1;
         else
