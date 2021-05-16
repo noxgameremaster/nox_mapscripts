@@ -8,6 +8,8 @@ int ArrTrp1, MainKey1;
 int UfRot;
 int player[20];
 int MyBlock2, FireTrp1;
+int g_libExBookcase;
+int g_libArrowTrp[9];
 int EnableMemoryReadWriteFunction(int t) {}
 
 int GetMemory(int addr) { return Unknownb9(addr); }
@@ -594,17 +596,12 @@ void ChangeColorMaiden(int red, int grn, int blue, int unit)
 int WizardRedBinTable()
 {
 	int arr[62], link;
-
 	if (!link)
 	{
-		arr[0] = 1635412311; arr[1] = 1699898482; arr[2] = 100; arr[3] = 0; arr[4] = 0; 
-		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
-		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
-		arr[15] = 0; arr[16] = 80000; arr[17] = 300; arr[18] = 100; arr[19] = 50; 
-		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 40; arr[24] = 1067869798; 
-		arr[25] = 0; arr[26] = 4; arr[27] = 4;
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 1128792064; arr[54] = 4; 
-        link = GetScrDataField(WizardRedBinTable);
+		arr[0] = 1635412311; arr[1] = 1699898482; arr[2] = 100; arr[16] = 80000; arr[17] = 300; 
+		arr[18] = 100; arr[19] = 50; arr[21] = 1065353216; arr[24] = 1067869798; arr[26] = 4; 
+		arr[27] = 4; arr[53] = 1128792064; arr[54] = 4;
+		link = GetScrDataField(WizardRedBinTable);
 	}
 	return link;
 }
@@ -617,7 +614,7 @@ int MaidenBinTable()
 		arr[0] = 1684627789; arr[1] = 28261; arr[2] = 0; arr[3] = 0; arr[4] = 0; 
 		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
 		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
-		arr[15] = 0; arr[16] = 0; arr[17] = 30; arr[18] = 92; arr[19] = 60; 
+		arr[15] = 0; arr[16] = 0; arr[17] = 30; arr[18] = 92; arr[19] = 80; 
 		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 32776; arr[24] = 1065688760; 
 		arr[25] = 0; arr[26] = 0; arr[27] = 1; arr[28] = 1106247680; arr[29] = 22; 
 		arr[30] = 1101004800; arr[31] = 2; arr[32] = 22; arr[33] = 30;
@@ -648,22 +645,13 @@ int GoonBinTable()
 
 int StrongWizardWhiteBinTable()
 {
-	int arr[62], link, unit;
+	int arr[62], link;
 	if (!link)
 	{
 		arr[0] = 1869771859; arr[1] = 1767335790; arr[2] = 1685217658; arr[3] = 1953065047; arr[4] = 101; 
-		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
-		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
-		arr[15] = 0; arr[16] = 80000; arr[17] = 200; arr[18] = 55; arr[19] = 60; 
-		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 8; arr[24] = 1069547520; 
-		arr[25] = 0; arr[26] = 0; arr[27] = 0; arr[28] = 0; arr[29] = 0; 
-		arr[30] = 0; arr[31] = 0; arr[32] = 0; arr[33] = 0; arr[34] = 0; 
-		arr[35] = 0; arr[36] = 0; arr[37] = 1701996870; arr[38] = 1819042146; arr[39] = 0; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 1128792064; arr[54] = 4; 
-		arr[55] = 20; arr[56] = 30; arr[57] = 5547984;
-        link = GetScrDataField(StrongWizardWhiteBinTable);
+		arr[19] = 1; arr[24] = 1065772646; arr[37] = 1701996870; arr[38] = 1819042146; arr[53] = 1128792064; 
+		arr[55] = 20; arr[56] = 30; arr[57] = 5547984; 
+		link = GetScrDataField(StrongWizardWhiteBinTable);
 	}
 	return link;
 }
@@ -2593,7 +2581,7 @@ void EnemyWarHarpoonCollide()
 {
     int owner = GetOwner(self);
 
-    while (1)
+    while (true)
     {
         if (CurrentHealth(other) && IsAttackedBy(other, owner))
         {
@@ -2602,8 +2590,8 @@ void EnemyWarHarpoonCollide()
         }
         else if (!GetCaller())
             DestroyWallAtUnitPos(self);
-        else
-            break;
+        // else
+        //     break;
         Delete(self);
         break;
     }
@@ -2967,16 +2955,31 @@ void PlayerHarpoonHandler(int sCur)
     }
 }
 
+int GetMissileThingID(int missile)
+{
+    int ptr = UnitToPtr(missile);
+
+    if (ptr)
+    {
+        if (GetMemory(ptr + 8) & 1)
+            return GetMemory(ptr + 4);
+    }
+    return 0;
+}
+
 void DetectedSpecificIndex(int curId)
 {
-    int thingID = GetUnitThingID(curId);
+    int thingID = GetMissileThingID(curId);
 
-    if (thingID == 1179)
+    if (thingID)
     {
-        ShurikenEvent(curId);
+        if (thingID == 1179)
+        {
+            ShurikenEvent(curId);
+        }
+        else if (thingID == 526)
+            PlayerHarpoonHandler(curId);
     }
-    else if (thingID == 526)
-        PlayerHarpoonHandler(curId);
 }
 
 void LoopSearchIndex()
@@ -3381,6 +3384,7 @@ void PlaceUnderfootMonster()
     SummonHecubah(109);
     //FrameTimerWithArg(1, CreateObject("InvisibleLightBlueHigh", 174), SpawnGolemBoss);
     InitLichKings();
+    FrameTimer(2, InitJailArea);
     FrameTimer(1, PlaceExMonster);
 }
 
@@ -3482,7 +3486,7 @@ void MapInitialize()
     MusicEvent();
     LastUnitPtr = CreateObject("RedPotion", 1);
     Delete(LastUnitPtr);
-    MapWaypointInit();
+    MapWaypointFill(GetMemory(0x83c7fc), GetScrDataField(MapWaypointTable));
     ImportBinTable();
     ImportAbsoluteWPickup();
     ImportEquipWeapon();
@@ -3501,6 +3505,8 @@ void MapInitialize()
     InitInvPropertiesSet();
     UserMapSetting();
     FrameTimerWithArg(90, Object("FirstTargetScan"), InitNPCScan);
+
+    FrameTimer(30, InitLibraryExZone);
 }
 
 void DefaultListenEnemy()
@@ -3727,7 +3733,7 @@ int LichLordBinTable()
 	{
 		arr[0] = 1751345484; arr[1] = 1685221196; arr[17] = 20; arr[19] = 100; arr[21] = 1065353216; 
 		arr[24] = 1065353216; arr[25] = 1; arr[26] = 4; arr[27] = 7; arr[28] = 1108082688; 
-		arr[29] = 130; arr[30] = 1092616192; arr[31] = 11; arr[32] = 9; arr[33] = 17; arr[57] = 5548288; 
+		arr[29] = 180; arr[30] = 1092616192; arr[31] = 11; arr[32] = 9; arr[33] = 17; arr[57] = 5548288; 
 		arr[59] = 5542784; 
 		CancelTimer(FrameTimerWithArg(10, LichLordBinTable, LichLordBinTable));
 		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
@@ -3836,7 +3842,7 @@ void StoneFallDown(int sUnit)
             }
             else
             {
-                SplashDamageAt(owner, 100, GetObjectX(sUnit + 1), GetObjectY(sUnit + 1), 85.0);
+                SplashDamageAt(owner, 200, GetObjectX(sUnit + 1), GetObjectY(sUnit + 1), 120.0);
                 DeleteObjectTimer(CreateObjectAt("BigSmoke", GetObjectX(sUnit + 1), GetObjectY(sUnit + 1)), 18);
                 PlaySoundAround(sUnit + 1, 30);
                 Effect("JIGGLE", GetObjectX(sUnit + 1), GetObjectY(sUnit + 1), 0.0, 0.0);
@@ -3906,9 +3912,8 @@ int GreenFrogBinTable()
 		arr[0] = 1701147207; arr[1] = 1869760110; arr[2] = 103; arr[17] = 500; arr[19] = 64; 
 		arr[21] = 1065353216; arr[23] = 32768; arr[24] = 1067869798; arr[26] = 4; arr[28] = 1106247680; 
 		arr[29] = 85; arr[30] = 1112014848; arr[31] = 2; arr[32] = 7; arr[33] = 15; 
-		arr[59] = 5543904; arr[60] = 1313; arr[61] = 46905856; 
-		CancelTimer(FrameTimerWithArg(10, GreenFrogBinTable, GreenFrogBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		arr[59] = 5543904; arr[60] = 1313; arr[61] = 46905856;
+		link = GetScrDataField(GreenFrogBinTable);
 	}
 	return link;
 }
@@ -5397,24 +5402,15 @@ void PlacingSpecialMarketBeacon()
 {
     int unit = CreateObject("InvisibleLightBlueLow", 171);
 
-    CancelTimer(FrameTimerWithArg(10, TradeMagicOrbStaff1, TradeMagicOrbStaff1));
-    SetOwner(unit, BeaconCreate(GetWaypointX(170), GetWaypointY(170), GetMemory(GetMemory(0x83395c) + 8)));
-    CancelTimer(FrameTimerWithArg(10, TradeAllEnchants, TradeAllEnchants));
-    SetOwner(unit, BeaconCreate(GetWaypointX(197), GetWaypointY(197), GetMemory(GetMemory(0x83395c) + 8)));
-    CancelTimer(FrameTimerWithArg(10, TradePowerHammer, TradePowerHammer));
-    SetOwner(unit, BeaconCreate(GetWaypointX(198), GetWaypointY(198), GetMemory(GetMemory(0x83395c) + 8)));
-    CancelTimer(FrameTimerWithArg(10, TradeFastHealing, TradeFastHealing));
-    SetOwner(unit, BeaconCreate(GetWaypointX(199), GetWaypointY(199), GetMemory(GetMemory(0x83395c) + 8)));
-    CancelTimer(FrameTimerWithArg(10, TradeKingsAmulet, TradeKingsAmulet));
-    SetOwner(unit, BeaconCreate(GetWaypointX(200), GetWaypointY(200), GetMemory(GetMemory(0x83395c) + 8)));
-    CancelTimer(FrameTimerWithArg(10, TradeAdvancedHarpoon, TradeAdvancedHarpoon));
-    SetOwner(unit, BeaconCreate(GetWaypointX(201), GetWaypointY(201), GetMemory(GetMemory(0x83395c) + 8)));
-    CancelTimer(FrameTimerWithArg(10, TradeWizardStaff, TradeWizardStaff));
-    SetOwner(unit, BeaconCreate(GetWaypointX(209), GetWaypointY(209), GetMemory(GetMemory(0x83395c) + 8)));
-    CancelTimer(FrameTimerWithArg(10, TradeMeteorWand, TradeMeteorWand));
-    SetOwner(unit, BeaconCreate(GetWaypointX(210), GetWaypointY(210), GetMemory(GetMemory(0x83395c) + 8)));
-    CancelTimer(FrameTimerWithArg(10, TradeForceOfStaff, TradeForceOfStaff));
-    SetOwner(unit, BeaconCreate(GetWaypointX(211), GetWaypointY(211), GetMemory(GetMemory(0x83395c) + 8)));
+    SetOwner(unit, BeaconCreate(LocationX(170), LocationY(170), TradeMagicOrbStaff1));
+    SetOwner(unit, BeaconCreate(LocationX(197), LocationY(197), TradeAllEnchants));
+    SetOwner(unit, BeaconCreate(LocationX(198), LocationY(198), TradePowerHammer));
+    SetOwner(unit, BeaconCreate(LocationX(199), LocationY(199), TradeFastHealing));
+    SetOwner(unit, BeaconCreate(LocationX(200), LocationY(200), TradeKingsAmulet));
+    SetOwner(unit, BeaconCreate(LocationX(201), LocationY(201), TradeAdvancedHarpoon));
+    SetOwner(unit, BeaconCreate(LocationX(209), LocationY(209), TradeWizardStaff));
+    SetOwner(unit, BeaconCreate(LocationX(210), LocationY(210), TradeMeteorWand));
+    SetOwner(unit, BeaconCreate(LocationX(211), LocationY(211), TradeForceOfStaff));
     TeleportMark(172, 171);
     TeleportMark(173, 12);
     TeleportMark(195, 12);
@@ -5457,15 +5453,6 @@ void MapWaypointFill(int wAddr, int tPtr)
         SetMemory(tPtr + (num * 4), wAddr);
         MapWaypointFill(GetMemory(wAddr + 484), tPtr);
     }
-}
-
-void MapWaypointInit()
-{
-    int tableLink;
-
-    CancelTimer(FrameTimerWithArg(10, MapWaypointTable, MapWaypointTable));
-    tableLink = GetMemory(GetMemory(0x75ae28) + ((0x30 * GetMemory(GetMemory(0x83395c) + 8)) + 0x1c));
-    MapWaypointFill(GetMemory(0x83c7fc), tableLink);
 }
 
 void MapSignInit(int langCheck)
@@ -6001,7 +5988,7 @@ void JandorGroupsHandler(int sUnit)
 
 void ClearWallAtWaypointPos(int sLocation)
 {
-    int xPos = FloatToInt(GetWaypointX(sLocation)), yPos = FloatToInt(GetWaypointY(sLocation));
+    int xPos = FloatToInt(LocationX(sLocation)), yPos = FloatToInt(LocationY(sLocation));
     int spX, spY, tx, ty, rx;
 
     if (xPos > yPos) xPos += 23;
@@ -6077,7 +6064,7 @@ int TalkingSkullBinTable()
 	{
 		arr[0] = 1802264916; arr[1] = 1399287401; arr[2] = 1819047275; arr[17] = 200; arr[19] = 85; 
 		arr[21] = 1065353216; arr[23] = 65536; arr[24] = 1065353216; arr[26] = 4; arr[28] = 1106247680; 
-		arr[29] = 30; arr[31] = 3; arr[32] = 3; arr[33] = 7; arr[59] = 5542432; 
+		arr[29] = 90; arr[31] = 3; arr[32] = 3; arr[33] = 7; arr[59] = 5542432; 
 		arr[60] = 2303; arr[61] = 46917632; 
 		CancelTimer(FrameTimerWithArg(10, TalkingSkullBinTable, TalkingSkullBinTable));
 		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
@@ -6109,7 +6096,7 @@ int TalkingSkull2BinTable()
 	if (!link)
 	{
 		arr[0] = 1802264916; arr[1] = 1399287401; arr[2] = 1819047275; arr[17] = 325; arr[19] = 110; 
-		arr[21] = 1060320051; arr[24] = 1065353216; arr[26] = 4; arr[28] = 1101004800; arr[29] = 80; 
+		arr[21] = 1060320051; arr[24] = 1065353216; arr[26] = 4; arr[28] = 1101004800; arr[29] = 160; 
 		arr[30] = 1106247680; arr[32] = 7; arr[33] = 14; arr[37] = 1769236816; arr[38] = 1181513062; 
 		arr[39] = 1650815593; arr[40] = 7105633; arr[53] = 1133903872; arr[55] = 12; arr[56] = 20; 
 		arr[59] = 5544320; arr[60] = 2303; arr[61] = 46917632; 
@@ -6931,9 +6918,13 @@ void StreamCopy(int src, int dst, int len)
     SetMemory(0x5c3320, temp);
 }
 
+void ResourceImageStone() {}
 void ResourceImageData1() { }
 void ResourceImageBuilding() { }
 void ResourceImageData2() { }
+void ResourceXellnaga() { }
+void ResourceMineral() {}
+void ResourceInfestedTerran() {}
 
 void UserImageInit()
 {
@@ -6942,6 +6933,10 @@ void UserImageInit()
     ApplyImageResource(363, GetScrCodeField(ResourceImageData1) + 4, f);
     ApplyImageResource(1442, GetScrCodeField(ResourceImageBuilding) + 4, f);
     ApplyImageResource(770, GetScrCodeField(ResourceImageData2) + 4, f);
+    ApplyImageResource(1917, GetScrCodeField(ResourceXellnaga) + 4, f);
+    ApplyImageResource(1568, GetScrCodeField(ResourceMineral) + 4, f);
+    ApplyImageResource(850, GetScrCodeField(ResourceInfestedTerran) + 4, f);
+    ApplyImageResource(62, GetScrCodeField(ResourceImageStone) + 4, f);
 }
 
 void CancelPlayerDialogWithPTR(int plrPtr)
@@ -7204,4 +7199,314 @@ int RedrawOnRespawn()
         FixCallOpcode(link + 0x2a, 0x4f2f70);
     }
     return link;
+}
+
+void WizRunAway()
+{
+	if (UnitCheckEnchant(self, GetLShift(29)))
+		EnchantOff(self, EnchantList(29));
+}
+
+int SummonMobRedWizard(int location)
+{
+    int redWiz = CreateObjectAt("WizardRed", LocationX(location), LocationY(location));
+    int uec = GetMemory(GetMemory(0x750710) + 0x2ec);
+
+    UnitLinkBinScript(redWiz, WizardRedBinTable());
+    UnitZeroFleeRange(redWiz);
+    SetUnitMaxHealth(redWiz, 484);
+    SetCallback(redWiz, 8, WizRunAway);
+    SetUnitStatus(redWiz, GetUnitStatus(redWiz) ^ 0x20);
+    if (uec)
+    {
+        SetMemory(uec + 0x528, ToInt(1.0));
+        SetMemory(uec + 0x520, ToInt(400.0));
+        uec += 0x5d0;
+        SetMemory(uec + GetSpellNumber("SPELL_LIGHTNING"), 0x40000000);
+		SetMemory(uec + GetSpellNumber("SPELL_SHIELD"), 0x10000000);
+        SetMemory(uec + GetSpellNumber("SPELL_SLOW"), 0x20000000);
+		SetMemory(uec + GetSpellNumber("SPELL_INVISIBILITY"), 0x10000000);
+		SetMemory(uec + GetSpellNumber("SPELL_FIREBALL"), 0x40000000);
+        SetMemory(uec + GetSpellNumber("SPELL_INVERSION"), 0x8000000);
+        SetMemory(uec + GetSpellNumber("SPELL_COUNTERSPELL"), 0x8000000);
+    }
+    return redWiz;
+}
+
+int SummonFireballWizard(int location)
+{
+    int wiz = CreateObjectAt("StrongWizardWhite", LocationX(location), LocationY(location));
+
+    UnitLinkBinScript(wiz, StrongWizardWhiteBinTable());
+    SetUnitMaxHealth(wiz, 430);
+    return wiz;
+}
+
+void UnlockJailLocker()
+{
+    ObjectOff(self);
+    UnlockDoor(Object("jailLock1"));
+    UnlockDoor(Object("jailLock2"));
+    UniPrint(other, "문의 잠금이 해제 되었습니다");
+}
+
+void InitJailArea()
+{
+    int i;
+
+    for (i = 0 ; i < 10 ; i ++)
+    {
+        CreateObjectAt("PiledBarrels3", LocationX(251), LocationY(251));
+        TeleportLocationVector(251, -23.0, -23.0);
+        if (i < 6)
+            CreateObjectAt("PiledBarrels3", LocationX(255 + i), LocationY(255 + i));
+    }
+    SummonNecromancer(252);
+    SetUnitMaxHealth(SummonDefaultMob("BlackWidow", 253), 225);
+    SetUnitMaxHealth(SummonDefaultMob("BlackWidow", 253), 225);
+
+    SetUnitMaxHealth(SummonDefaultMob("WeirdlingBeast", 254), 295);
+    SetUnitMaxHealth(SummonDefaultMob("WeirdlingBeast", 254), 295);
+
+    SummonNecromancer(261);
+    SummonNecromancer(262);
+
+    SummonMaiden(264, 0, 255, 0);
+    SummonNecromancer(264);
+    SummonMaiden(266, 0, 255, 0);
+    SetUnitMaxHealth(SummonDefaultMob("EmberDemon", 267), 130);
+    
+    RegistSignMessage(Object("jailSign1"), "출입제한 구역- 이곳은 본 건물의 기계실 이므로 관계자외 꺼져");
+}
+
+void ClearRightWall()
+{
+    ObjectOff(self);
+    ClearWallAtWaypointPos(263);
+    UniPrint(other, "비밀통로가 열렸습니다");
+}
+
+void FireTrapTriggered()
+{
+    ObjectOn(Object("firetrp1"));
+    ObjectOn(Object("firetrp2"));
+}
+
+void FireTrapDisabled()
+{
+    ObjectOff(Object("firetrp1"));
+    ObjectOff(Object("firetrp2"));
+}
+
+int BookcaseMovingSingle(int single, int location, int finishLocation)
+{
+    if (LocationX(location) < LocationX(274))
+        TeleportLocationVector(location, 1.0, 1.0);
+    else if (LocationX(location) < LocationX(finishLocation))
+        TeleportLocationVector(location, 1.0, -1.0);
+    else
+        return true;
+
+    MoveObject(single, LocationX(location), LocationY(location));
+    return false;
+}
+
+void ClearLibraryExWalls()
+{
+    int u;
+
+    for (u = 0 ; u < 8 ; u ++)
+    {
+        ClearWallAtWaypointPos(281);
+        TeleportLocationVector(281, 23.0, 23.0);
+    }
+}
+
+void LibraryExPartMobSettings()
+{
+    SetUnitMaxHealth(SummonDefaultMob("Goon", 290), 225);
+    SetUnitMaxHealth(SummonDefaultMob("Goon", 291), 225);
+    SetUnitMaxHealth(SummonDefaultMob("Shade", 292), 260);
+    SetUnitMaxHealth(SummonDefaultMob("Shade", 293), 260);
+
+    SummonNecromancer(294);
+    SummonNecromancer(296);
+    SummonNecromancer(297);
+    SummonMaiden(295, 225, 64, 240);
+    SummonMaiden(297, 225, 64, 240);
+}
+
+void BookcaseMovingSecond(int first)
+{
+    int i, res = 0;
+
+    for (i = 0 ; i < 6 ; i ++)
+        res += BookcaseMovingSingle(first + i, 268 + i, 275 + i);
+    if (res ^ 6)
+        FrameTimerWithArg(1, first, BookcaseMovingSecond);
+    else
+        ClearLibraryExWalls(); //@brief. end of action
+}
+
+void BookcaseMovingFirst(int first)
+{
+    int i, totalCount;
+
+    if (totalCount < 23)
+    {
+        for (i = 0 ; i < 6 ; i ++)
+        {
+            TeleportLocationVector(268 + i, -1.0, 1.0);
+            MoveObject(first + i, LocationX(268 + i), LocationY(268 + i));
+        }
+        totalCount ++;
+        FrameTimerWithArg(1, first, BookcaseMovingFirst);
+    }
+    else
+    {
+        ClearWallAtWaypointPos(282);
+        FrameTimerWithArg(3, first, BookcaseMovingSecond);
+        LibraryExPartMobSettings();
+    }
+}
+
+void StartLibraryExBookcase()
+{
+    ObjectOff(self);
+    FrameTimerWithArg(1, g_libExBookcase, BookcaseMovingFirst);
+}
+
+void ClearEastWalls()
+{
+    int u;
+
+    ObjectOff(self);
+    for (u = 0 ; u < 8 ; u ++)
+    {
+        ClearWallAtWaypointPos(283);
+        TeleportLocationVector(283, 23.0, 23.0);
+    }
+    SummonMobRedWizard(287);
+    SummonNecromancer(288);
+    SummonNecromancer(289);
+}
+
+void ClearSouthWalls()
+{
+    int u;
+
+    for (u = 0 ; u < 14 ; u ++)
+    {
+        ClearWallAtWaypointPos(284);
+        TeleportLocationVector(284, -23.0, 23.0);
+    }
+}
+
+void RespectSurpriseWiz(int location)
+{
+    int wiz = SummonDefaultMob("Demon", location);
+
+    SetUnitMaxHealth(wiz, 600);
+    Effect("SMOKE_BLAST", LocationX(location), LocationY(location), 0.0, 0.0);
+}
+
+void ClearEWWalls()
+{
+    int u;
+
+    ObjectOff(self);
+    for (u = 0 ; u < 8 ; u ++)
+    {
+        ClearWallAtWaypointPos(285);
+        ClearWallAtWaypointPos(286);
+        TeleportLocationVector(285, 23.0, 23.0);
+        TeleportLocationVector(286, 23.0, 23.0);
+    }
+    FrameTimerWithArg(8, 298, RespectSurpriseWiz);
+    FrameTimerWithArg(8, 299, RespectSurpriseWiz);
+    FrameTimerWithArg(8, 300, RespectSurpriseWiz);
+    SummonMobRedWizard(301);
+    SummonMaiden(302, 255, 0, 0);
+    SummonMaiden(305, 255, 0, 0);
+    SetUnitMaxHealth(SummonDefaultMob("BlackWidow", 303), 325);
+    SetUnitMaxHealth(SummonDefaultMob("BlackWidow", 304), 325);
+
+    CreateObjectAt("BearTrap", LocationX(314), LocationY(314));
+}
+
+int InitPlacingBookcase()
+{
+    int i, baseUnit = CreateObjectAt("ImaginaryCaster", LocationX(268), LocationY(268));
+
+    Delete(baseUnit);
+    for (i = 0 ; i < 6 ; i ++)
+        Frozen(CreateObjectAt("MovableBookcase2", LocationX(268 + i), LocationY(268 + i)), true);
+    return baseUnit + 1;
+}
+
+void InitLibraryExZone()
+{
+    g_libExBookcase = InitPlacingBookcase();
+    InitLibraryArrowTraps();
+}
+
+void InitLibraryArrowTraps()
+{
+    int u;
+
+    for (u = 0 ; u < 9 ; u ++)
+    {
+        g_libArrowTrp[u] = Object("libarrowtrap" + IntToString(u + 1));
+        ObjectOff(g_libArrowTrp[u]);
+        HookArrowTraps(g_libArrowTrp[u]);
+    }
+}
+
+void ActivateLibArrowTrp()
+{
+    int u;
+
+    for (u = 0 ; u < 9 ; u ++)
+        ObjectOn(g_libArrowTrp[u]);
+}
+
+void DisabledLibArrowTrp()
+{
+    int u;
+
+    for (u = 0 ; u < 9 ; u ++)
+        ObjectOff(g_libArrowTrp[u]);
+}
+
+void HookArrowTraps(int trapUnit)
+{
+    int ptr = UnitToPtr(trapUnit);
+
+    if (ptr)
+        SetMemory(GetMemory(ptr + 0x2ec) + 0x0c, 693);
+}
+
+int RespectFireWizSingle(int location)
+{
+    int wiz = SummonFireballWizard(location);
+
+    Enchant(wiz, "ENCHANT_SHOCK", 0.0);
+    UniChatMessage(wiz, "갑툭튀 시전!!\n깜놀했지? ㅋㅋㅋ", 107);
+    Effect("TELEPORT", LocationX(location), LocationY(location), 0.0, 0.0);
+    Effect("COUNTERSPELL_EXPLOSION", LocationX(location), LocationY(location), 0.0, 0.0);
+    Effect("SMOKE_BLAST", LocationX(location), LocationY(location), 0.0, 0.0);
+    return wiz;
+}
+
+void RespectFireWizs()
+{
+    int u;
+
+    ObjectOff(self);
+    for (u = 0 ; u < 6 ; u ++)
+        LookAtObject(RespectFireWizSingle(306 + u), other);
+    SummonNecromancer(312);
+    SummonNecromancer(313);
+
+    UniPrintToAll("**깜짝출연 -호바스- ");
 }
