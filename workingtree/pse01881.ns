@@ -3947,5 +3947,5 @@ void LinearOrbMove(int unit, float x_vect, float y_vect, float speed, int time)
 void TestFunction()
 {
     ObjectOff(self);
-    FrameTimer(30, EntryArea6);
+    // FrameTimer(30, EntryArea6);
 }
