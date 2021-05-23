@@ -80,6 +80,26 @@ void SetPlayerDeathFlag(int plr)
     player[plr + 10] = player[plr + 10] ^ 0x02;
 }
 
+int CheckSkillFlag(int plr)
+{
+    return player[plr + 10] & 4;
+}
+
+void SetSkillFlag(int plr)
+{
+    player[plr + 10] ^= 4;
+}
+
+int CheckAllEnchantFlag(int plr)
+{
+    return player[plr + 10] & 8;
+}
+
+void SetAllEnchantFlag(int plr)
+{
+    player[plr + 10] ^= 8;
+}
+
 void SetUnitStatus(int unit, int stat)
 {
     int temp, ptr = UnitToPtr(unit);
@@ -263,6 +283,15 @@ void UnitLinkBinScript(int unit, int binAddr)
         SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, binAddr);
 }
 
+int IsPoisonedUnit(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x21c) & 0xff;
+    return 0;
+}
+
 int GetOwner(int unit)
 {
     int ptr = UnitToPtr(unit), res;
@@ -339,12 +368,49 @@ void PlaySoundAround(int sUnit, int sNumber)
 	}
 }
 
+void PlayerClassGiveAllEnchant(int pUnit)
+{
+    Enchant(pUnit, EnchantList(9), 0.0);
+    Enchant(pUnit, EnchantList(13), 0.0);
+    Enchant(pUnit, EnchantList(17), 0.0);
+    Enchant(pUnit, EnchantList(18), 0.0);
+    Enchant(pUnit, EnchantList(20), 0.0);
+    Enchant(pUnit, EnchantList(21), 0.0);
+    Enchant(pUnit, EnchantList(27), 0.0);
+}
+
 void PlayerClassOnExit(int plr)
 {
     FixPlayerDialogBug(plr);
     RemoveAllCreature(plr);
     player[plr] = 0;
     player[plr + 10] = 0;
+}
+
+void PoisonAutoCure(int sPlr)
+{
+    int arr[10], plrUnit = player[sPlr];
+
+    if (CheckAllEnchantFlag(sPlr))
+    {
+        if (IsPoisonedUnit(plrUnit))
+        {
+            CastSpellObjectObject("SPELL_CURE_POISON", plrUnit, plrUnit);
+            Effect("VIOLET_SPARKS", GetObjectX(plrUnit), GetObjectY(plrUnit), 0.0, 0.0);
+        }
+    }
+    else if (IsPoisonedUnit(plrUnit))
+    {
+        if (arr[sPlr] < 60)
+            arr[sPlr] += IsPoisonedUnit(plrUnit);
+        else
+        {
+            Damage(plrUnit, 0, IsPoisonedUnit(plrUnit), 5);
+            arr[sPlr] = 0;
+        }
+    }
+    else if (arr[sPlr])
+        arr[sPlr] = 0;
 }
 
 void PlayerClassOnAlive(int plr)
@@ -355,7 +421,7 @@ void PlayerClassOnAlive(int plr)
     {
         EnchantOff(pUnit, EnchantList(31));
         RemoveTreadLightly(pUnit);
-        if (UnitCheckEnchant(pUnit, GetLShift(30)))
+        if (CheckSkillFlag(plr))
             FrameTimerWithArg(1, pUnit, WarPlusSkill);
     }
     else if (!(CheckPlayerAct(pUnit) ^ 0x1a))
@@ -366,6 +432,7 @@ void PlayerClassOnAlive(int plr)
             BringAllCreature(plr);
         }
     }
+    PoisonAutoCure(plr);
 }
 
 void PlayerClassOnDeath(int plr)
@@ -457,13 +524,11 @@ void PlayerGo(int plr)
 {
     if (CheckPlayerDeathFlag(plr))
         SetPlayerDeathFlag(plr);
-    if (IsObjectOn(PlayerRespawnMark(plr)))
-    {
-        if (!HasEnchant(player[plr], "ENCHANT_CROWN"))
-            Enchant(player[plr], "ENCHANT_CROWN", 0.0);
-    }
+    if (CheckAllEnchantFlag(plr))
+        PlayerClassGiveAllEnchant(player[plr]);
+    
     MoveObject(player[plr], LocationX(23), LocationY(23));
-    DeleteObjectTimer(CreateObject("BlueRain", 23), 9);
+    DeleteObjectTimer(CreateObjectAt("BlueRain", LocationX(23), LocationY(23)), 9);
     AudioEvent("QuestPlayerJoinGame", 23);
 }
 
@@ -1161,6 +1226,8 @@ void DelayInitRun()
     IceBlock();
     ImportTellStoryUniNamePartB();
     ImportTellStoryUniNamePartA();
+
+    RegistSignMessage(Object("Sign01"), "특별한 물건을 취급하는 장소입니다. 현질 요소가 많은 곳이기도 하죠");
 }
 
 void MapInitialize()
@@ -3208,68 +3275,77 @@ void RespectBossUnit()
     ObjectOff(self);
     TeleportLocation(176, GetObjectX(self), GetObjectY(self));
     AudioEvent("QuestRespawn", 176);
-    DoubleRingFx(CreateObjectAt("AmbBeachBirds", LocationX(176), LocationY(176)));
+    DrawGeometryRing("HealOrb", 176);
     SetCallback(SpawnCaptainBoss(176), 5, BossDeath);
 }
 
-void DoubleRingFx(int subUnit)
+void DrawGeometryRing(string orbName, int location)
 {
-    int count = GetDirection(subUnit);
-    if (count < 10)
-    {
-        TeleportLocation(176, GetObjectX(subUnit), GetObjectY(subUnit));
-        SparkSpreadFx(176 | (Random(0, 3) << 0x10));
-        LookWithAngle(subUnit, count + 1);
-        FrameTimerWithArg(1, subUnit, DoubleRingFx);
-    }
-    else
-        Delete(subUnit);
+    int u, link = GetScrDataField(DrawGeometryRing) + 8;
+    float speed = 2.3;
+
+    for ( u = 0 ; u < 60 ; SetMemory(link, u + 1))
+        LinearOrbMove(CreateObjectAt(orbName, LocationX(location), LocationY(location)), MathSine((u * 6) + 90, -12.0), MathSine(u * 6, -12.0), speed, 10);
 }
 
-void GreenRingFx(int subUnit)
-{
-    int count = GetDirection(subUnit);
+// void DoubleRingFx(int subUnit)
+// {
+//     int count = GetDirection(subUnit);
+//     if (count < 10)
+//     {
+//         TeleportLocation(176, GetObjectX(subUnit), GetObjectY(subUnit));
+//         SparkSpreadFx(176 | (Random(0, 3) << 0x10));
+//         LookWithAngle(subUnit, count + 1);
+//         FrameTimerWithArg(1, subUnit, DoubleRingFx);
+//     }
+//     else
+//         Delete(subUnit);
+// }
 
-    if (count < 10)
-    {
-        TeleportLocation(209, GetObjectX(subUnit), GetObjectY(subUnit));
-        SparkSpreadFx(209 | (1 << 0x10));
-        LookWithAngle(subUnit, count + 1);
-        FrameTimerWithArg(2, subUnit, GreenRingFx);
-    }
-    else
-        Delete(subUnit);
-}
+// void GreenRingFx(int subUnit)
+// {
+//     int count = GetDirection(subUnit);
 
-void SparkSpreadFx(int flag)
-{
-    string orb = {"ManaBombOrb", "HealOrb", "CharmOrb", "DrainManaOrb"};
-    int wp = flag & 0xff, color = (flag >> 0x10) & 0xff;
-    int subUnit = CreateObject("AmbBeachBirds", wp) + 1, k;
+//     if (count < 10)
+//     {
+//         TeleportLocation(209, GetObjectX(subUnit), GetObjectY(subUnit));
+//         SparkSpreadFx(209 | (1 << 0x10));
+//         LookWithAngle(subUnit, count + 1);
+//         FrameTimerWithArg(2, subUnit, GreenRingFx);
+//     }
+//     else
+//         Delete(subUnit);
+// }
 
-    Delete(subUnit - 1);
-    for (k = 0 ; k < 30 ; k ++)
-        CreateObjectAt(ToStr(SToInt(orb) + color), LocationX(wp), LocationY(wp));
-    FrameTimerWithArg(1, subUnit, MovingSpread);
-}
+// void SparkSpreadFx(int flag)
+// {
+//     string orb = {"ManaBombOrb", "HealOrb", "CharmOrb", "DrainManaOrb"};
+//     int wp = flag & 0xff, color = (flag >> 0x10) & 0xff;
+//     int subUnit = CreateObject("AmbBeachBirds", wp) + 1, k;
 
-void MovingSpread(int subUnit)
-{
-    int k, count = GetDirection(subUnit);
+//     Delete(subUnit - 1);
+//     for (k = 0 ; k < 30 ; k ++)
+//         CreateObjectAt(ToStr(SToInt(orb) + color), LocationX(wp), LocationY(wp));
+//     FrameTimerWithArg(1, subUnit, MovingSpread);
+// }
 
-    if (count < 32)
-    {
-        for (k = 0 ; k < 30 ; k ++)
-            MoveObject(subUnit + k, GetObjectX(subUnit + k) + MathSine((k * 12) + 90, 2.0), GetObjectY(subUnit + k) + MathSine(k * 12, 2.0));
-        LookWithAngle(subUnit, count + 1);
-        FrameTimerWithArg(1, subUnit, MovingSpread);
-    }
-    else
-    {
-        for (k = 0 ; k < 30 ; k ++)
-            Delete(subUnit + k);
-    }
-}
+// void MovingSpread(int subUnit)
+// {
+//     int k, count = GetDirection(subUnit);
+
+//     if (count < 32)
+//     {
+//         for (k = 0 ; k < 30 ; k ++)
+//             MoveObject(subUnit + k, GetObjectX(subUnit + k) + MathSine((k * 12) + 90, 2.0), GetObjectY(subUnit + k) + MathSine(k * 12, 2.0));
+//         LookWithAngle(subUnit, count + 1);
+//         FrameTimerWithArg(1, subUnit, MovingSpread);
+//     }
+//     else
+//     {
+//         for (k = 0 ; k < 30 ; k ++)
+//             Delete(subUnit + k);
+//     }
+// }
 
 void BossDeath()
 {
@@ -3322,9 +3398,10 @@ int SpawnFinalBoss(int wp)
 void FinalBossDead()
 {
     UniPrintToAll("당신의 승리! 보스가 죽었습니다");
-    MoveWaypoint(167, GetObjectX(self), GetObjectY(self));
-    Effect("WHITE_FLASH", GetWaypointX(167), GetWaypointY(167), 0.0, 0.0);
-    DoubleRingFx(CreateObject("InvisibleLightBlueHigh", 167));
+    TeleportLocation(167, GetObjectX(self), GetObjectY(self));
+    Effect("WHITE_FLASH", LocationX(167), LocationY(167), 0.0, 0.0);
+    // DoubleRingFx(CreateObject("InvisibleLightBlueHigh", 167));
+    DrawGeometryRing("DrainManaOrb", 167);
     Delete(self);
     AudioEvent("OgreBruteDie", 167);
     AudioEvent("GameOver", 167);
@@ -3455,20 +3532,30 @@ void InitSoulGatePlaced()
 
 void MarketSetting()
 {
-    int ptr = MyNpc("WizardRed", 198);
+    int marketBase = MyNpc("WizardRed", 198);
 
     MyNpc("Swordsman", 208);
-    StoryPic(ptr, "MaleStaffOblivionOrb");
-    StoryPic(ptr + 1, "SpellbookEmberDemon");
-    SetDialog(ptr, "YESNO", DescriptionInvincibleItem, ITemGod);
-    SetDialog(ptr + 1, "YESNO", DescriptionAwardSkill, BuyNewSkill);
+    StoryPic(marketBase, "MaleStaffOblivionOrb");
+    StoryPic(marketBase + 1, "SpellbookEmberDemon");
+    SetDialog(marketBase, "YESNO", DescriptionInvincibleItem, ITemGod);
+    SetDialog(marketBase + 1, "YESNO", DescriptionAwardSkill, BuyNewSkill);
     SetShopkeeperText(Object("warWeaponMarket"), "전사 무기전문점");
     SetShopkeeperText(Object("warArmorMarket"), "전사 갑옷한벌 장만혀!");
     SetShopkeeperText(Object("PotionMarket"), "포션좀 보고가세요");
     SetShopkeeperText(Object("PotionMarket2"), "포션팔이 중년남성");
     Enchant(Object("PotionMarket2"), "ENCHANT_FREEZE", 0.0);
-    LookWithAngle(ptr, 192);
+    LookWithAngle(marketBase, 192);
     FrameTimer(3, SetupCreatureShop);
+
+    int allEnchantMarket = MyNpc("WizardGreen", 260);
+
+    StoryPic(allEnchantMarket, "SpellbookEmberDemon");
+    SetDialog(allEnchantMarket, "YESNO", DescriptionAllEnchant, TradeAllEnchant);
+
+    int fonMarket = MyNpc("Mimic", 261);
+
+    StoryPic(fonMarket, "SpellbookEmberDemon");
+    SetDialog(fonMarket, "YESNO", DescriptionFonAmulet, TradeFonAmulet);
 }
 
 int MyNpc(string name, int wp)
@@ -3476,20 +3563,16 @@ int MyNpc(string name, int wp)
     int unit = CreateObject(name, wp);
 
     Damage(unit, 0, MaxHealth(unit) + 1, -1);
-    Frozen(unit, 1);
+    Frozen(unit, true);
 
     return unit;
-}
-
-void ReventDialogCrash()
-{
-    Frozen(other, 0);
 }
 
 void DescriptionAwardSkill()
 {
     TellStoryUnitName("AwardGuide", "War05A.scr:ShopKeeperTalk2", "스킬구입?");
     UniPrint(other, "새로운 스킬을 구입합니다, 2만원이 요구되며 계속하려면 '예' 를 누르세요");
+    UniChatMessage(self, "스킬정보: 자신 범위 내 적에게 데미지 100", 120);
 }
 
 void BuyNewSkill()
@@ -3500,7 +3583,7 @@ void BuyNewSkill()
 
     if (plr + 1)
     {
-        if (IsObjectOn(PlayerRespawnMark(plr)))
+        if (CheckSkillFlag(plr))
         {
             UniPrint(other, "이미 능력을 배운상태 입니다!");
         }
@@ -3508,13 +3591,13 @@ void BuyNewSkill()
         {
             if (GetGold(other) >= 20000)
             {
-                MoveWaypoint(26, GetObjectX(other), GetObjectY(other));
+                TeleportLocation(26, GetObjectX(other), GetObjectY(other));
                 GreenSparkFx(26);
-                DoubleRingFx(CreateObject("InvisibleLightBlueHigh", 26));
-                Enchant(other, "ENCHANT_CROWN", 0.0);
+                // DoubleRingFx(CreateObject("InvisibleLightBlueHigh", 26));
+                DrawGeometryRing("CharmOrb", 26);
                 UniPrint(other, "결제가 완료되었습니다");
                 ChangeGold(other, -20000);
-                ObjectOn(PlayerRespawnMark(plr));
+                SetSkillFlag(plr);
             }
             else
                 UniPrint(other, "잔액이 부족합니다");
@@ -3535,13 +3618,65 @@ void ITemGod()
     
     if (GetGold(other) >= 5000)
     {
-        MoveWaypoint(167, GetObjectX(other), GetObjectY(other));
+        TeleportLocation(167, GetObjectX(other), GetObjectY(other));
         AudioEvent("TreasurePickup", 167);
         ChangeGold(other, -5000);
         UniPrint(other, "결제가 완료되었습니다, 총 " + IntToString(NotDestroyAllItems(other)) + "개 아이템이 처리되었습니다");
     }
     else
         UniPrint(other, "금화가 부족합니다!");
+}
+
+void DescriptionAllEnchant()
+{
+    UniPrint(other, "올 엔첸트 능력을 구입하시겠어요? 4만 골드가 필요합니다");
+    UniPrint(other, "올 엔첸트 능력: 흡혈, 헤이스트를 포함한 유용한 엔첸트가 항상 지속됩니다");
+    TellStoryUnitName("AwardGuide", "War09a:MysticDialog", "올엔첸트 구입");
+}
+
+void TradeAllEnchant()
+{
+    if (GetAnswer(self) ^ 1) return;
+
+    if (GetGold(other) >= 40000)
+    {
+        int plr = CheckPlayer();
+
+        if (plr < 0)
+            return;
+        if (CheckAllEnchantFlag(plr))
+            UniPrint(other, "당신은 이미 이 능력을 가졌습니다");
+        else
+        {
+            ChangeGold(other, -40000);
+            PlayerClassGiveAllEnchant(other);
+            SetAllEnchantFlag(plr);
+            UniPrint(other, "결제가 완료되었습니다");
+        }
+    }
+    else
+        UniPrint(other, "잔액이 부족합니다");
+}
+
+void DescriptionFonAmulet()
+{
+    UniPrint(other, "포오네의 목걸이를 구입하시겠어요? 5만 골드가 필요합니다");
+    UniPrint(other, "포오네 목걸이: 사용하면 포스 오브 네이쳐(일명 포오네)를 시전합니다. 약간의 쿨다운이 있습니다");
+    TellStoryUnitName("AwardGuide", "War09a:MysticDialog", "포오네목걸이 구입?");
+}
+
+void TradeFonAmulet()
+{
+    if (GetAnswer(self) ^ 1) return;
+
+    if (GetGold(other) >= 50000)
+    {
+        ChangeGold(other, -50000);
+        PlacingFonAmulet(other);
+        UniPrint(other, "결제가 완료되었습니다");
+    }
+    else
+        UniPrint(other, "잔액이 부족합니다");
 }
 
 int NotDestroyAllItems(int unit)
@@ -3690,7 +3825,8 @@ void WarPlusSkill(int caster)
         {
             Enchant(caster, "ENCHANT_ANTI_MAGIC", 10.0);
             TeleportLocation(167, GetObjectX(caster) + UnitAngleCos(caster, 25.0), GetObjectY(caster) + UnitAngleSin(caster, 25.0));
-            GreenRingFx(CreateObject("InvisibleLightBlueHigh", 167));
+            // GreenRingFx(CreateObject("InvisibleLightBlueHigh", 167));
+            DrawGeometryRing("CharmOrb", 167);
             SplashDamage(caster, 125, 120.0, 167);
             SetPlayerAction(UnitToPtr(caster), 0x1);
             AudioEvent("CrushLight", 167);
@@ -4211,6 +4347,55 @@ void RiseBlueSpark(float x, float y)
     int fx = CreateObjectAt("TeleportWake", x, y);
     Frozen(fx, 1);
     UnitNoCollide(fx);
+}
+
+void FonAmuletDecreaseCooldown(int amulet)
+{
+    if (IsObjectOn(amulet) && IsObjectOn(amulet + 1))
+    {
+        if (GetDirection(amulet + 1))
+        {
+            LookWithAngle(amulet + 1, GetDirection(amulet + 1) - 1);
+            FrameTimerWithArg(2, amulet, FonAmuletDecreaseCooldown);
+        }
+    }
+    else
+    {
+        Delete(amulet);
+        Delete(amulet + 1);
+    }
+}
+
+void ItemClassUseFonAmulet()
+{
+    int subUnit = GetTrigger() + 1;
+
+    if (IsObjectOn(subUnit))
+    {
+        if (!GetDirection(subUnit))
+        {
+            FrameTimerWithArg(1, GetTrigger(), FonAmuletDecreaseCooldown);
+            LookWithAngle(subUnit, 90);
+            RestoreHealth(other, 100);
+            TeleportLocation(262, GetObjectX(other), GetObjectY(other));
+            DrawGeometryRing("WhiteOrb", 262);
+            CastSpellObjectObject("SPELL_FORCE_OF_NATURE", other, other);
+        }
+        else
+            UniPrint(other, "쿨다운 중입니다... " + IntToString(GetDirection(subUnit)));
+        MoveObject(subUnit, GetObjectX(self), GetObjectY(self));
+    }
+}
+
+int PlacingFonAmulet(int posUnit)
+{
+    int amulet = CreateObjectAt("AmuletOfClarity", GetObjectX(posUnit), GetObjectY(posUnit));
+    int ptr = GetMemory(0x750710);
+
+    CreateObjectAt("ImaginaryCaster", GetObjectX(amulet), GetObjectY(amulet));
+    SetMemory(ptr + 0x2dc, ImportUseItemFunc());
+    SetMemory(ptr + 0x2fc, ItemClassUseFonAmulet);
+    return amulet;
 }
 
 int ImportCreateAtFunc()
@@ -5145,4 +5330,32 @@ int RedrawOnRespawn()
         FixCallOpcode(link + 0x2a, 0x4f2f70);
     }
     return link;
+}
+
+int ImportOrbMoveFunc()
+{
+	int arr[6], link;
+
+	if (!link)
+	{
+		arr[0] = 0x52353068; arr[1] = 0x72506800; arr[2] = 0x14FF0050; arr[3] = 0x54FF5024; arr[4] = 0xC4830824; arr[5] = 0x9090C30C;
+		link = GetScrDataField(ImportOrbMoveFunc);
+	}
+	return link;
+}
+
+void LinearOrbMove(int unit, float x_vect, float y_vect, float speed, int time)
+{
+	int ptr = UnitToPtr(unit), temp = GetMemory(0x5c336c);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x50, ToInt(x_vect));
+		SetMemory(ptr + 0x54, ToInt(y_vect));
+		SetMemory(ptr + 0x70, ToInt(speed));
+		SetMemory(0x5c336c, ImportOrbMoveFunc());
+		Unknownb8(ptr);
+		SetMemory(0x5c336c, temp);
+		DeleteObjectTimer(unit, time);
+	}
 }

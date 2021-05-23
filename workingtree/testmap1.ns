@@ -1087,9 +1087,66 @@ void PlayNPC_Voice(string voiceFilename)
     SetMemory(0x5c3108, temp);
 }
 
+int ImportOrbMoveFunc()
+{
+	int arr[6], link;
+
+	if (!link)
+	{
+		arr[0] = 0x52353068; arr[1] = 0x72506800; arr[2] = 0x14FF0050; arr[3] = 0x54FF5024; arr[4] = 0xC4830824; arr[5] = 0x9090C30C;
+		link = GetScrDataField(ImportOrbMoveFunc);
+	}
+	return link;
+}
+
+void LinearOrbMove(int unit, float x_vect, float y_vect, float speed, int time)
+{
+	int ptr = UnitToPtr(unit), temp = GetMemory(0x5c336c);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x50, ToInt(x_vect));
+		SetMemory(ptr + 0x54, ToInt(y_vect));
+		SetMemory(ptr + 0x70, ToInt(speed));
+		SetMemory(0x5c336c, ImportOrbMoveFunc());
+		Unknownb8(ptr);
+		SetMemory(0x5c336c, temp);
+		DeleteObjectTimer(unit, time);
+	}
+}
+
+void SpreadOrb(string orbName)
+{
+    int u, link = GetScrDataField(SpreadOrb) + 4;
+    float speed = 2.3;
+
+    for ( u = 0 ; u < 60 ; SetMemory(link, u + 1))
+        LinearOrbMove(CreateObjectAt(orbName, GetObjectX(self), GetObjectY(self)), MathSine((u * 6) + 90, -12.0), MathSine(u * 6, -12.0), speed, 10);
+}
+
 void MakeBlackBook()
 {
-    CastSpellObjectObject("SPELL_SUMMON_IMP", other, other);
+    return;
+}
+
+void GreenSpreadFx()
+{
+    SpreadOrb("CharmOrb");
+}
+
+void BlueSpreadFx()
+{
+    SpreadOrb("BlueMoveOrb");
+}
+
+void WhiteSpreadFx()
+{
+    SpreadOrb("WhiteOrb");
+}
+
+void RedSpreadFx()
+{
+    SpreadOrb("HealOrb");
 }
 
 void CallNode4e9ac0()
