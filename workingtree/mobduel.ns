@@ -170,6 +170,11 @@ int UnitToPtr(int unit)
 	return res;
 }
 
+void MapExit()
+{
+    SelfDamageClassMapExit();
+}
+
 void MapInitialize()
 {
     int t = EnableMemoryReadWriteFunction(0);
@@ -196,6 +201,8 @@ void MapInitialize()
     FrameTimer(10, resetOff);
     SecondTimer(10, spawnMapPotions);
     FrameTimer(100, selectGameMode);
+
+    MusicEvent();
 }
 
 void initializeStruct(int arg_0) {
@@ -357,6 +364,8 @@ void selectMonster()
             EnchantOff(other, "ENCHANT_SNEAK");
             player[plr] = GetCaller();
             player[plr + 10] = 1;
+            if (IsPlayerUnit(other))
+                SelfDamageClassEntry(other);
             // player[plr + 20] = GetMemory(0x979720);
             MoveObject(player[plr], GetWaypointX(1), GetWaypointY(1));
             Enchant(player[plr], "ENCHANT_INVULNERABLE", 4.0);
@@ -383,11 +392,11 @@ void loopPreservePlayerTable()
     {
         if (player[k + 10] && !CurrentHealth(player[k]))
         {
+            UniPrintToAll(ToStr(SToInt(characterName()) + k) + "(" + PlayerIngameNick(player[k]) + ")이(가) 격추되었습니다");
             player[k] = 0;
             MoveObject(FAN_CHAK[k], GetWaypointX(104), GetWaypointY(104));
             resetMonsterPlaced(k);
             player[k + 10] = 0;
-            UniPrintToAll(ToStr(SToInt(characterName()) + k) + "(" + PlayerIngameNick(player[k]) + ")이(가) 격추되었습니다");
         }
         else if (CurrentHealth(player[k]))
         {
@@ -3555,4 +3564,45 @@ string PlayerIngameNick(int sUnit)
         }
     }
     return "NULL";
+}
+
+int ImportCheckSelfDamage()
+{
+    int arr[14], link;
+
+    if (!link)
+    {
+        arr[0] = 0x4C8B5651; arr[1] = 0xC9850C24; arr[2] = 0x748B2374; arr[3] = 0xF6851024; arr[4] = 0xF1391B74; arr[5] = 0x8B501374; arr[6] = 0x0001FC86;
+        arr[7] = 0x74C08500; arr[8] = 0x58F08B05; arr[9] = 0xEB58ECEB; arr[10] = 0xC3595E04; arr[11] = 0x68595E90; arr[12] = 0x004E17B0; arr[13] = 0x909090C3;
+        link = GetScrDataField(ImportCheckSelfDamage);
+    }
+    return link;
+}
+
+void SelfDamageClassEntry(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+        SetMemory(ptr + 0x2cc, ImportCheckSelfDamage());
+}
+
+void SelfDamageClassMapExit()
+{
+    int i, pTable = 0x62f9e0, ptr;
+    int link = GetScrDataField(SelfDamageClassMapExit);
+
+    for (i = 31 ; i >= 0 ; Unused59(link, Unknownb9(link) - 1))
+    {
+        SetMemory(link + 8, GetMemory(pTable));
+        if (ptr)
+        {
+            SetMemory(ptr + 0x2cc, 0x4e17b0);
+            // SetMemory(ptr + 0x2d4, 0x54d2b0);
+            // if (GetMemory(ptr + 0x2e8) ^ 0x4E62F0)      //@brief. 관객모드가 아닐 경우에만 되돌립니다//
+                // SetMemory(GetMemory(pTable) + 0x2e8, 0x4f8100);     //@brief. 업데이트 되돌리기//
+            // CancelPlayerDialogWithPTR(GetMemory(pTable));
+        }
+        Unused59(link + 4, Unknownb9(link + 4) + 0x12dc);
+    }
 }
