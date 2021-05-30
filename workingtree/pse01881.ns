@@ -15,6 +15,9 @@ int g_puzzleGens = 0;
 
 object g_ternnelSwitch;
 
+object g_frontBlocks;
+object g_backBlocks;
+
 int EnableMemoryReadWriteFunction(int t) { }
 float ToFloat(int arg) { StopScript(arg); }
 int ToInt(float arg) { StopScript(arg); }
@@ -298,7 +301,7 @@ void MapInitialize()
     ImportUniChatCore();
     ImportUniPrintCore();
     ImportUnitCollideFunc();
-    CallFunctionWithArgInt(0, 0);
+    // CallFunctionWithArgInt(0, 0);
     MapWaypointInit();
 
     int ptr = DiePlayerHandlerCopiedCode();
@@ -856,6 +859,7 @@ int PlayerUpdate4f8460()
         arr[56] = 0xC3004F99; arr[57] = 0x01148F8B; arr[58] = 0xD2310000; arr[59] = 0x0810918A; arr[60] = 0xE8520000; arr[61] = 0xF29E52A8; arr[62] = 0x5604C483;
         arr[63] = 0x9C255FE8; arr[64] = 0x04C483F2; arr[65] = 0x4F850B68; arr[66] = 0x9090C300;
         link = GetScrDataField(PlayerUpdate4f8460);
+        
         FixCallOpcode(link + 0x4d, 0x40a5c0);
         FixCallOpcode(link + 0x70, 0x40a5c0);
         FixCallOpcode(link + 0x94, 0x51ab50);
@@ -1257,18 +1261,8 @@ int CalleeArgInt(int arg)
 
 int CallFunctionWithArgInt(int func, int arg)
 {
-    int link;
-
-    if (!link)
-    {
-        link = GetMemory(GetMemory(0x75ae28) + ((0x30 * CalleeArgInt) + 0x20));
-        return 0;
-    }
-    else
-    {
-        SetMemory(link + 0x10, func);
-        return CalleeArgInt(arg);
-    }
+    SetMemory(GetScrCodeField(CalleeArgInt) + 0x10, func);
+    return CalleeArgInt(arg);
 }
 
 void SetDirectWeaponProperty(int unit, int propertyOffs1, int propertyOffs2, int propertyOffs3, int propertyOffs4)
@@ -2004,7 +1998,7 @@ void MobMakerMobDeath()
     DungeonMonsterDeath();
 }
 
-int PlaceMobMaker(int location, int count, int function)
+int PlaceMobMaker(int location, int count, object function)
 {
     int maker = CreateObjectAt("ImaginaryCaster", LocationX(location), LocationY(location));
     int counter = MobMakerCounter();
@@ -2135,6 +2129,7 @@ void DelayMapInit()
     Enchant(g_ternnelSwitch, EnchantList(0), 0.0);
     FrameTimer(30, LoopSearchIndex);
     FrameTimer(60, InitBlocks);
+    FrameTimer(60, InitLastPart);
     FrameTimer(20, InitWeaponContainer);
     FrameTimer(1, InitializeGenerators);
     FrameTimer(80, MonStrikeBuffInit);
@@ -2474,11 +2469,7 @@ void Callee()
 
 void CallFunction(int func)
 {
-    int link;
-
-    if (!link)
-        link = GetScrCodeField(Callee);
-    SetMemory(link + 4, func);
+    SetMemory(GetScrCodeField(Callee) + 4, func);
     Callee();
 }
 
@@ -3948,4 +3939,153 @@ void TestFunction()
 {
     ObjectOff(self);
     // FrameTimer(30, EntryArea6);
+}
+
+void FrontBlockMovingToRight(int block)
+{
+    int remain = GetDirection(block);
+
+    if (remain)
+    {
+        FrameTimerWithArg(1, block, FrontBlockMovingToRight);
+        MoveObjectVector(block, 1.0, -1.0);
+    }
+}
+
+void FrontBlockMovingToLeft(int block)
+{
+    int remain = GetDirection(block);
+
+    if (remain)
+    {
+        FrameTimerWithArg(1, block, FrontBlockMovingToLeft);
+        MoveObjectVector(block, -1.0, 1.0);
+    }
+}
+
+void RemoveFrontBlockWalls()
+{
+    int i;
+
+    for (i = 0 ; i < 5 ; i ++)
+    {
+        ClearWallAtWaypointPos(118);
+        TeleportLocationVector(118, -23.0, 23.0);
+    }
+}
+
+void StartFrontBlocks()
+{
+    int blocks = g_frontBlocks;
+
+    if (!IsObjectOn(blocks))
+    {
+        ObjectOn(blocks);
+        FrameTimerWithArg(1, blocks, FrontBlockMovingToRight);
+        FrameTimerWithArg(1, blocks + 1, FrontBlockMovingToRight);
+        FrameTimerWithArg(1, blocks + 2, FrontBlockMovingToRight);
+        FrameTimerWithArg(1, blocks + 3, FrontBlockMovingToRight);
+        SecondTimer(3, RemoveFrontBlockWalls);
+    }
+}
+
+void FrontBlockLever()
+{
+    int count;
+
+    ObjectOff(self);
+    count ++;
+    if (count == 2)
+        StartFrontBlocks();
+}
+
+int InitSecondBlocks()
+{
+    int blocks = CreateObjectAt("IronBlock", LocationX(111), LocationY(111));
+
+    Frozen(CreateObjectAt("IronBlock", LocationX(112), LocationY(112)), true);
+    Frozen(CreateObjectAt("IronBlock", LocationX(113), LocationY(113)), true);
+    Frozen(CreateObjectAt("IronBlock", LocationX(114), LocationY(114)), true);
+    Frozen(blocks, true);
+    ObjectOff(blocks);
+
+    return blocks;
+}
+
+void BackBlockMovingToRight(int block)
+{
+    int remain = GetDirection(block);
+
+    if (remain)
+    {
+        FrameTimerWithArg(1, block, BackBlockMovingToRight);
+        MoveObjectVector(block, 2.0, 2.0);
+    }
+}
+
+void BackBlockMovingToLeft(int block)
+{
+    int remain = GetDirection(block);
+
+    if (remain)
+    {
+        FrameTimerWithArg(1, block, BackBlockMovingToLeft);
+        MoveObjectVector(block, -2.0, 2.0);
+    }
+}
+
+void StartBackBlocks()
+{
+    int blocks = g_backBlocks;
+
+    ObjectOff(self);
+    if (!IsObjectOn(blocks))
+    {
+        FrameTimerWithArg(3, blocks, BackBlockMovingToRight);
+        FrameTimerWithArg(3, blocks + 1, BackBlockMovingToRight);
+        FrameTimerWithArg(3, blocks + 2, BackBlockMovingToRight);
+    }
+}
+
+void StartBackBlocks2()
+{
+    int blocks = g_backBlocks + 3;
+
+    ObjectOff(self);
+    if (!IsObjectOn(blocks))
+    {
+        FrameTimerWithArg(3, blocks, BackBlockMovingToLeft);
+        FrameTimerWithArg(3, blocks + 1, BackBlockMovingToLeft);
+        FrameTimerWithArg(3, blocks + 2, BackBlockMovingToLeft);
+    }
+}
+
+int InitBackBlocks()
+{
+    int blocks = CreateObjectAt("SpikeBlock", LocationX(115), LocationY(115));
+
+    CreateObjectAt("SpikeBlock", LocationX(116), LocationY(116));
+    CreateObjectAt("SpikeBlock", LocationX(117), LocationY(117));
+
+    ObjectOff(CreateObjectAt("SpikeBlock", LocationX(118), LocationY(118)));
+    CreateObjectAt("SpikeBlock", LocationX(119), LocationY(119));
+    CreateObjectAt("SpikeBlock", LocationX(120), LocationY(120));
+    ObjectOff(blocks);
+    return blocks;
+}
+
+void InitLastPart()
+{
+    g_frontBlocks = InitSecondBlocks();
+    g_backBlocks = InitBackBlocks();
+}
+
+void EndArea8()
+{ }
+
+void EntryArea8()
+{
+    MobMakerStartSummon(9, PlaceMobMaker(109, 30, SummonMobPlant));
+
+    SetNextFunction(EndArea8);
 }
