@@ -27,6 +27,11 @@ int GetScrCodeField(int functionName)
     return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x20));
 }
 
+int FixCallOpcode(int curAddr, int targetAddr)
+{
+    SetMemory(curAddr + 1, targetAddr - curAddr - 5);
+}
+
 void SetUnitMaxHealth(int unit, int amount)
 {
     int ptr = UnitToPtr(unit);
@@ -203,6 +208,7 @@ void MapInitialize()
     FrameTimer(100, selectGameMode);
 
     MusicEvent();
+    FrameTimer(1, NetClientLoop);
 }
 
 void initializeStruct(int arg_0) {
@@ -498,7 +504,11 @@ void DecreaseCooldown(int arg_0)
                 UniPrint(player[arg_0], "지금 " + ToStr(SToInt(skillName()) + (i / 10)) + " 스킬 쿨다운이 완료되었습니다");
         }
         else if (!IsObjectOn(MAGIC_ORB[arg_0 + i]) && CurrentHealth(player[arg_0]))
+        {
             MAGIC_ORB[arg_0 + i] = CreateObject(ToStr(SToInt(cooldownDotType()) + (i / 10)), 103);
+            Frozen(MAGIC_ORB[arg_0 + i], true);
+            UnitNoCollide(MAGIC_ORB[arg_0 + i]);
+        }
     }
 }
 
@@ -511,7 +521,7 @@ string skillName()
 
 string cooldownDotType()
 {
-    string table = {"HealOrb", "CharmOrb", "DrainManaOrb", "ManaBombOrb"};
+    string table = {"OldDarkWoodenChair3", "OldDarkWoodenChair1", "OldDarkWoodenChair2", "OldDarkWoodenChair4"};
 
     return table;
 }
@@ -658,7 +668,7 @@ void skillEyeofwolf(int arg_0)
     if (!time[0])
     {
         time[0] = 30; time[1] = 30; time[2] = 30; time[3] = 30; time[4] = 30;
-        time[5] = 40; time[6] = 30; time[7] = 30; time[8] = 30; time[9] = 30;
+        time[5] = 40; time[6] = 30; time[7] = 30; time[8] = 30; time[9] = 60;
         return;
     }
     if (!MAGIC_ORB[arg_0 + 50] && !HasEnchant(player[arg_0], "ENCHANT_ANCHORED"))
@@ -1210,12 +1220,12 @@ void lichSkillA(int arg_0)
             SetOwner(player[arg_0], ray_id);
             SetRayRadian(player[arg_0], ray_addr);
             Enchant(player[arg_0], "ENCHANT_INVULNERABLE", 0.9);
-            FrameTimerWithArg(4, arg_0, lichSkillA);
+            FrameTimerWithArg(19, arg_0, lichSkillA);
         }
         else
         {
             MoveObject(ray_id, GetWaypointX(96), GetWaypointY(96));
-            FrameTimerWithArg(10, arg_0, lichSkillA);
+            FrameTimerWithArg(6, arg_0, lichSkillA);
         }
         rep ++;
     }
@@ -1536,34 +1546,42 @@ void ogreSkillS(int arg_0) {
     }
 }
 
-void lichSkillS(int arg_0) {
-    int var_0;
-    int var_1;
+void lichSkillS(int plr) {
+    int var_0, glow;
     int var_2[18];
     int i;
 
-    if (CurrentHealth(player[arg_0]) > 0 && var_0 < 100) {
+    if (CurrentHealth(player[plr]) > 0 && var_0 < 100) {
         if (var_0 == 0) {
-            var_1 = CreateObject("moonglow", 2);
-            SetOwner(player[arg_0], var_1);
-            Enchant(player[arg_0], "ENCHANT_ANCHORED", 0.0);
+            glow = CreateObject("moonglow", 2);
+            SetOwner(player[plr], glow);
+            Enchant(player[plr], "ENCHANT_ANCHORED", 0.0);
         }
-        else if (var_0 == 1) {
-            MoveWaypoint(98, GetObjectX(var_1), GetObjectY(var_1));
-            Delete(var_1);
-            flagMode(arg_0, 0);
+        else if (var_0 == 1)
+        {
+            if (IsVisibleTo(player[plr], glow))
+            {
+                MoveWaypoint(98, GetObjectX(glow), GetObjectY(glow));
+            }
+            else
+            {
+                MoveWaypoint(98, GetObjectX(player[plr]), GetObjectY(player[plr]));
+                UniPrint(player[plr], "마우스 커서 지역을 볼수 없어서 자기 주변에 시전됩니다");
+            }
+            Delete(glow);
+            flagMode(plr, 0);
         }
         else {
             flagMode(0, 1);
         }
         var_0 += 1;
-        FrameTimerWithArg(1, arg_0, lichSkillS);
+        FrameTimerWithArg(1, plr, lichSkillS);
     }
     else {
         var_0 = 0;
-        COOLDOWN[arg_0 + 10] = 0;
-        Delete(var_1);
-        EnchantOff(player[arg_0], "ENCHANT_ANCHORED");
+        COOLDOWN[plr + 10] = 0;
+        Delete(glow);
+        EnchantOff(player[plr], "ENCHANT_ANCHORED");
         flagMode(0, 2);
     }
 }
@@ -1891,7 +1909,7 @@ void FlyingTrackingBullet(int ptr)
 {
     int owner = GetOwner(ptr), count = ToInt(GetObjectZ(ptr)), target;
 
-    if (CurrentHealth(owner) && count < 20)
+    if (CurrentHealth(owner) && count < 25)
     {
         if (GetDirection(ptr + 1))
         {
@@ -2783,6 +2801,37 @@ int ogreTrg()
     return switch;
 }
 
+void LichStatueCollide()
+{
+    int owner = GetOwner(self);
+
+    while (GetTrigger())
+    {
+        if (CurrentHealth(other) && IsAttackedBy(other, owner))
+        {
+            Damage(other, owner, 60, 9);
+            Enchant(other, "ENCHANT_CHARMING", 0.2);
+        }
+        else if (!GetCaller())
+            DestroyWallAtUnitPos(self);
+        else
+            break;
+        Delete(self);
+        break;
+    }
+}
+
+int LichStatue(float xProfile, float yProfile, int index)
+{
+    int statue = CreateObjectAt(ToStr(SToInt(SpiritStatues()) + ((index % 16) / 2)), xProfile, yProfile);
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
+    SetMemory(ptr + 0x2fc, LichStatueCollide);
+
+    return statue;
+}
+
 void flagMode(int plr, int mode)
 {
     //owner_index, mode(0: spawn, 1: control, 2: remove)
@@ -2793,19 +2842,21 @@ void flagMode(int plr, int mode)
     {
         if (!mode)
         {
-            MoveWaypoint(97, GetWaypointX(98) + mathSine(i * 20 + 90, 200.0), GetWaypointY(98) + mathSine(i * 20, 200.0));
-            unit[i] = CreateObject(ToStr(SToInt(SpiritStatues()) + ((i % 16) / 2)), 97);
+            // MoveWaypoint(97, GetWaypointX(98) + mathSine(i * 20 + 90, 200.0), GetWaypointY(98) + mathSine(i * 20, 200.0));
+            // unit[i] = CreateObject(ToStr(SToInt(SpiritStatues()) + ((i % 16) / 2)), 97);
+            unit[i] = LichStatue(GetWaypointX(98) + mathSine(i * 20 + 90, 200.0), GetWaypointY(98) + mathSine(i * 20, 200.0), i);
             SetOwner(player[plr], unit[i]);
-            Effect("SMOKE_BLAST", GetWaypointX(97), GetWaypointY(97), 0.0, 0.0);
+            Effect("SMOKE_BLAST", GetWaypointX(98), GetWaypointY(98), 0.0, 0.0);
         }
-        else if (mode == 1)
+        else if (IsObjectOn(unit[i]))
         {
-            if (!HasEnchant(unit[i], "ENCHANT_SHOCK"))
-                Enchant(unit[i], "ENCHANT_SHOCK", 0.0);
-            PushObject(unit[i], -1.0, GetWaypointX(98), GetWaypointY(98));
+            if (mode == 1)
+            {
+                PushObject(unit[i], -1.0, GetWaypointX(98), GetWaypointY(98));
+            }
+            else if (mode == 2)
+                Delete(unit[i]);
         }
-        else if (mode == 2)
-            Delete(unit[i]);
     }
 }
 
@@ -3605,4 +3656,327 @@ void SelfDamageClassMapExit()
         }
         Unused59(link + 4, Unknownb9(link + 4) + 0x12dc);
     }
+}
+
+int GetPlayerIndex(int plrUnit)
+{
+    int ptr = UnitToPtr(plrUnit);
+
+    if (ptr)
+        return GetMemory(GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x810);
+    return -1;
+}
+
+int ValidPlayerCheck(int plrUnit)
+{
+    int plrArr[32], pIndex = GetPlayerIndex(plrUnit);
+
+    if (pIndex >= 0)
+    {
+        if (plrUnit ^ plrArr[pIndex])
+        {
+            plrArr[pIndex] = plrUnit;
+            return true;
+        }
+    }
+    return false;
+}
+
+int NoxOpcodeCmdLine()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x49E85650; arr[1] = 0x85FFDB62; arr[2] = 0x8B1174C0; arr[3] = 0x8D30FFF0;
+        arr[4] = 0x30FF0446; arr[5] = 0xCF2C68E8; arr[6] = 0x08C483FF; arr[7] = 0x90C3585E;
+        link = GetScrDataField(NoxOpcodeCmdLine);
+        FixCallOpcode(link + 2, 0x507250);
+        FixCallOpcode(link + 0x14, 0x443c80);
+    }
+    return link;
+}
+
+void CmdLine(string commandMessage, int isShow)
+{
+    int destPtr = GetScrDataField(CmdLine) + 12;
+    int dest[100];
+    int srcPtr = GetMemory(0x97bb40 + (SToInt(commandMessage) * 4));
+    int previousFunctionPtr = GetMemory(0x5c3108);
+
+    NoxUtf8ToUnicode(srcPtr, destPtr);
+    SetMemory(0x5c3108, NoxOpcodeCmdLine());
+    Unused1f(GetScrDataField(CmdLine) + 4);
+    SetMemory(0x5c3108, previousFunctionPtr);
+}
+
+int ImportStreamCopy()
+{
+    int arr[8], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50515756; arr[1] = 0xDB6247E8; arr[2] = 0xE8C88BFF; arr[3] = 0xFFDB6240; arr[4] = 0x39E8F88B; arr[5] = 0x8BFFDB62; arr[6] = 0x58A5F3F0; arr[7] = 0xC35E5F59;
+        link = GetScrDataField(ImportStreamCopy);
+        FixCallOpcode(link + 4, 0x507250);
+        FixCallOpcode(link + 0xb, 0x507250);
+        FixCallOpcode(link + 0x12, 0x507250);
+    }
+    return link;
+}
+
+void StreamCopy(int src, int dst, int len)
+{
+    int temp = GetMemory(0x5c3320);
+
+    SetMemory(0x5c3320, ImportStreamCopy());
+    GroupRunAway(src, dst, len);
+    SetMemory(0x5c3320, temp);
+}
+
+int NetClientExec()
+{
+    int arr[3], link;
+
+    arr[0] = 0xdf;
+    link = GetScrDataField(NetClientExec);
+    return link;
+}
+
+void ClientSetMemory(int user, int targetAddr, int byte)
+{
+    int ptr = NetClientExec();
+
+    SetMemory(ptr + 1, targetAddr - 0x6d495c);
+    SetMemory(ptr + 5, byte);
+    NetClientSend(user, ptr, 6);
+}
+
+int ImportNetSendClient()
+{
+    int arr[15], link;
+
+    if (!link)
+    {
+        arr[0] = 0x40EBC068; arr[1] = 0x72506800; arr[2] = 0x83500050; arr[3] = 0x54FF10EC; arr[4] = 0x44891424;
+        arr[5] = 0x54FF0C24; arr[6] = 0x44891424; arr[7] = 0x54FF0824; arr[8] = 0x44891424; arr[9] = 0x54FF0424;
+        arr[10] = 0x04891424; arr[11] = 0x2454FF24; arr[12] = 0x10C48318; arr[13] = 0x08C48358; arr[14] = 0x909090C3;
+        link = GetScrDataField(ImportNetSendClient);
+    }
+    return link;
+}
+
+void NetClientSend(int plrUnit, int buffPtr, int buffSize)
+{
+    //netClientSend,0x0040EBC0
+    int plrPtr = UnitToPtr(plrUnit), plrIdx;
+    int temp = GetMemory(0x5c315c);
+
+    if (plrPtr)
+    {
+        if (GetMemory(plrPtr + 0x08) & 0x04)
+        {
+            plrIdx = GetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0x810);
+            //5c31ac
+            SetMemory(0x5c315c, ImportNetSendClient());
+            GroupDamage(plrIdx, 1, buffPtr, buffSize);
+            SetMemory(0x5c315c, temp);
+        }
+    }
+}
+
+void NetClientSendRaw(int pIndex, int boolDirection, int buffPtr, int buffSize)
+{
+    int temp = GetMemory(0x5c315c);
+
+    SetMemory(0x5c315c, ImportNetSendClient());
+    GroupDamage(pIndex, boolDirection, buffPtr, buffSize);
+    SetMemory(0x5c315c, temp);
+}
+
+void DelayLink(int pUnit)
+{
+    ClientSetMemory(pUnit, 0x69ba98 + 0, 0);
+    ClientSetMemory(pUnit, 0x69ba98 + 1, 0x10);
+    ClientSetMemory(pUnit, 0x69ba98 + 2, 0x75);
+}
+
+int ImageResourceDrawFunctionFix(int bptr)
+{
+    int arr[58];
+
+    arr[0] = 0x83EC8B55; arr[1] = 0x8B5608EC; arr[2] = 0x358B0845; arr[3] = 0x0069F224; arr[4] = 0x8BFC4589; arr[5] = 0x348B6C40; arr[6] = 0xF8758986;
+    arr[7] = 0x5D5350A1; arr[8] = 0x60768B00; arr[9] = 0x1374F039; arr[10] = 0xB8F8758B; arr[11] = 0x004BCC20; arr[12] = 0x8B584689; arr[13] = 0x4689FC75;
+    arr[14] = 0x5EC03158; arr[15] = 0x5D08C483; arr[16] = 0x909090C3; arr[17] = 0x83EC8B55; arr[18] = 0x8B5620EC; arr[19] = 0xE8560C75; arr[20] = 0xFFFFFFAC;
+    arr[21] = 0x8504C483; arr[22] = 0x8B2274C0; arr[23] = 0xC0850846; arr[24] = 0x31561B74; arr[25] = 0x708B66F6; arr[26] = 0x4860A108; arr[27] = 0x348D0069;
+    arr[28] = 0xB0048DF6; arr[29] = 0x8BF04589; arr[30] = 0xEC458900; arr[31] = 0xE445895E; arr[32] = 0x3474C085; arr[33] = 0x896C468B; arr[34] = 0xB68BF445;
+    arr[35] = 0x00000130; arr[36] = 0x8904768B; arr[37] = 0x068BFC75; arr[38] = 0x8BF84589; arr[39] = 0x69F22435; arr[40] = 0xF4458B00; arr[41] = 0x8B86348D;
+    arr[42] = 0x74468B36; arr[43] = 0x89F0758B; arr[44] = 0xFC458B06; arr[45] = 0x3089F631; arr[46] = 0x8B08758D; arr[47] = 0xFF500446; arr[48] = 0xBA96E836;
+    arr[49] = 0xC483FFD6; arr[50] = 0x458B5008; arr[51] = 0x74C085E4; arr[52] = 0xFC458B10; arr[53] = 0x89F8758B; arr[54] = 0xF0458B30; arr[55] = 0x89EC758B;
+    arr[56] = 0x835E5830; arr[57] = 0xC35D20C4;
+    StreamCopy(GetScrDataField(ImageResourceDrawFunctionFix) + 4, bptr, 58);
+    return bptr + 0x44;
+}
+
+void ApplyImageResourceFix(int thingId, int rscPtr, int drawF)
+{
+    int chandle = GetMemory(0x5d5350);
+    int tPtr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
+
+    //SetMemory(tPtr + 0x54, chandle);
+    SetMemory(tPtr + 0x60, chandle);
+    SetMemory(tPtr + 0x58, drawF);
+    SetMemory(tPtr + 0x74, rscPtr);
+}
+
+void RectangleImageKeyJ()
+{ }
+
+void RectangleImageKeyK()
+{ }
+
+void RectangleImageKeyL()
+{ }
+
+void RectangleImageSpacebar()
+{ }
+
+int TestPacket()
+{
+    int first = 0x020002a8, second = 0, third = 0x31000001;
+    int nop = 0;
+
+    return GetScrDataField(TestPacket);
+}
+
+void ClientTestPacket()
+{
+    int packet = TestPacket();
+    //A8 13 03 04 2E 05 8A 05 1E B4 00 F8 AD 20 00 04 B2 6C AD E0 B4 20 00 F5 AC B0 C0 FC C8 58 C7 20 00 38 C1 25 B8 D0 C5 20 00 18 BC 00 B3 58 D5 74 BA 20 00 A9 C6 1C C1 58 D5 C0 C9 20 00 4A C5 94 B2 E4 B2 21 00 00 00 00
+
+    NetClientSendRaw(31, 0, packet, 13);
+}
+
+void PlayerClassCommonWhenEntry()
+{
+    int drawF = ImageResourceDrawFunctionFix(0x7510c4);
+
+    ApplyImageResourceFix(579, GetScrCodeField(RectangleImageKeyJ) + 4, drawF);
+    ApplyImageResourceFix(580, GetScrCodeField(RectangleImageKeyK) + 4, drawF);
+    ApplyImageResourceFix(581, GetScrCodeField(RectangleImageKeyL) + 4, drawF);
+    ApplyImageResourceFix(582, GetScrCodeField(RectangleImageSpacebar) + 4, drawF);
+
+    CmdLine("say 게임 참가완료", false);
+    // if (!GetMemory(0x654284))   //!RemoveMe
+    //     ClientTestPacket();     //!RemoveMe
+}
+
+void ClientMain()
+{
+    int v0;
+
+    if (!v0)
+    {
+        v0 = EnableMemoryReadWriteFunction(0);
+        SetMemory(0x69ba98, 0x43de10);
+        PlayerClassCommonWhenEntry();
+
+        v0 ++;
+    }
+}
+
+void ClientEntry(int cliUnit)
+{
+    //6A 00 6A 00/ 68 7F 00 00/ 00 E8 02 63/ DB FF 83 C4/ 0C 68 B0 95/ 4B 00 C3 90: 24Byte
+    ClientSetMemory(cliUnit, 0x751000, 0x6a);
+    ClientSetMemory(cliUnit, 0x751001, 0x00);
+    ClientSetMemory(cliUnit, 0x751002, 0x6a);
+    ClientSetMemory(cliUnit, 0x751003, 0x00);
+    ClientSetMemory(cliUnit, 0x751004, 0x68);
+    ClientSetMemory(cliUnit, 0x751005, ClientMain & 0xff);
+    ClientSetMemory(cliUnit, 0x751006, (ClientMain >> 8) & 0xff);
+    ClientSetMemory(cliUnit, 0x751007, 0);
+    ClientSetMemory(cliUnit, 0x751008, 0);
+    ClientSetMemory(cliUnit, 0x751009, 0xe8);
+    ClientSetMemory(cliUnit, 0x75100a, 0x02);
+    ClientSetMemory(cliUnit, 0x75100b, 0x63);
+    ClientSetMemory(cliUnit, 0x75100c, 0xdb);
+    ClientSetMemory(cliUnit, 0x75100d, 0xff);
+    ClientSetMemory(cliUnit, 0x75100e, 0x83);
+    ClientSetMemory(cliUnit, 0x75100f, 0xc4);
+    ClientSetMemory(cliUnit, 0x751010, 0x0c);
+    ClientSetMemory(cliUnit, 0x751011, 0x68);
+    ClientSetMemory(cliUnit, 0x751012, 0x10);
+    ClientSetMemory(cliUnit, 0x751013, 0xde);
+    ClientSetMemory(cliUnit, 0x751014, 0x43);
+    ClientSetMemory(cliUnit, 0x751015, 0x00);
+    ClientSetMemory(cliUnit, 0x751016, 0xc3);
+    FrameTimerWithArg(1, cliUnit, DelayLink);
+}
+
+void NetServerMapped(int pIndex, int plrUnit)   //@brief. 서버 측 처리를 여기서 구성합니다
+{
+    PlayerClassCommonWhenEntry();
+}
+
+void NetClientMapped(int pIndex, int plrUnit)   //@brief. 여기에서 클라이언트 메인을 구성합니다
+{
+    ClientEntry(plrUnit);
+}
+
+void NetClientRegist(int pIndex, int plrPtr)
+{
+    int plrUnit = GetMemory(plrPtr + 0x2c);
+
+    if (!plrUnit)
+        return;
+
+    if (ValidPlayerCheck(plrUnit))
+    {
+        if (plrUnit == GetHost())
+            NetServerMapped(pIndex, plrUnit);
+        else
+            NetClientMapped(pIndex, plrUnit);
+    }
+}
+
+void NetClientLoop()
+{
+    int u, link = GetScrDataField(NetClientLoop);
+
+    for (u = 0 ; u < 32 ; SetMemory(link, u + 1))
+    {
+        if (GetMemory(0x62f9e0 + (u * 0x12dc)))
+            NetClientRegist(u, GetMemory(0x62f9e0 + (u * 0x12dc)));
+    }
+    FrameTimer(1, NetClientLoop);
+}
+
+void DestroyWallAtUnitPos(int sUnit)
+{
+    int xPos = FloatToInt(GetObjectX(sUnit)), yPos = FloatToInt(GetObjectY(sUnit));
+    int spX, spY, tx, ty, rx;
+
+    if (xPos > yPos) xPos += 23;
+    else             yPos += 23;
+    spX = (xPos + yPos - 22) / 46;
+    spY = (xPos - yPos) / 46;
+    tx = spX * 46;
+    ty = spY * 46;
+    rx = (tx + ty) / 2;
+    WallBreak(Wall(rx / 23, (rx - ty) / 23));
+}
+
+int ImportUnitCollideFunc()
+{
+    int arr[10], link;
+
+    if (!link)
+    {
+        arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x14246C8B; arr[3] = 0x1824748B;
+        arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
+        arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
+        link = GetScrDataField(ImportUnitCollideFunc);
+    }
+    return link;
 }

@@ -5,12 +5,30 @@ int MobMakeFuncCount = 12;
 int LastUnitID = 129;
 int player[30];
 float pi = 3.1415926535;
-int Gvar_4[10]; //stones
+int g_subStone[10]; //stones
 int HAMMER[16]; //hammers + cooldown_table
 int max_ham = 8;
 string WpEnchant;
 
-int EnableMemoryReadWriteFunction(int t) {}
+int g_maxMobCount = 32;
+int EnableMemoryReadWriteFunction(int t) { }
+float ToFloat(int arg) { StopScript(arg); }
+int ToInt(float arg) { StopScript(arg); }
+string ToStr(int arg) { StopScript(arg); }
+int SToInt(string arg) { StopScript(arg); }
+int GetMemory(int addr) { return Unknownb9(addr); }
+float GetMemoryFloat(int addr) { StopScript(Unknownb9(addr)); }
+void SetMemory(int addr, int value) { Unused59(addr, value); }
+
+int GetScrDataField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x1c));
+}
+
+int GetScrCodeField(int functionName)
+{
+    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x20));
+}
 
 int BlackWidowBinTable()
 {
@@ -23,8 +41,7 @@ int BlackWidowBinTable()
 		arr[33] = 21; arr[34] = 50; arr[35] = 3; arr[36] = 12; arr[37] = 1684631635; 
 		arr[38] = 1884516965; arr[39] = 29801; arr[53] = 1128792064; arr[55] = 20; arr[56] = 28; 
 		arr[59] = 5544896; arr[61] = 45071360; 
-		CancelTimer(FrameTimerWithArg(10, BlackWidowBinTable, BlackWidowBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(BlackWidowBinTable);
 	}
 	return link;
 }
@@ -56,8 +73,7 @@ int BomberBinTable()
 		arr[21] = 1065353216; arr[23] = 1; arr[24] = 1065353216; arr[26] = 4; arr[37] = 1399876937; 
 		arr[38] = 7630696; arr[53] = 1128792064; arr[55] = 8; arr[56] = 14; arr[58] = 5547856; 
 		arr[60] = 1348; arr[61] = 46899968; 
-		CancelTimer(FrameTimerWithArg(10, BomberBinTable, BomberBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(BomberBinTable);
 	}
 	return link;
 }
@@ -89,8 +105,7 @@ int MaidenBinTable()
 		arr[23] = 32768; arr[24] = 1065353216; arr[25] = 3; arr[26] = 9; arr[27] = 5; 
 		arr[28] = 1106247680; arr[29] = 35; arr[32] = 9; arr[33] = 17; arr[59] = 5542432; 
 		arr[60] = 1385; arr[61] = 46907904; 
-		CancelTimer(FrameTimerWithArg(10, MaidenBinTable, MaidenBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(MaidenBinTable);
 	}
 	return link;
 }
@@ -122,8 +137,7 @@ int LichLordBinTable()
 		arr[23] = 2060; arr[24] = 1065353216; arr[25] = 1; arr[26] = 4; arr[27] = 7; 
 		arr[28] = 1108082688; arr[29] = 40; arr[30] = 1092616192; arr[32] = 13; arr[33] = 21; 
 		arr[57] = 5548288; arr[59] = 5542784; 
-		CancelTimer(FrameTimerWithArg(10, LichLordBinTable, LichLordBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(LichLordBinTable);
 	}
 	return link;
 }
@@ -156,8 +170,7 @@ int HecubahWithOrbBinTable()
 		arr[27] = 5; arr[37] = 1952539972; arr[38] = 1818313320; arr[39] = 1634879084; arr[40] = 1852140903; 
 		arr[41] = 116; arr[53] = 1128792064; arr[55] = 16; arr[56] = 26; arr[60] = 1384; 
 		arr[61] = 46914560; 
-		CancelTimer(FrameTimerWithArg(10, HecubahWithOrbBinTable, HecubahWithOrbBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(HecubahWithOrbBinTable);
 	}
 	return link;
 }
@@ -189,8 +202,7 @@ int FireSpriteBinTable()
 		arr[21] = 1065353216; arr[23] = 65536; arr[24] = 1065353216; arr[37] = 1769236816; arr[38] = 1181513062; 
 		arr[39] = 1650815593; arr[40] = 7105633; arr[53] = 1133903872; arr[55] = 13; arr[56] = 21; 
 		arr[58] = 5546320; 
-		CancelTimer(FrameTimerWithArg(10, FireSpriteBinTable, FireSpriteBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(FireSpriteBinTable);
 	}
 	return link;
 }
@@ -222,8 +234,7 @@ int GoonBinTable()
 		arr[24] = 1065353216; arr[25] = 1; arr[26] = 3; arr[28] = 1103626240; arr[29] = 28; 
 		arr[30] = 1090519040; arr[31] = 3; arr[32] = 14; arr[33] = 24; arr[34] = 1; 
 		arr[35] = 1; arr[36] = 20; arr[57] = 5548368; arr[58] = 5546608; arr[59] = 5544320; 
-		CancelTimer(FrameTimerWithArg(10, GoonBinTable, GoonBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(GoonBinTable);
 	}
 	return link;
 }
@@ -255,8 +266,7 @@ int AirshipCaptainBinTable()
 		arr[19] = 90; arr[21] = 1065353216; arr[23] = 2061; arr[24] = 1065353216; arr[26] = 4; 
 		arr[28] = 1101004800; arr[29] = 20; arr[32] = 6; arr[33] = 12; arr[58] = 5546320; 
 		arr[59] = 5542784; arr[60] = 1387; arr[61] = 46915328; 
-		CancelTimer(FrameTimerWithArg(10, AirshipCaptainBinTable, AirshipCaptainBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(AirshipCaptainBinTable);
 	}
 	return link;
 }
@@ -288,8 +298,7 @@ int WeirdlingBeastBinTable()
 		arr[19] = 55; arr[21] = 1065353216; arr[24] = 1071225242; arr[26] = 4; arr[28] = 1101004800; 
 		arr[29] = 21; arr[31] = 3; arr[32] = 5; arr[33] = 10; arr[59] = 5542784; 
 		arr[60] = 1388; arr[61] = 46915072; 
-		CancelTimer(FrameTimerWithArg(10, WeirdlingBeastBinTable, WeirdlingBeastBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(WeirdlingBeastBinTable);
 	}
 	return link;
 }
@@ -321,8 +330,7 @@ int HecubahBinTable()
 		arr[24] = 1065353216; arr[25] = 1; arr[26] = 4; arr[27] = 7; arr[28] = 1108082688; 
 		arr[29] = 60; arr[30] = 1092616192; arr[31] = 11; arr[32] = 10; arr[33] = 18; 
 		arr[57] = 5548288; arr[59] = 5542784; 
-		CancelTimer(FrameTimerWithArg(10, HecubahBinTable, HecubahBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(HecubahBinTable);
 	}
 	return link;
 }
@@ -354,8 +362,7 @@ int GreenFrogBinTable()
 		arr[21] = 1065353216; arr[23] = 2049; arr[24] = 1066192077; arr[26] = 4; arr[28] = 1103101952; 
 		arr[29] = 15; arr[31] = 8; arr[32] = 7; arr[33] = 11; arr[59] = 5542784; 
 		arr[60] = 1313; arr[61] = 46905856; 
-		CancelTimer(FrameTimerWithArg(10, GreenFrogBinTable, GreenFrogBinTable));
-		link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(GreenFrogBinTable);
 	}
 	return link;
 }
@@ -544,8 +551,7 @@ int ImportUnitToPtrFunc()
     {
         arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
         arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3;
-        CancelTimer(FrameTimerWithArg(10, ImportUnitToPtrFunc, ImportUnitToPtrFunc));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportUnitToPtrFunc);
     }
     return link;
 }
@@ -592,16 +598,6 @@ int CreateMoverFix(int targetUnit, int destLocation, float speed)
     return unitMover;
 }
 
-int GetMemory(int addr)
-{
-    return Unknownb9(addr);
-}
-
-void SetMemory(int addr, int value)
-{
-    Unused59(addr, value);
-}
-
 void MapStartGuideMessage()
 {
     InitMapPickets();
@@ -611,7 +607,7 @@ void MapStartGuideMessage()
 
 void MobMakeStandBy()
 {
-    int mobMake1 = MobMakeClassInit(GetWaypointX(7), GetWaypointY(7), 32, 30);
+    int mobMake1 = MobMakeClassInit(GetWaypointX(7), GetWaypointY(7), g_maxMobCount, 30);
 
     Raise(mobMake1 + 1, MobClassBeast);
     Raise(mobMake1 + 2, MobClassBlackSpider);
@@ -642,8 +638,7 @@ void MapInitialize()
     ImportUniChatCore();
     ImportUniPrintCore();
     ImportPlaySoundAround();
-    CallFunctionWithArg(0, 0);
-    CallFunctionWithArgInt(0, 0);
+    MapWaypointInit();
     VoiceList(0);
     initializeHammer();
     FrameTimer(1, initializeUsemapSetting);
@@ -654,6 +649,7 @@ void MapInitialize()
     FrameTimer(10, LoopHammerRespawn);
     FrameTimerWithArg(50, 0, MapStartGuideMessage);
     FrameTimerWithArg(80, CreateObject("InvisibleLightBlueLow", 39), CheckAdvanceHammerLoop);
+    SecondTimer(3, InitModePicket);
 }
 
 void initializeUsemapSetting()
@@ -661,7 +657,7 @@ void initializeUsemapSetting()
     int k;
     for (k = 9 ; k >= 0 ; k --)
     {
-        Gvar_4[k] = CreateObject("CaveRocksPebbles", k + 8);
+        g_subStone[k] = CreateObject("CaveRocksPebbles", k + 8);
     }
     SetHostileCritter();
     FrameTimerWithArg(10, 10, ChakramEffect);
@@ -769,7 +765,6 @@ void StartMent(int idx)
     else
     {
         HallOfFame();
-        FrameTimer(90, MobMakeStandBy);
     }
 }
 
@@ -860,7 +855,7 @@ void loopPreservePlayerVar()
                 if (!HasEnchant(player[k],"ENCHANT_CROWN"))
                     Enchant(player[k], "ENCHANT_CROWN", 1.0);
                 SetHammerPIndex(k);
-                MoveObject(Gvar_4[k], GetObjectX(player[k]) + UnitAngleCos(player[k], 30.0), GetObjectY(player[k]) + UnitAngleSin(player[k], 30.0));
+                MoveObject(g_subStone[k], GetObjectX(player[k]) + UnitAngleCos(player[k], 30.0), GetObjectY(player[k]) + UnitAngleSin(player[k], 30.0));
             }
         }
         else
@@ -1075,8 +1070,7 @@ int ObstacleAnkh(int sOwner, float sX, float sY)
     SetOwner(sOwner, unit);
     SetUnitFlags(unit, GetUnitFlags(unit) ^ 0x10);
     SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    CancelTimer(FrameTimerWithArg(10, CollideObstacleAnkh, CollideObstacleAnkh));
-    SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+    SetMemory(ptr + 0x2fc, CollideObstacleAnkh);
     return unit;
 }
 
@@ -1327,8 +1321,7 @@ int ImportPlaySoundAround()
 		arr[0] = 0x50196068; arr[1] = 0x72506800; arr[2] = 0x50560050; arr[3] = 0x082454FF;
 		arr[4] = 0x54FFF08B; arr[5] = 0x006A0824; arr[6] = 0x5650006A; arr[7] = 0x1C2454FF;
 		arr[8] = 0x5810C483; arr[9] = 0x08C4835E; arr[10] = 0x909090C3;
-		CancelTimer(FrameTimerWithArg(10, ImportPlaySoundAround, ImportPlaySoundAround));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+		link = GetScrDataField(ImportPlaySoundAround);
 	}
 	return link;
 }
@@ -1578,19 +1571,8 @@ int CalleeArgInt(int arg)
 
 int CallFunctionWithArgInt(int func, int arg)
 {
-    int link, ptr;
-
-    if (!link)
-    {
-        CancelTimer(FrameTimerWithArg(10, CalleeArgInt, CalleeArgInt));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x20));
-        return 0;
-    }
-    else
-    {
-        SetMemory(link + 0x10, func);
-        return CalleeArgInt(arg);
-    }
+    SetMemory(GetScrCodeField(CalleeArgInt) + 0x10, func);
+    return CalleeArgInt(arg);
 }
 
 int ListClassGetPrevNode(int sCur)
@@ -1628,15 +1610,13 @@ void MobMakeClassUnitDeath()
     int sUnit = GetOwner(GetTrigger() + 1);
     int sNew = CreateObjectAt("InvisibleLightBlueLow", GetObjectX(self), GetObjectY(self));
 
-    //CancelTimer(FrameTimerWithArg(10, RewardClassCreateWeapon, RewardClassCreateWeapon));
-    //CallFunctionWithArgInt(GetMemory(GetMemory(0x83395c) +  8) + Random(0, 6), self);
     ListClassAddList(sUnit, sNew, GetTrigger());
     MoveObject(GetTrigger() + 1, GetObjectX(self), GetObjectY(self));
     if (GetDirection(sUnit) ^ GetDirection(sUnit + 1))
         LookWithAngle(sUnit, GetDirection(sUnit + 1));
 }
 
-int MobMakeClassCreate(int sHeadNode, int sUnit, int sFunc)
+int MobMakeClassCreate(int sHeadNode, int sUnit, object sFunc)
 {
     int unit = CallFunctionWithArgInt(sFunc, sUnit);
 
@@ -1693,14 +1673,16 @@ void MobMakeClassLoop(int sUnit)
 
 void MobMakeClassStartInitSum(int sUnit)
 {
-    int count = GetDirection(sUnit), func = ToInt(GetObjectZ(sUnit + Random(1, MobMakeFuncCount)));
+    int count = GetDirection(sUnit);
 
     if (IsObjectOn(sUnit))
     {
         if (count)
         {
-            if (func)
-                MobMakeClassCreate(sUnit, sUnit, func);
+            object function = ToInt(GetObjectZ(sUnit + Random(1, MobMakeFuncCount)));
+
+            if (function)
+                MobMakeClassCreate(sUnit, sUnit, function);
             else
                 UniPrintToAll("mobMake 클래스 생성 에러");
             LookWithAngle(sUnit, count - 1);
@@ -1732,16 +1714,6 @@ int MobMakeClassInit(float sX, float sY, int sAmount, int sRespTime)
     CreateObjectAt(mobMakeName, sX, sY);
     LookWithAngle(mobMake, sAmount);
     return mobMake;
-}
-
-int SToInt(string x)
-{
-    StopScript(x);
-}
-
-string ToStr(int x)
-{
-    StopScript(x);
 }
 
 float GetSineValue(int wp, float c)
@@ -1794,16 +1766,6 @@ float UnitAngleCos(int unit, float size)
 float UnitAngleSin(int unit, float size)
 {
     return MathSine(GetDirection(unit) * 45 / 32, size);
-}
-
-int ToInt(float x)
-{
-    StopScript(x);
-}
-
-float ToFloat(int x)
-{
-    StopScript(x);
 }
 
 float UnitRatioX(int unit, int target, float size)
@@ -1901,18 +1863,8 @@ void UnitVisibleSplash()
 
 void CallFunctionWithArg(int func, int arg)
 {
-    int link;
-
-    if (!link)
-    {
-        CancelTimer(FrameTimerWithArg(10, CalleeArg, CalleeArg));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x20));
-    }
-    else
-    {
-        SetMemory(link + 0x10, func);
-        CalleeArg(arg);
-    }
+    SetMemory(GetScrCodeField(CalleeArg) + 0x10, func);
+    CalleeArg(arg);
 }
 
 void CalleeArg(int arg)
@@ -1944,11 +1896,7 @@ int ImportCreateAtFunc()
         arr[5] = 0x082454FF; arr[6] = 0x4085048B; arr[7] = 0x680097BB; arr[8] = 0x004E3810; arr[9] = 0x2454FF50;
         arr[10] = 0x08C48304; arr[11] = 0xF685F08B; arr[12] = 0x006A0A74; arr[13] = 0x2454FF56; arr[14] = 0x08C48314;
         arr[15] = 0x50723068; arr[16] = 0x54FF5600; arr[17] = 0xC4830424; arr[18] = 0x5EC03118; arr[19] = 0x909090C3; 
-        if (GetMemory(0x83c7fc))
-        {
-            CancelTimer(FrameTimerWithArg(10, ImportCreateAtFunc, ImportCreateAtFunc));
-            link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-        }
+        link = GetScrDataField(ImportCreateAtFunc);
     }
     return link;
 }
@@ -2178,8 +2126,7 @@ void RegistSignMessage(int sUnit, string sMsg)
         str = GetMemory(0x97bb40 + (str * 4));
         NoxUtf8ToUnicode(str, GetMemory(ptr + 0x2e0));
         SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        CancelTimer(FrameTimerWithArg(10, SignNotification, SignNotification));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, SignNotification);
     }
 }
 
@@ -2221,8 +2168,7 @@ int ImportUseItemFunc()
         arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x1424748B; arr[3] = 0x18246C8B;
         arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
         arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
-        CancelTimer(FrameTimerWithArg(10, ImportUseItemFunc, ImportUseItemFunc));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportUseItemFunc);
     }
     return link;
 }
@@ -2244,8 +2190,7 @@ int ImportUnitCollideFunc()
         arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x14246C8B; arr[3] = 0x1824748B;
         arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
         arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
-        CancelTimer(FrameTimerWithArg(10, ImportUnitCollideFunc, ImportUnitCollideFunc));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportUnitCollideFunc);
     }
     return link;
 }
@@ -2272,8 +2217,7 @@ int SpecialMissile(int sOwner, float sX, float sY, float sForce)
     if (ptr)
     {
         SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-        CancelTimer(FrameTimerWithArg(10, SpecialMissileCollide, SpecialMissileCollide));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, SpecialMissileCollide);
         SetOwner(sOwner, unit);
         LookAtObject(unit, sOwner);
         LookWithAngle(unit, GetDirection(unit) + 128);
@@ -2291,8 +2235,7 @@ int ImportGreenExplosionFunc()
 		arr[5] = 0xC4830424; arr[6] = 0xFFF08B04; arr[7] = 0x89042454; arr[8] = 0x2454FF06; arr[9] = 0x04468904;
 		arr[10] = 0x0000C868; arr[11] = 0x54FF5600; arr[12] = 0xC4831024; arr[13] = 0x425D6814; arr[14] = 0xFF560040;
 		arr[15] = 0x83042454; arr[16] = 0xC35E08C4; 
-        CancelTimer(FrameTimerWithArg(10, ImportGreenExplosionFunc, ImportGreenExplosionFunc));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportGreenExplosionFunc);
     }
     return link;
 }
@@ -2326,8 +2269,7 @@ int ImportWeaponHitFunc()
         arr[0] = 0x50731068; arr[1] = 0x8B565000; arr[2] = 0x8B102474; arr[3] = 0x0002FC86;
         arr[4] = 0x006A5600; arr[5] = 0x2454FF50; arr[6] = 0x0CC48314; arr[7] = 0xC483585E;
         arr[8] = 0x9090C304;
-        CancelTimer(FrameTimerWithArg(10, ImportWeaponHitFunc, ImportWeaponHitFunc));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
+        link = GetScrDataField(ImportWeaponHitFunc);
     }
     return link;
 }
@@ -2368,8 +2310,7 @@ void WeaponHitEvent()
         mis = GetMemory(ptr + 0x2c);
         //SetMemory(ptr + 0x2e8, 5483536); //projectile update
         SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-        CancelTimer(FrameTimerWithArg(10, ForceOfNatureCollide, ForceOfNatureCollide));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, ForceOfNatureCollide);
         PlaySoundAround(owner, 38);
         Enchant(mis, "ENCHANT_RUN", 0.0);
         Enchant(mis, "ENCHANT_HASTED", 0.0);
@@ -2384,8 +2325,7 @@ int AdvanceHammer(int sUnit)
     if (ptr)
     {
         SetMemory(ptr + 0x2d0, ImportWeaponHitFunc());
-        CancelTimer(FrameTimerWithArg(10, WeaponHitEvent, WeaponHitEvent));
-        SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+        SetMemory(ptr + 0x2fc, WeaponHitEvent);
         Enchant(unit, "ENCHANT_REFLECTIVE_SHIELD", 0.0);
     }
     return unit;
@@ -2410,6 +2350,103 @@ void TestHammerChecking()
     int ptr = GetMemory(0x750710);
 
     SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    CancelTimer(FrameTimerWithArg(10, HammerCollide, HammerCollide));
-    SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+    SetMemory(ptr + 0x2fc, HammerCollide);
 }
+
+void InitModePicket()
+{
+    RegistSignMessage(Object("noUseMon"), "몬스터를 사용하지 않습니다");
+    RegistSignMessage(Object("use32"), "32개의 몬스터가 등장합니다");
+    RegistSignMessage(Object("use64"), "64개의 몬스터가 생성됩니다");
+    RegistSignMessage(Object("use128"), "128개의 몬스터가 생성됩니다");
+    RegistSignMessage(Object("selSign"), "게임 모드를 선택하여 주십시오");
+
+    MoveObject(GetHost(), LocationX(61), LocationY(61));
+}
+
+void HostPlayerTeleportToCenter()
+{
+    Enchant(GetHost(), "ENCHANT_INVULNERABLE", 3.0);
+    MoveObject(GetHost(), LocationX(7), LocationY(7));
+}
+
+void UseNoMons()
+{
+    HostPlayerTeleportToCenter();
+    UniPrint(other, "몬스터를 사용하지 않습니다");
+}
+
+void UseMon1()
+{
+    HostPlayerTeleportToCenter();
+    FrameTimer(90, MobMakeStandBy);
+    g_maxMobCount = 32;
+    UniPrint(other, "32개의 몬스터를 사용합니다");
+}
+
+void UseMon2()
+{
+    HostPlayerTeleportToCenter();
+    FrameTimer(90, MobMakeStandBy);
+    g_maxMobCount = 64;
+    UniPrint(other, "64개의 몬스터를 사용합니다");
+}
+
+void UseMon3()
+{
+    HostPlayerTeleportToCenter();
+    FrameTimer(90, MobMakeStandBy);
+    g_maxMobCount = 128;
+    UniPrint(other, "128개의 몬스터를 사용합니다");
+}
+
+int MapWaypointTable(int idx)
+{
+    int table[600];
+
+    return table[idx - 1];
+}
+
+float LocationX(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 8));
+}
+
+float LocationY(int location)
+{
+    StopScript(GetMemory(MapWaypointTable(location) + 12));
+}
+
+void TeleportLocation(int location, float xProfile, float yProfile)
+{
+    int wTable = MapWaypointTable(location);
+
+    SetMemory(wTable + 8, ToInt(xProfile));
+    SetMemory(wTable + 12, ToInt(yProfile));
+}
+
+void TeleportLocationVector(int location, float xVect, float yVect)
+{
+    int wTable = MapWaypointTable(location);
+
+    SetMemory(wTable + 8, ToInt(ToFloat(GetMemory(wTable + 8)) + xVect));
+    SetMemory(wTable + 12, ToInt(ToFloat(GetMemory(wTable + 12)) + yVect));
+}
+
+void MapWaypointFill(int wAddr, int tPtr)
+{
+    int num;
+
+    if (wAddr)
+    {
+        num = GetMemory(wAddr);
+        SetMemory(tPtr + (num * 4), wAddr);
+        MapWaypointFill(GetMemory(wAddr + 484), tPtr);
+    }
+}
+
+void MapWaypointInit()
+{
+    MapWaypointFill(GetMemory(0x83c7fc), GetScrDataField(MapWaypointTable));
+}
+
