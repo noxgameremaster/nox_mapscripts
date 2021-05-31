@@ -190,9 +190,11 @@ void MapInitialize()
     ImportUniChatCore();
     ImportUniPrintCore();
     ImportUseItemFunc();
+    ImportPlaySoundAround();
+    ImportOrbMoveFunc();
     BkRevent(-1);
     mathSpiral(-1);
-    mathSine(0, 0.0);
+    MathSine(44, 1.0 / 57.3);
     initializeSelectBeacon();
     initializeChak();
     initializeCharacters();
@@ -445,7 +447,7 @@ void loopPreservePlayerTable()
                 }
                 else if (HasEnchant(GetLastItem(player[k]), "ENCHANT_VILLAIN")) {
                     MoveWaypoint(102, GetObjectX(player[k]), GetObjectY(player[k]));
-                    RestoreHealth(player[k], 100);
+                    RestoreHealth(player[k], 50);
                     AudioEvent("RegenerationOn", 102);
                     Delete(GetLastItem(player[k]));
                 }
@@ -894,8 +896,8 @@ void GWizSkillA(int arg_0)
     if (CurrentHealth(player[arg_0]) && var_0 < 22) {
         if (var_0 == 0) {
             var_3 = GetDirection(player[arg_0]);
-            var_1 = unitForward(player[arg_0], 1, -10.0); //dx
-            var_2 = unitForward(player[arg_0], 0, -10.0); //dy
+            var_1 = UnitAngleCos(player[arg_0], -10.0); //dx
+            var_2 = UnitAngleSin(player[arg_0], -10.0); //dy
             MoveWaypoint(44, GetObjectX(player[arg_0]) + var_1 + (var_2 * 10.0), GetObjectY(player[arg_0]) + var_2 - (var_1 * 10.0));
             MoveWaypoint(45, GetObjectX(player[arg_0]) + var_1 - (var_2 * 10.0), GetObjectY(player[arg_0]) + var_2 + (var_1 * 10.0));
             AudioEvent("GlyphCast", 44);
@@ -925,8 +927,8 @@ void DemonSkillA(int arg_0)
     if (CurrentHealth(player[arg_0]) && var_0 < 30)
     {
         if (var_0 == 0) {
-            var_1 = unitForward(player[arg_0], 1, 23.0);
-            var_2 = unitForward(player[arg_0], 0, 23.0);
+            var_1 = UnitAngleCos(player[arg_0], 23.0);
+            var_2 = UnitAngleSin(player[arg_0], 23.0);
             MoveWaypoint(48, GetObjectX(player[arg_0]) + var_1, GetObjectY(player[arg_0]) + var_2);
             var_0 = 1;
         }
@@ -959,8 +961,8 @@ void mecaGolemSkillA(int arg_0) {
     if (CurrentHealth(player[arg_0]) && var_0 < 30)
     {
         if (var_0 == 0) {
-            var_1 = unitForward(player[arg_0], 1, 24.0);
-            var_2 = unitForward(player[arg_0], 0, 24.0);
+            var_1 = UnitAngleCos(player[arg_0], 24.0);
+            var_2 = UnitAngleSin(player[arg_0], 24.0);
             MoveWaypoint(51, GetObjectX(player[arg_0]) + var_1, GetObjectY(player[arg_0]) + var_2);
         }
         else {
@@ -991,8 +993,8 @@ void stoneGolemSkillA(int arg_0)
 
     if (CurrentHealth(player[arg_0]))
     {
-        var_0 = unitForward(player[arg_0], 1, 20.0); //-dx
-        var_1 = unitForward(player[arg_0], 0, 20.0); //-dy
+        var_0 = UnitAngleCos(player[arg_0], 20.0); //-dx
+        var_1 = UnitAngleSin(player[arg_0], 20.0); //-dy
         MoveWaypoint(58, GetObjectX(player[arg_0]) + var_0, GetObjectY(player[arg_0]) + var_1);
         MoveWaypoint(82, GetWaypointX(58) - var_1, GetWaypointY(58) + var_0);
         MoveWaypoint(83, GetWaypointX(58) + var_1, GetWaypointY(58) - var_0);
@@ -1107,31 +1109,37 @@ void RWizSkillA(int arg_0)
     }
 }
 
-void horrendousSkillA(int arg_0) {
-    int var_0;
-    int var_1;
+void horrendousSkillA(int plr)
+{
+    int progress, glowPoint;
     
-    if (CurrentHealth(player[arg_0]) > 0 && var_0 < 60) {
-        if (var_0 == 0) {
-            var_1 = CreateObject("moonglow", 2);
-            SetOwner(player[arg_0], var_1);
-            var_0 = -1;
+    if (CurrentHealth(player[plr]) > 0 && progress < 60)
+    {
+        if (progress == 0)
+        {
+            glowPoint = CreateObject("moonglow", 2);
+            SetOwner(player[plr], glowPoint);
+            progress = -1;
         }
-        else if (var_0 == -1) {
-            MoveWaypoint(68, GetObjectX(var_1), GetObjectY(var_1));
-            LookWithAngle(var_1, 68);
-            controlBlock(arg_0, var_1, 100.0, 0);
-            Delete(var_1);
-            var_0 = 1;
+        else if (progress == -1)
+        {
+            if (IsVisibleTo(player[plr], glowPoint))
+            {
+                controlBlock(plr, glowPoint, 100.0, false);
+            }
+            else
+                UniPrint(player[plr], "커서 지점을 볼 수 없습니다");
+            progress = 1;
+            Delete(glowPoint);
         }
         else
-            var_0 += 1;
-        FrameTimerWithArg(1, arg_0, horrendousSkillA);
+            progress += 1;
+        FrameTimerWithArg(1, plr, horrendousSkillA);
     }
     else {
-        controlBlock(arg_0, 0, 0.0, 1);
-        COOLDOWN[arg_0] = 0;
-        var_0 = 0;
+        controlBlock(plr, 0, 0.0, true);
+        COOLDOWN[plr] = 0;
+        progress = 0;
     }
 }
 
@@ -1144,8 +1152,8 @@ void hecubahSkillA(int arg_0)
 
     if (CurrentHealth(player[arg_0]))
     {
-        var_0 = unitForward(player[arg_0], 1, 30.0);
-        var_1 = unitForward(player[arg_0], 0, 30.0);
+        var_0 = UnitAngleCos(player[arg_0], 30.0);
+        var_1 = UnitAngleSin(player[arg_0], 30.0);
         MoveWaypoint(75, GetObjectX(player[arg_0]) + var_0, GetObjectY(player[arg_0]) + var_1);
 
         while(var_2 < 12)
@@ -1174,8 +1182,8 @@ void ogreSkillA(int arg_0) {
 
     if (CurrentHealth(player[arg_0]) > 0 && var_2 < 21) {
         if (var_2 == 0) {
-            var_0 = unitForward(player[arg_0], 1, 26.0);
-            var_1 = unitForward(player[arg_0], 0, 26.0);
+            var_0 = UnitAngleCos(player[arg_0], 26.0);
+            var_1 = UnitAngleSin(player[arg_0], 26.0);
             MoveWaypoint(78, GetObjectX(player[arg_0]) + var_0, GetObjectY(player[arg_0]) + var_1);
             AudioEvent("CrossBowShoot", 78);
             Enchant(player[arg_0], "ENCHANT_ANCHORED", 0.0);
@@ -1220,7 +1228,7 @@ void lichSkillA(int arg_0)
             SetOwner(player[arg_0], ray_id);
             SetRayRadian(player[arg_0], ray_addr);
             Enchant(player[arg_0], "ENCHANT_INVULNERABLE", 0.9);
-            FrameTimerWithArg(19, arg_0, lichSkillA);
+            FrameTimerWithArg(6, arg_0, lichSkillA);
         }
         else
         {
@@ -1265,7 +1273,7 @@ void GWizSkillS(int arg_0) {
 
     if (CurrentHealth(player[arg_0]) > 0 && var_0 < 90) {
         if (var_0 == 0) {
-            MoveWaypoint(46, GetObjectX(player[arg_0]) - unitForward(player[arg_0], 1, -23.0), GetObjectY(player[arg_0]) - unitForward(player[arg_0], 0, -23.0));
+            MoveWaypoint(46, GetObjectX(player[arg_0]) - UnitAngleCos(player[arg_0], -23.0), GetObjectY(player[arg_0]) - UnitAngleSin(player[arg_0], -23.0));
             var_1 = CreateObject("willOWisp", 46);
             Enchant(var_1, "ENCHANT_INVULNERABLE", 0.0);
             Enchant(var_1, "ENCHANT_ANTI_MAGIC", 0.0);
@@ -1300,36 +1308,21 @@ void GWizSkillS(int arg_0) {
     }
 }
 
-void DemonSkillS(int arg_0) {
-    int var_0;
-    int var_1 = 0;
-    int var_2;
-    float var_3;
-    float var_4;
+void DemonSkillS(int plr)
+{
+    if (CurrentHealth(player[plr]))
+    {
+        object splashUnit = CreateObjectAt("AmbBeachBirds", GetObjectX(player[plr]), GetObjectY(player[plr]));
 
-    if (CurrentHealth(player[arg_0]) > 0 && var_0 < 20) {
-        var_3 = mathSine(var_0 * 18, 38.0);
-        var_4 = mathSine(var_0 * 18 + 90, 38.0);
-        MoveWaypoint(49, GetObjectX(player[arg_0]) + var_3, GetObjectY(player[arg_0]) + var_4);
-        AudioEvent("GolemHitting", 49);
-        
-        while(var_1 < 6) {
-            var_2 = CreateObject("CarnivorousPlant", 49);
-            LookWithAngle(var_2, arg_0);
-            Frozen(var_2, 1);
-            DeleteObjectTimer(var_2, 1);
-            SetCallback(var_2, 9, demonTouched2);
-            DeleteObjectTimer(CreateObject("Explosion", 49), 5);
-            MoveWaypoint(49, GetWaypointX(49) + var_3, GetWaypointY(49) + var_4);
-            var_1 += 1;
-        }
-        var_0 += 1;
-        FrameTimerWithArg(1, arg_0, DemonSkillS);
+        LookWithAngle(splashUnit, 9);
+
+        SetOwner(player[plr], splashUnit);
+        AroundSplashTriggered(splashUnit, 380.0, 137);
+        PlaySoundAround(splashUnit, 485);
+        DemonsBloodFestival(splashUnit);
+        Effect("JIGGLE", GetObjectX(splashUnit), GetObjectY(splashUnit), 33.0, 0.0);
     }
-    else {
-        var_0 = 0;
-        COOLDOWN[arg_0 + 10] = 0;
-    }
+    COOLDOWN[plr + 10] = 0;
 }
 
 void mecaGolemSkillS(int arg_0) {
@@ -1372,8 +1365,8 @@ void stoneGolemSkillS(int arg_0) {
 
     if (CurrentHealth(player[arg_0]) > 0) {
         Enchant(player[arg_0], "ENCHANT_FREEZE", 2.0);
-        var_0 = unitForward(player[arg_0], 1, 30.0);
-        var_1 = unitForward(player[arg_0], 0, 30.0);
+        var_0 = UnitAngleCos(player[arg_0], 30.0);
+        var_1 = UnitAngleSin(player[arg_0], 30.0);
         MoveWaypoint(58, GetObjectX(player[arg_0]) + var_0, GetObjectY(player[arg_0]) + var_1);
         for(i = 0; i < 12; i += 1) {
             MoveWaypoint(58, GetWaypointX(58) + var_0, GetWaypointY(58) + var_1);
@@ -1393,8 +1386,8 @@ void beholderSkillS(int arg_0) {
     int var_3;
 
     if (CurrentHealth(player[arg_0]) > 0 && var_0 < 120) {
-        var_1 = mathSine(Random(0, 359) + 90, RandomFloat(30.0, 200.0));
-        var_2 = mathSine(Random(0, 359), RandomFloat(30.0, 200.0));
+        var_1 = MathSine(Random(0, 359) + 90, RandomFloat(30.0, 200.0));
+        var_2 = MathSine(Random(0, 359), RandomFloat(30.0, 200.0));
         MoveWaypoint(60, GetObjectX(player[arg_0]) + var_1, GetObjectY(player[arg_0]) + var_2);
         var_3 = CreateObject("CarnivorousPlant", 60);
         Frozen(var_3, 1);
@@ -1488,35 +1481,39 @@ void horrendousSkillS(int arg_0) {
     }
 }
 
-void hecubahSkillS(int arg_0) {
-    int var_0;
-    int var_1;
+void hecubahSkillS(int plr)
+{
+    int progress, fxUnit;
 
-    if (CurrentHealth(player[arg_0]) > 0 && var_0 < 2) {
-        if (var_0 == 0) {
-            MoveWaypoint(75, GetObjectX(player[arg_0]), GetObjectY(player[arg_0]));
-            var_1 = CreateObject("ManaBombCharge", 75);
-            AudioEvent("ManaBombCast", 75);
-            Effect("JIGGLE", GetWaypointX(75), GetWaypointY(75), 50.0, 0.0);
-            Enchant(player[arg_0], "ENCHANT_FREEZE", 0.0);
-            Enchant(player[arg_0], "ENCHANT_ANCHORED", 0.0);
-            Enchant(player[arg_0], "ENCHANT_INVULNERABLE", 2.0);
-            stunPlayer(arg_0, 75, 350.0);
-            FrameTimerWithArg(57, arg_0, hecubahSkillS);
+    if (CurrentHealth(player[plr]) > 0 && progress < 2)
+    {
+        if (progress == 0)
+        {
+            fxUnit = CreateObjectAt("ManaBombCharge", GetObjectX(player[plr]), GetObjectY(player[plr]));
+            PlaySoundAround(CreateObjectAt("AmbBeachBirds", GetObjectX(fxUnit), GetObjectY(fxUnit)), 80);
+            SetOwner(player[plr], fxUnit + 1);
+            Effect("JIGGLE", GetObjectX(fxUnit), GetObjectY(fxUnit), 50.0, 0.0);
+            Enchant(player[plr], "ENCHANT_FREEZE", 0.0);
+            Enchant(player[plr], "ENCHANT_ANCHORED", 0.0);
+            Enchant(player[plr], "ENCHANT_INVULNERABLE", 2.0);
+            stunPlayer(fxUnit + 1, 350.0);
+            FrameTimerWithArg(57, plr, hecubahSkillS);
         }
-        else if (var_0 == 1) {
-            localRisk(arg_0, 200, 75, 400.0);
-            Effect("WHITE_FLASH", GetWaypointX(75), GetWaypointY(75), 0.0, 0.0);
-            EnchantOff(player[arg_0], "ENCHANT_ANCHORED");
-            EnchantOff(player[arg_0], "ENCHANT_FREEZE");
-            FrameTimerWithArg(5, arg_0, hecubahSkillS);
+        else if (progress == 1)
+        {
+            AroundSplashTriggered(fxUnit + 1, 370.0, 149);
+            Effect("WHITE_FLASH", GetObjectX(fxUnit), GetObjectY(fxUnit), 0.0, 0.0);
+            EnchantOff(player[plr], "ENCHANT_ANCHORED");
+            EnchantOff(player[plr], "ENCHANT_FREEZE");
+            FrameTimerWithArg(5, plr, hecubahSkillS);
         }
-        var_0 += 1;
+        progress++;
     }
     else {
-        var_0 = 0;
-        COOLDOWN[arg_0 + 10] = 0;
-        Delete(var_1);
+        progress = 0;
+        COOLDOWN[plr + 10] = 0;
+        Delete(fxUnit);
+        Delete(fxUnit + 1);
     }
 }
 
@@ -1530,7 +1527,7 @@ void ogreSkillS(int arg_0) {
             MoveWaypoint(79, GetObjectX(player[arg_0]), GetObjectY(player[arg_0]));
             DeleteObjectTimer(CreateObject("ForceOfNatureCharge", 79), 30);
         }
-        MoveWaypoint(80, GetWaypointX(79) - mathSine((var_0 % 36) * 10, 30.0), GetWaypointY(79) - mathSine(((var_0 % 36) * 10) + 90, 30.0));
+        MoveWaypoint(80, GetWaypointX(79) - MathSine((var_0 % 36) * 10, 30.0), GetWaypointY(79) - MathSine(((var_0 % 36) * 10) + 90, 30.0));
         for(i = 0; i < 5 ; i += 1) {
             var_1 = CreateObject("FanChakramInMotion", 80);
             Enchant(var_1, "ENCHANT_FREEZE", 0.0);
@@ -1650,7 +1647,7 @@ void GWizSkillD(int arg_0)
 
     if (CurrentHealth(player[arg_0]))
     {
-        MoveWaypoint(47, GetObjectX(player[arg_0]) + unitForward(player[arg_0], 1, 23.0), GetObjectY(player[arg_0]) + unitForward(player[arg_0], 0, 23.0));
+        MoveWaypoint(47, GetObjectX(player[arg_0]) + UnitAngleCos(player[arg_0], 23.0), GetObjectY(player[arg_0]) + UnitAngleSin(player[arg_0], 23.0));
         var_0 = CreateObject("greenFrog", 47);
         SetCallback(var_0, 9, GWizTouched2);
         AudioEvent("GlyphCast", 47);
@@ -1664,34 +1661,40 @@ void GWizSkillD(int arg_0)
     COOLDOWN[arg_0 + 20] = 0;
 }
 
-void DemonSkillD(int arg_0) {
-    int var_0;
-    int var_1;
-    if (CurrentHealth(player[arg_0]) > 0 && var_0 < 2) {
-        if (var_0 == 0) {
-            var_1 = CreateObject("moonglow", 2);
-            DeleteObjectTimer(var_1, 30);
-            SetOwner(player[arg_0], var_1);
-            var_0 = 1;
-            FrameTimerWithArg(1, arg_0, DemonSkillD);
+void DemonSkillD(int plr)
+{
+    int progress;
+    object glowPoint;
+
+    if (CurrentHealth(player[plr]) && progress < 2)
+    {
+        if (progress == 0)
+        {
+            glowPoint = CreateObject("moonglow", 2);
+            DeleteObjectTimer(glowPoint, 30);
+            SetOwner(player[plr], glowPoint);
+            progress = 1;
+            FrameTimerWithArg(1, plr, DemonSkillD);
         }
-        else if (var_0 == 1) {
-            MoveWaypoint(50, GetObjectX(var_1), GetObjectY(var_1));
-            Delete(var_1);
-            var_1 = CreateObject("FireSprite", 50);
-            LinkFireSpriteBin(var_1);
-            storageTemp(var_1, 1);
-            Raise(var_1, 180.0);
-            SetOwner(player[arg_0], var_1);
-            Enchant(var_1, "ENCHANT_DEATH", 0.1);
-            FrameTimerWithArg(3, arg_0, disableInvisible);
-            var_0 = 2;
-            FrameTimerWithArg(3, arg_0, DemonSkillD);
+        else if (progress == 1)
+        {
+            object flame = CreateObjectAt("FireSprite", GetObjectX(glowPoint), GetObjectY(glowPoint));
+            Delete(glowPoint);
+            LinkFireSpriteBin(flame);
+            UnitNoCollide(flame);
+            storageTemp(flame, 1);
+            Raise(flame, 180.0);
+            SetOwner(player[plr], flame);
+            Enchant(flame, "ENCHANT_DEATH", 0.1);
+            FrameTimerWithArg(3, plr, disableInvisible);
+            progress = 2;
+            FrameTimerWithArg(3, plr, DemonSkillD);
         }
     }
-    else {
-        var_0 = 0;
-        COOLDOWN[arg_0 + 20] = 0;
+    else
+    {
+        progress = 0;
+        COOLDOWN[plr + 20] = 0;
     }
 }
 
@@ -1717,8 +1720,8 @@ void stoneGolemSkillD(int arg_0) {
     
     if (CurrentHealth(player[arg_0]))
     {
-        var_0 = unitForward(player[arg_0], 1, 30.0);
-        var_1 = unitForward(player[arg_0], 0, 30.0);
+        var_0 = UnitAngleCos(player[arg_0], 30.0);
+        var_1 = UnitAngleSin(player[arg_0], 30.0);
         MoveWaypoint(58, GetObjectX(player[arg_0]) + var_0, GetObjectY(player[arg_0]) + var_1);
         var_2 = CreateObject("boulder", 58);
         SetOwner(player[arg_0], var_2);
@@ -1732,7 +1735,7 @@ void stoneGolemSkillD(int arg_0) {
 void beholderSkillD(int arg_0) {
     if (CurrentHealth(player[arg_0]) > 0) {
         Enchant(player[arg_0], "ENCHANT_PROTECT_FROM_MAGIC", 1.0);
-        CastSpellObjectLocation("SPELL_MAGIC_MISSILE", player[arg_0], GetObjectX(player[arg_0]) + unitForward(player[arg_0], 1, 23.0), GetObjectY(player[arg_0]) + unitForward(player[arg_0], 0, 23.0));
+        CastSpellObjectLocation("SPELL_MAGIC_MISSILE", player[arg_0], GetObjectX(player[arg_0]) + UnitAngleCos(player[arg_0], 23.0), GetObjectY(player[arg_0]) + UnitAngleSin(player[arg_0], 23.0));
     }
     COOLDOWN[arg_0 + 20] = 0;
 }
@@ -1743,7 +1746,7 @@ void RWizSkillD(int arg_0) {
 
     if (CurrentHealth(player[arg_0]) > 0 && var_0 < 52) {
         if (var_0 == 0) {
-            MoveWaypoint(67, GetObjectX(player[arg_0]) + unitForward(player[arg_0], 1, 30.0), GetObjectY(player[arg_0]) + unitForward(player[arg_0], 0, 30.0));
+            MoveWaypoint(67, GetObjectX(player[arg_0]) + UnitAngleCos(player[arg_0], 30.0), GetObjectY(player[arg_0]) + UnitAngleSin(player[arg_0], 30.0));
             var_1 = CreateObject("MovableStatueVictory4SW", 67);
             SetOwner(player[arg_0], var_1);
             LookWithAngle(var_1, arg_0);
@@ -1770,8 +1773,8 @@ void horrendousSkillD(int arg_0) {
     if (CurrentHealth(player[arg_0]) > 0 && var_0 < 21) {
         if (!var_0)
         {
-            pos_x = unitForward(player[arg_0], 1, 20.0);
-            pos_y = unitForward(player[arg_0], 0, 20.0);
+            pos_x = UnitAngleCos(player[arg_0], 20.0);
+            pos_y = UnitAngleSin(player[arg_0], 20.0);
             MoveWaypoint(71, GetObjectX(player[arg_0]) + pos_x, GetObjectY(player[arg_0]) + pos_y);
             MoveObject(GetMagic(), GetWaypointX(71), GetWaypointY(71));
             unit = CreateObject("Maiden", 71);
@@ -1804,7 +1807,7 @@ void hecubahSkillD(int arg_0) {
     int var_0;
 
     if (CurrentHealth(player[arg_0]) > 0) {
-        MoveWaypoint(75, GetObjectX(player[arg_0]) + unitForward(player[arg_0], 1, 20.0), GetObjectY(player[arg_0]) + unitForward(player[arg_0], 0, 20.0));
+        MoveWaypoint(75, GetObjectX(player[arg_0]) + UnitAngleCos(player[arg_0], 20.0), GetObjectY(player[arg_0]) + UnitAngleSin(player[arg_0], 20.0));
         AudioEvent("ForceOfNatureRelease", 75);
         for(i = 0 ; i < 3 ; i += 1) {
             var_0 = CreateObject("DeathBallFragment", 75);
@@ -1826,14 +1829,14 @@ void ogreSkillD(int arg_0) {
         if (var_0 == 0) {
             EnchantOff(player[arg_0], "ENCHANT_FREEZE");
             Enchant(player[arg_0], "ENCHANT_INVULNERABLE", 0.0);
-            PushObject(player[arg_0], -150.0, GetObjectX(player[arg_0]) + unitForward(player[arg_0], 1, 20.0), GetObjectY(player[arg_0]) + unitForward(player[arg_0], 0, 20.0));
+            PushObject(player[arg_0], -150.0, GetObjectX(player[arg_0]) + UnitAngleCos(player[arg_0], 20.0), GetObjectY(player[arg_0]) + UnitAngleSin(player[arg_0], 20.0));
             FrameTimerWithArg(7, arg_0, ogreSkillD);
         }
         else {
             EnchantOff(player[arg_0], "ENCHANT_INVULNERABLE");
             Enchant(player[arg_0], "ENCHANT_FREEZE", 1.0);
             for(i = 0 ; i < 12 ; i += 1) {
-                MoveWaypoint(81, GetObjectX(player[arg_0]) + mathSine(i * 30, 50.0), GetObjectY(player[arg_0]) + mathSine(i * 30 + 90, 50.0));
+                MoveWaypoint(81, GetObjectX(player[arg_0]) + MathSine(i * 30, 50.0), GetObjectY(player[arg_0]) + MathSine(i * 30 + 90, 50.0));
                 var_1 = CreateObject("CarnivorousPlant", 81);
                 Frozen(var_1, 1);
                 LookWithAngle(var_1, arg_0);
@@ -1866,8 +1869,8 @@ void lichSkillD(int arg_0)
         {
             var_1 = GetDirection(player[arg_0]);
             Enchant(player[arg_0], "ENCHANT_ANCHORED", 0.0);
-            var_3 = unitForward(player[arg_0], 1, 22.0);
-            var_4 = unitForward(player[arg_0], 0, 22.0);
+            var_3 = UnitAngleCos(player[arg_0], 22.0);
+            var_4 = UnitAngleSin(player[arg_0], 22.0);
             MoveWaypoint(100, GetObjectX(player[arg_0]) + var_3, GetObjectY(player[arg_0]) + var_4);
             var_2 = CreateObject("BlackWolf", 100);
             CreateObject("InvisibleLightBlueHigh", 100);
@@ -2024,50 +2027,49 @@ void GWizSkillJ(int arg_0) {
     }
 }
 
-void DemonSkillJ(int arg_0) {
-    float var_0;
-    float var_1;
-    int var_2[3];
-    int var_3 = 0;
+void DemonSkillJ(int plr)
+{
+    if (CurrentHealth(player[plr]))
+    {
+        float xPos = GetObjectX(player[plr]), yPos = GetObjectY(player[plr]);
+        float vectX = UnitAngleCos(player[plr], -23.0), vectY = UnitAngleSin(player[plr], -23.0);
+        object missile = DemonsArmageddon(xPos - vectX, yPos - vectY, player[plr]);
 
-    if (CurrentHealth(player[arg_0]) > 0) {
-        var_0 = unitForward(player[arg_0], 1, -23.0); //dx
-        var_1 = unitForward(player[arg_0], 0, -23.0); //dy
-        MoveWaypoint(54, GetObjectX(player[arg_0]) - var_0, GetObjectY(player[arg_0]) - var_1);
-        MoveWaypoint(50, GetObjectX(player[arg_0]) + (0.2 * var_1) - var_0, GetObjectY(player[arg_0]) - (0.2 * var_0) - var_1);
-        MoveWaypoint(53, GetObjectX(player[arg_0]) - (0.2 * var_1) - var_0, GetObjectY(player[arg_0]) + (0.2 * var_0) - var_1);
-        while(var_3 < 3) {
-            var_2[var_3] = CreateObject("StrongFireball", demonSkillJwayBuffer(var_3));
-            SetOwner(player[arg_0], var_2[var_3]);
-            LookAtObject(var_2[var_3], player[arg_0]);
-            LookWithAngle(var_2[var_3], GetDirection(var_2[var_3]) + 128);
-            PushObject(var_2[var_3], 30.0, GetObjectX(player[arg_0]), GetObjectY(player[arg_0]));
-            var_3 += 1;
+        DemonsArmageddon(xPos + (0.2 * vectY) - vectX, yPos - (0.2 * vectX) - vectY, player[plr]);
+        DemonsArmageddon(xPos - (0.2 * vectY) - vectX, yPos + (0.2 * vectX) - vectY, player[plr]);
+
+        int u;
+
+        for (u = 0 ; u < 3 ; u ++)
+        {
+            LookAtObject(missile + u, player[plr]);
+            LookWithAngle(missile + u, GetDirection(missile + u) + 128);
+            PushObject(missile + u, 30.0, xPos, yPos);
         }
     }
-    COOLDOWN[arg_0 + 30] = 0;
+    COOLDOWN[plr + 30] = 0;
 }
 
 void MecaGolemSkillJ(int plr)
 {
-    int x; int ptr;
-    float pos_x; float pos_y;
+    int x, subUnit;
+    float pos_x, pos_y;
 
     if (CurrentHealth(player[plr]) && x < 30)
     {
         if (!x)
         {
-            pos_x = unitForward(player[plr], 1, 19.0);
-            pos_y = unitForward(player[plr], 0, 19.0);
+            pos_x = UnitAngleCos(player[plr], 19.0);
+            pos_y = UnitAngleSin(player[plr], 19.0);
             Enchant(player[plr], "ENCHANT_FREEZE", 0.0);
         }
         MoveWaypoint(57, GetObjectX(player[plr]) - pos_x, GetObjectY(player[plr]) - pos_y);
         AudioEvent("FirewalkOn", 57);
-        ptr = CreateObject("CarnivorousPlant", 57);
-        Frozen(ptr, 1);
-        LookWithAngle(ptr, plr);
-        SetCallback(ptr, 9, MecaBerserkerTouched);
-        DeleteObjectTimer(ptr, 1);
+        subUnit = CreateObject("CarnivorousPlant", 57);
+        Frozen(subUnit, true);
+        LookWithAngle(subUnit, plr);
+        SetCallback(subUnit, 9, MecaBerserkerTouched);
+        DeleteObjectTimer(subUnit, 1);
         DeleteObjectTimer(CreateObject("MeteorExplode", 57), 6);
         x ++;
         FrameTimerWithArg(1, plr, MecaGolemSkillJ);
@@ -2094,7 +2096,7 @@ void stoneGolemSkillJ(int arg_0) {
             Drop(player[arg_0], stoneGolemInv());
             MoveObject(stoneGolemInv(), 100.0, 100.0);
         }
-        PushObject(player[arg_0], -5.0, GetObjectX(player[arg_0]) + unitForward(player[arg_0], 1, 20.0), GetObjectY(player[arg_0]) + unitForward(player[arg_0], 0, 20.0));
+        PushObject(player[arg_0], -5.0, GetObjectX(player[arg_0]) + UnitAngleCos(player[arg_0], 20.0), GetObjectY(player[arg_0]) + UnitAngleSin(player[arg_0], 20.0));
         var_0 += 1;
         FrameTimerWithArg(1, arg_0, stoneGolemSkillJ);
     }
@@ -2117,8 +2119,8 @@ void beholderSkillJ(int arg_0) {
     if (CurrentHealth(player[arg_0]) > 0 && var_0 < 2) {
         if (var_0 == 0) {
             var_0 += 1;
-            var_1 = unitForward(player[arg_0], 1, 30.0);
-            var_2 = unitForward(player[arg_0], 0, 30.0);
+            var_1 = UnitAngleCos(player[arg_0], 30.0);
+            var_2 = UnitAngleSin(player[arg_0], 30.0);
             Enchant(player[arg_0], "ENCHANT_ANCHORED", 0.0);
             Enchant(player[arg_0], "ENCHANT_FREEZE", 0.0);
             MoveWaypoint(61, GetObjectX(player[arg_0]) + var_1, GetObjectY(player[arg_0]) + var_2);
@@ -2242,53 +2244,60 @@ void horrendousSkillJ(int arg_0)
     }
 }
 
-void hecubahSkillJ(int arg_0) {
-    int var_0;
-    int var_1;
-    float var_2;
-    float var_3;
-    float var_4;
-    int var_5[4];
+void hecubahSkillJ(int plr) {
+    int progress;
+    int glowPoint;
+    float vectX, vectY;
+    int flames[4];
     
-    if (CurrentHealth(player[arg_0]) > 0 && var_0 < 20) {
-        if (var_0 == 0) {
-            var_1 = CreateObject("moonglow", 2);
-            SetOwner(player[arg_0], var_1);
-            Enchant(player[arg_0], "ENCHANT_ANCHORED", 0.0);
+    if (CurrentHealth(player[plr]) > 0 && progress < 20) {
+        if (progress == 0) {
+            glowPoint = CreateObject("moonglow", 2);
+            SetOwner(player[plr], glowPoint);
+            Enchant(player[plr], "ENCHANT_ANCHORED", 0.0);
         }
-        else if (var_0 == 1) {
-            var_3 = unitForward(player[arg_0], 1, -20.0); //dx
-            var_4 = unitForward(player[arg_0], 0, -20.0); //dy
-            MoveWaypoint(75, GetObjectX(var_1), GetObjectY(var_1));
-            MoveWaypoint(76, GetWaypointX(75), GetWaypointY(75));
-            Delete(var_1);
+        else if (progress == 1)
+        {
+            if (IsVisibleTo(player[plr], glowPoint))
+            {
+                vectX = UnitAngleCos(player[plr], -20.0); //dx
+                vectY = UnitAngleSin(player[plr], -20.0); //dy
+                MoveWaypoint(75, GetObjectX(glowPoint), GetObjectY(glowPoint));
+                MoveWaypoint(76, GetWaypointX(75), GetWaypointY(75));
+            }
+            else
+            {
+                progress = 255;
+                UniPrint(player[plr], "커서 위치를 볼 수 없습니다");
+            }
+            Delete(glowPoint);
         }
         else {
-            var_5[0] = CreateObject("LargeFlame", 75);
-            var_5[1] = CreateObject("LargeFlame", 76);
-            var_5[2] = CreateObject("fireball", 75);
-            var_5[3] = CreateObject("fireball", 76);
-            DeleteObjectTimer(var_5[0], 120);
-            DeleteObjectTimer(var_5[1], 120);
+            flames[0] = CreateObject("LargeFlame", 75);
+            flames[1] = CreateObject("LargeFlame", 76);
+            flames[2] = CreateObject("fireball", 75);
+            flames[3] = CreateObject("fireball", 76);
+            DeleteObjectTimer(flames[0], 120);
+            DeleteObjectTimer(flames[1], 120);
             DeleteObjectTimer(CreateObject("barrel", 75), 3);
             DeleteObjectTimer(CreateObject("barrel", 76), 3);
-            SetOwner(player[arg_0], var_5[0]);
-            SetOwner(player[arg_0], var_5[1]);
-            SetOwner(player[arg_0], var_5[2]);
-            SetOwner(player[arg_0], var_5[3]);
-            MoveWaypoint(75, GetWaypointX(75) + var_4, GetWaypointY(75) - var_3);
-            MoveWaypoint(76, GetWaypointX(76) - var_4, GetWaypointY(76) + var_3);
+            SetOwner(player[plr], flames[0]);
+            SetOwner(player[plr], flames[1]);
+            SetOwner(player[plr], flames[2]);
+            SetOwner(player[plr], flames[3]);
+            MoveWaypoint(75, GetWaypointX(75) + vectY, GetWaypointY(75) - vectX);
+            MoveWaypoint(76, GetWaypointX(76) - vectY, GetWaypointY(76) + vectX);
             AudioEvent("FirewalkOff", 75);
             AudioEvent("FirewalkOff", 76);
         }
-        var_0 += 1;
-        FrameTimerWithArg(1, arg_0, hecubahSkillJ);
+        progress += 1;
+        FrameTimerWithArg(1, plr, hecubahSkillJ);
     }
     else {
-        var_0 = 0;
-        EnchantOff(player[arg_0], "ENCHANT_ANCHORED");
-        COOLDOWN[arg_0 + 30] = 0;
-        Delete(var_1);
+        progress = 0;
+        EnchantOff(player[plr], "ENCHANT_ANCHORED");
+        COOLDOWN[plr + 30] = 0;
+        Delete(glowPoint);
     }
 }
 
@@ -2299,8 +2308,8 @@ void ogreSkillJ(int arg_0) { //not_yet
 
     if (CurrentHealth(player[arg_0]) > 0 && var_0 < 30) {
         if (var_0 == 0) {
-            var_1 = unitForward(player[arg_0], 1, 24.0);
-            var_2 = unitForward(player[arg_0], 0, 24.0);
+            var_1 = UnitAngleCos(player[arg_0], 24.0);
+            var_2 = UnitAngleSin(player[arg_0], 24.0);
             MoveWaypoint(84, GetObjectX(player[arg_0]) + var_1, GetObjectY(player[arg_0]) + var_2);
             ogreSpawnBarrel(0, 84);
             LookWithAngle(ogreTrg(), arg_0);
@@ -2331,7 +2340,7 @@ void lichSkillJ(int arg_0) {
 
     if (CurrentHealth(player[arg_0]) > 0) {
         UniChatMessage(player[arg_0], "순보...!", 109);
-        MoveWaypoint(99, GetObjectX(player[arg_0]) + unitForward(player[arg_0], 1, 140.0), GetObjectY(player[arg_0]) + unitForward(player[arg_0], 0, 140.0));
+        MoveWaypoint(99, GetObjectX(player[arg_0]) + UnitAngleCos(player[arg_0], 140.0), GetObjectY(player[arg_0]) + UnitAngleSin(player[arg_0], 140.0));
         var_0 = CreateObject("redPotion2", 99);
         if (IsVisibleTo(player[arg_0], var_0)) {
             MoveObject(player[arg_0], GetWaypointX(99), GetWaypointY(99));
@@ -2350,7 +2359,7 @@ void demonTouched() {
 
     if (CurrentHealth(other) > 0 && IsAttackedBy(other, player[var_0])) {
         Damage(other, player[var_0], 130, 7);
-        Enchant(other, "ENCHANT_CHARMING", 0.5);
+        Enchant(other, "ENCHANT_HELD", 3.0);
     }
 }
 
@@ -2413,7 +2422,7 @@ void aroundSpreadMissiles(int arg_0) {
     int var_1;
 
     while(var_0 < 20) {
-        MoveWaypoint(52, GetObjectX(player[arg_0]) - mathSine(var_0 * 18 + 90, 35.0), GetObjectY(player[arg_0]) - mathSine(var_0 * 18, 35.0));
+        MoveWaypoint(52, GetObjectX(player[arg_0]) - MathSine(var_0 * 18 + 90, 35.0), GetObjectY(player[arg_0]) - MathSine(var_0 * 18, 35.0));
         var_1 = CreateObject("CarnivorousPlant", 52);
         LookWithAngle(var_1, arg_0);
         Frozen(var_1, 1);
@@ -2562,45 +2571,44 @@ void lightningRisk(int arg_0) {
     }
 }
 
-void controlBlock(int arg_0, int arg_1, float arg_2, int arg_3) { //player_index, base_unit, range, mode(0: spawn, 1: delete)
-    int var_0 = GetDirection(arg_1); //area
-    float var_1;
-    float var_2;
-    float var_3;
-    float var_4;
-    int var_5[40];
-    float var_6;
-    int i;
+void controlBlock(int plr, int glowPoint, float size, int mode)
+{
+    //player_index, base_unit, range, mode(0: spawn, 1: delete)
+    int blocks[40], i;
+    float pointX = GetObjectX(glowPoint), pointY = GetObjectY(glowPoint) + 100.0;
 
-    var_1 = GetObjectX(arg_1);
-    var_2 = GetObjectY(arg_1) + 100.0;
-    for(i = 0 ; i < 40 ; i += 1) {
-        if (arg_3 == 0) {
-            var_6 = Distance(GetObjectX(arg_1), GetObjectY(arg_1), var_1, var_2);
-            var_3 = (GetObjectX(arg_1) - var_1) * arg_2 / var_6; //dx
-            var_4 = (GetObjectY(arg_1) - var_2) * arg_2 / var_6; //dy
-            MoveWaypoint(var_0, GetObjectX(arg_1) - var_3, GetObjectY(arg_1) - var_4);
-            var_5[i] = CreateObject("RotatingSpikes", var_0);
-            SetOwner(player[arg_0], var_5[i]);
-            Enchant(var_5[i], "ENCHANT_SHOCK", 0.0);
-            Frozen(var_5[i], 1);
-            var_1 = GetObjectX(arg_1) - (0.2 * var_4) - var_3;
-            var_2 = GetObjectY(arg_1) + (0.2 * var_3) - var_4;
+    for (i = 0 ; i < 40 ; i ++)
+    {
+        if (mode == false)
+        {
+            float distSize = Distance(GetObjectX(glowPoint), GetObjectY(glowPoint), pointX, pointY);
+            float vectX = (GetObjectX(glowPoint) - pointX) * size / distSize; //dx
+            float vectY = (GetObjectY(glowPoint) - pointY) * size / distSize; //dy
+            blocks[i] = CreateObjectAt("RotatingSpikes", GetObjectX(glowPoint) - vectX, GetObjectY(glowPoint) - vectY);
+            SetOwner(player[plr], blocks[i]);
+            Enchant(blocks[i], "ENCHANT_SHOCK", 0.0);
+            Frozen(blocks[i], 1);
+            pointX = GetObjectX(glowPoint) - (0.2 * vectY) - vectX;
+            pointY = GetObjectY(glowPoint) + (0.2 * vectX) - vectY;
         }
         else
-            Delete(var_5[i]);
+            Delete(blocks[i]);
     }
 }
 
-void localRisk(int arg_0, int arg_1, int arg_2, float arg_3) { //index, damage_value, area, range
-    float var_0;
+void localRisk(int plr, int amount, object location, float range)
+{
+    //index, damage_value, area, range
+    float distSize;
     int i;
 
-    for(i = 0; i < 10 ; i += 1) {
-        if (CurrentHealth(player[i]) > 0 && i != arg_0) {
-            var_0 = Distance(GetObjectX(player[i]), GetObjectY(player[i]), GetWaypointX(arg_2), GetWaypointY(arg_2));
-            if (var_0 < arg_3)
-                Damage(player[i], player[arg_0], arg_1, 14);
+    for (i = 0; i < 10 ; i ++)
+    {
+        if (CurrentHealth(player[i]) && i != plr)
+        {
+            distSize = Distance(GetObjectX(player[i]), GetObjectY(player[i]), GetWaypointX(location), GetWaypointY(location));
+            if (distSize < range)
+                Damage(player[i], player[plr], amount, 14);
         }
     }
 }
@@ -2641,18 +2649,50 @@ void spawnArrowWithHor(int arg_0, int arg_1, int arg_2) { //index, wp, amount
     }
 }
 
-void stunPlayer(int arg_0, int arg_1, float arg_2) {
-    int i;
-    float var_0;
+void stunPlayer(object splashUnit, float range)
+{
+    int i, owner = GetOwner(splashUnit);
 
-    for(i = 0 ; i < 10 ; i += 1) {
-        if (CurrentHealth(player[i]) > 0 && i != arg_0) {
-            var_0 = Distance(GetObjectX(player[i]), GetObjectY(player[i]), GetWaypointX(arg_1), GetWaypointY(arg_1));
-            if (var_0 < arg_2)
-                Enchant(player[i], "ENCHANT_FREEZE", 1.0);
+    for (i = 0 ; i < 10 ; i += 1)
+    {
+        if (player[i] ^ owner)
+        {
+            if (CurrentHealth(player[i]))
+            {
+                if (IsVisibleTo(player[i], splashUnit) || IsVisibleTo(splashUnit, player[i]))
+                {
+                    float tempDist = Distance(GetObjectX(player[i]), GetObjectY(player[i]), GetObjectX(splashUnit), GetObjectY(splashUnit));
+                    if (tempDist < range)
+                        Enchant(player[i], "ENCHANT_FREEZE", 1.0);
+                }
+            }
         }
     }
 }
+
+void AroundSplashTriggered(object splashUnit, float range, int amount)
+{
+    int i, owner = GetOwner(splashUnit);
+    
+    for (i = 0 ; i < 10 ; i ++)
+    {
+        if (player[i] ^ owner)
+        {
+            if (CurrentHealth(player[i]))
+            {
+                if (IsVisibleTo(player[i], splashUnit) || IsVisibleTo(splashUnit, player[i]))
+                {
+                    float tempDist = Distance(GetObjectX(player[i]), GetObjectY(player[i]), GetObjectX(splashUnit), GetObjectY(splashUnit));
+                    if (tempDist < range)
+                    {
+                        Damage(player[i], owner, amount, 0);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void deathrayTouched()
 {
     int plr = GetDirection(self);
@@ -2684,8 +2724,8 @@ void makeStar(int arg_0, float arg_1) {
     int i;
 
     for(i = 0; i < 5; i += 1) {
-        var_2[i * 2] = var_0 - mathSine(i * 72, arg_1);
-        var_2[i * 2 + 1] = var_1 - mathSine(i * 72 + 90, arg_1);
+        var_2[i * 2] = var_0 - MathSine(i * 72, arg_1);
+        var_2[i * 2 + 1] = var_1 - MathSine(i * 72 + 90, arg_1);
     }
 
     Effect("SENTRY_RAY", var_2[0], var_2[1], var_2[4], var_2[5]);
@@ -2741,54 +2781,55 @@ string OgreTables()
 
 void catchOgrePlayer()
 {
-    int var_0 = GetDirection(ogreTrg());
-    int var_1;
-    int var_2;
-    int var_3;
-    int var_4;
+    int mePlr = GetDirection(ogreTrg());
+    int count;
+    int enemy, trash;
+    int progress;
 
-    if (CurrentHealth(player[var_0]) && var_1 < 25)
+    if (CurrentHealth(player[mePlr]) && count < 25)
     {
-        if (!CurrentHealth(var_2) && !IsCaller(player[var_0]))
+        if (!CurrentHealth(enemy) && !IsCaller(player[mePlr]))
         {
             ogreSpawnBarrel(2, 0);
-            var_2 = GetCaller();
+            enemy = GetCaller();
             UniPrintToAll("트랩에 걸렸습니다 .");
-            Effect("CYAN_SPARKS", GetObjectX(var_2), GetObjectY(var_2), 0.0, 0.0);
+            // Effect("CYAN_SPARKS", GetObjectX(var_2), GetObjectY(var_2), 0.0, 0.0);
+            DrawGeometryRingAt("DrainManaOrb", GetObjectX(enemy), GetObjectY(enemy), 0);
             ObjectOff(ogreTrg());
-            var_4 = 1;
+            progress = 1;
         }
-        if (var_4 == 1)
+        if (progress == 1)
         {
-            if (CurrentHealth(var_2))
+            if (CurrentHealth(enemy))
             {
-                if (IsObjectOn(var_3))
+                if (IsObjectOn(trash))
                 {
-                    Damage(var_3, 0, 255, 14);
-                    Damage(var_2, player[var_0], 10, 2);
+                    DrawGeometryRingAt("DrainManaOrb", GetObjectX(trash), GetObjectY(trash), 0);
+                    Damage(trash, 0, 255, 14);
+                    Damage(enemy, player[mePlr], 10, 2);
                 }
                 else
                 {
-                    MoveWaypoint(84, GetObjectX(var_2), GetObjectY(var_2));
-                    var_3 = CreateObject(ToStr(SToInt(OgreTables()) + Random(0, 4)), 84);
-                    Raise(var_3, 200.0);
+                    trash = CreateObjectAt(ToStr(SToInt(OgreTables()) + Random(0, 4)), GetObjectX(enemy), GetObjectY(enemy));
+                    UnitNoCollide(trash);
+                    Raise(trash, 200.0);
                 }
-                var_1 += 1;
-                FrameTimer(21, catchOgrePlayer);
+                count += 1;
+                FrameTimer(11, catchOgrePlayer);
             }
             else {
-                var_1 = 25;
+                count = 25;
                 FrameTimer(1, catchOgrePlayer);
             }
         }
     }
     else
     {
-        if (IsObjectOn(var_3))
-            Delete(var_3);
-        var_1 = 0;
-        var_2 = 0;
-        var_4 = 0;
+        if (IsObjectOn(trash))
+            Delete(trash);
+        count = 0;
+        enemy = 0;
+        progress = 0;
     }
 }
 int ogreTrg()
@@ -2809,8 +2850,8 @@ void LichStatueCollide()
     {
         if (CurrentHealth(other) && IsAttackedBy(other, owner))
         {
-            Damage(other, owner, 60, 9);
-            Enchant(other, "ENCHANT_CHARMING", 0.2);
+            Damage(other, owner, 70, 9);
+            Enchant(other, "ENCHANT_CHARMING", 0.3);
         }
         else if (!GetCaller())
             DestroyWallAtUnitPos(self);
@@ -2842,9 +2883,7 @@ void flagMode(int plr, int mode)
     {
         if (!mode)
         {
-            // MoveWaypoint(97, GetWaypointX(98) + mathSine(i * 20 + 90, 200.0), GetWaypointY(98) + mathSine(i * 20, 200.0));
-            // unit[i] = CreateObject(ToStr(SToInt(SpiritStatues()) + ((i % 16) / 2)), 97);
-            unit[i] = LichStatue(GetWaypointX(98) + mathSine(i * 20 + 90, 200.0), GetWaypointY(98) + mathSine(i * 20, 200.0), i);
+            unit[i] = LichStatue(GetWaypointX(98) + MathSine(i * 20 + 90, 200.0), GetWaypointY(98) + MathSine(i * 20, 200.0), i);
             SetOwner(player[plr], unit[i]);
             Effect("SMOKE_BLAST", GetWaypointX(98), GetWaypointY(98), 0.0, 0.0);
         }
@@ -2927,15 +2966,6 @@ int CheckUnitOwner(int unit)
     return -1;
 }
 
-float unitForward(int unit, int mode, float size) { //unit_idx, 0 sin, 1 cos, size
-    int angle = GetDirection(unit) * 45 / 32;
-
-    if (!mode)
-        return mathSine(angle, size);
-    else
-        return mathSine(angle + 90, size);
-}
-
 void DummyFunction()
 {
     //
@@ -2949,12 +2979,12 @@ void setUnitHealth(int arg_0, int arg_1) {
 
 float Rx_ratio(float x, float y, int angle)
 {
-    return (mathSine(angle + 90, 1.0) * x) - (mathSine(angle, 1.0) * y);
+    return (MathSine(angle + 90, 1.0) * x) - (MathSine(angle, 1.0) * y);
 }
 
 float Ry_ratio(float x, float y, int angle)
 {
-    return (mathSine(angle, 1.0) * x) + (mathSine(angle + 90, 1.0) * y);
+    return (MathSine(angle, 1.0) * x) + (MathSine(angle + 90, 1.0) * y);
 }
 
 float mathSpiral(int num)
@@ -2993,61 +3023,46 @@ float mathSpiral(int num)
     return pos_xy[num];
 }
 
-float mathSine(int angle, float size)
+float WayRatioX(int wp1, int wp2)
+{
+    return (GetWaypointX(wp1) - GetWaypointX(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
+}
+
+float WayRatioY(int wp1, int wp2)
+{
+    return (GetWaypointY(wp1) - GetWaypointY(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
+}
+
+float GetSineValue(int wp, float c)
+{
+    float x_ratio = WayRatioX(wp, wp + 1), y_ratio = WayRatioY(wp, wp + 1), res;
+
+    res = GetWaypointX(wp) - GetWaypointX(wp + 1);
+    MoveWaypoint(wp + 1, GetWaypointX(wp) - (c * y_ratio) - x_ratio, GetWaypointY(wp) + (c * x_ratio) - y_ratio);
+    return res;
+}
+
+float MathSine(int angle, float size)
 {
     float var_0[91];
-    int i;
-    int k;
-
-    if (var_0[90] != 0.0)
+    int i, k;
+ 
+    if (!ToInt(var_0[90]))
     {
-        k = angle / 90;
-        i = angle - (k * 90);
-        k %= 2;
-        if (k == 1)
-            i = 90 - i;
-        if ((angle / 180) % 2 == 1)
-            return -var_0[i] * size;
-        else
-            return var_0[i] * size;
+        MoveWaypoint(angle + 1, GetWaypointX(angle), GetWaypointY(angle) - 1.0);
+        for (i = 0 ; i <= 90 ; i ++)
+        {
+            var_0[i] = GetSineValue(angle, size);
+            Delete(k + i + 1);
+        }
+        return var_0[0];
     }
-    k = MathRingCore(44);
-    Delete(k);
-    for (i = 0 ; i <= 90 ; i ++)
-    {
-        var_0[i] = GetObjectZ(k + i + 1);
-        Delete(k + i + 1);
-    }
-    return var_0[0];
-}
+    k = angle / 90;
+    i = angle - (k * 90);
 
-int MathRingCore(int wp)
-{
-    float x_ratio;
-    float y_ratio;
-    string name = "InvisibleLightBlueLow";
-    int unit = CreateObject(name, wp);
-    int i;
-
-    MoveWaypoint(wp + 1, GetWaypointX(wp), GetWaypointY(wp) - 1.0);
-    for (i = 0 ; i <= 90 ; i ++)
-    {
-        x_ratio = WayRatioXY(wp, wp + 1, 0);
-        y_ratio = WayRatioXY(wp, wp + 1, 1);
-        MoveWaypoint(wp + 1, GetWaypointX(wp) - x_ratio, GetWaypointY(wp) - y_ratio);
-        CreateObject(name, wp + 1);
-        Raise(unit + i + 1, GetWaypointX(wp) - GetWaypointX(wp + 1));
-        MoveWaypoint(wp + 1, GetWaypointX(wp) - (1.0 / 57.3 * y_ratio) - x_ratio, GetWaypointY(wp) + (1.0 / 57.3 * x_ratio) - y_ratio);
-    }
-    return unit;
-}
-
-float WayRatioXY(int wp1, int wp2, int mode)
-{
-    if (!mode)
-        return (GetWaypointX(wp1) - GetWaypointX(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
-    else
-        return (GetWaypointY(wp1) - GetWaypointY(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
+    if (k % 2) i = 90 - i;
+    if ((angle / 180) % 2) return -var_0[i] * size;
+	else return var_0[i] * size;
 }
 
 int SentryRay()
@@ -3098,12 +3113,12 @@ float IntToFloat(int x)
 
 float UnitAngleCos(int unit, float size)
 {
-    return mathSine((GetDirection(unit) * 45 / 32) + 90, size);
+    return MathSine((GetDirection(unit) * 45 / 32) + 90, size);
 }
 
 float UnitAngleSin(int unit, float size)
 {
-    return mathSine(GetDirection(unit) * 45 / 32, size);
+    return MathSine(GetDirection(unit) * 45 / 32, size);
 }
 
 string PlayerName(int ptr)
@@ -3841,6 +3856,9 @@ void RectangleImageKeyL()
 void RectangleImageSpacebar()
 { }
 
+void BitaPowerDrinkImage()
+{ }
+
 int TestPacket()
 {
     int first = 0x020002a8, second = 0, third = 0x31000001;
@@ -3865,6 +3883,7 @@ void PlayerClassCommonWhenEntry()
     ApplyImageResourceFix(580, GetScrCodeField(RectangleImageKeyK) + 4, drawF);
     ApplyImageResourceFix(581, GetScrCodeField(RectangleImageKeyL) + 4, drawF);
     ApplyImageResourceFix(582, GetScrCodeField(RectangleImageSpacebar) + 4, drawF);
+    ApplyImageResourceFix(2178, GetScrCodeField(BitaPowerDrinkImage) + 4, drawF);
 
     CmdLine("say 게임 참가완료", false);
     // if (!GetMemory(0x654284))   //!RemoveMe
@@ -3979,4 +3998,140 @@ int ImportUnitCollideFunc()
         link = GetScrDataField(ImportUnitCollideFunc);
     }
     return link;
+}
+
+int ImportPlaySoundAround()
+{
+	int arr[17], link;
+
+	if (!link)
+	{
+		arr[0] = 0x50196068; arr[1] = 0x72506800; arr[2] = 0x50560050; arr[3] = 0x082454FF;
+		arr[4] = 0x54FFF08B; arr[5] = 0x006A0824; arr[6] = 0x5650006A; arr[7] = 0x1C2454FF;
+		arr[8] = 0x5810C483; arr[9] = 0x08C4835E; arr[10] = 0x909090C3;
+        link = GetScrDataField(ImportPlaySoundAround);
+	}
+	return link;
+}
+
+void PlaySoundAround(int sUnit, int sNumber)
+{
+	int unitPtr = UnitToPtr(sUnit), temp = GetMemory(0x5c325c);
+
+	if (unitPtr)
+	{
+		SetMemory(0x5c325c, ImportPlaySoundAround());
+		Unused74(unitPtr, sNumber);
+		SetMemory(0x5c325c, temp);
+	}
+}
+
+int ImportOrbMoveFunc()
+{
+	int arr[6], link;
+
+	if (!link)
+	{
+		arr[0] = 0x52353068; arr[1] = 0x72506800; arr[2] = 0x14FF0050; arr[3] = 0x54FF5024; arr[4] = 0xC4830824; arr[5] = 0x9090C30C;
+		link = GetScrDataField(ImportOrbMoveFunc);
+	}
+	return link;
+}
+
+void LinearOrbMove(int unit, float x_vect, float y_vect, float speed, int time)
+{
+	int ptr = UnitToPtr(unit), temp = GetMemory(0x5c336c);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x50, ToInt(x_vect));
+		SetMemory(ptr + 0x54, ToInt(y_vect));
+		SetMemory(ptr + 0x70, ToInt(speed));
+		SetMemory(0x5c336c, ImportOrbMoveFunc());
+		Unknownb8(ptr);
+		SetMemory(0x5c336c, temp);
+		DeleteObjectTimer(unit, time);
+	}
+}
+
+void DrawGeometryRingAt(string orbName, float xProfile, float yProfile, int angleAdder)
+{
+    int u, link = GetScrDataField(DrawGeometryRingAt) + 16;
+    float speed = 2.3;
+
+    for ( u = 0 ; u < 60 ; SetMemory(link, u + 1))
+        LinearOrbMove(CreateObjectAt(orbName, xProfile, yProfile), MathSine((u * 6) + 90 + angleAdder, -12.0), MathSine((u * 6) + angleAdder, -12.0), speed, 10);
+}
+
+void DrawSpreadOrbFx(string orbName, float xProfile, float yProfile, int angleAdder)
+{
+    int u, link = GetScrDataField(DrawSpreadOrbFx) + 16;
+    float speed = 2.4;
+
+    for (u = 0 ; u < 60 ; SetMemory(link, u + 1))
+        LinearOrbMove(CreateObjectAt(orbName, xProfile, yProfile), MathSine((u * 6) + 90 + angleAdder, -24.0), MathSine((u * 6) + angleAdder, -24.0), speed, 12);
+}
+
+void DemonsBloodFestival(int baseUnit)
+{
+    int count = GetDirection(baseUnit);
+    string orbName = {"CharmOrb", "HealOrb", "WhiteOrb", "DrainManaOrb"};
+
+    while (true)
+    {
+        if (count)
+        {
+            LookWithAngle(baseUnit, count - 1);
+            DrawGeometryRingAt("HealOrb", GetObjectX(baseUnit), GetObjectY(baseUnit), count);
+            DrawSpreadOrbFx(ToStr(SToInt(orbName) + (count % 4)) , GetObjectX(baseUnit), GetObjectY(baseUnit), count);
+            FrameTimerWithArg(1, baseUnit, DemonsBloodFestival);
+            break;
+        }
+        Delete(baseUnit);
+        break;
+    }
+}
+
+void ArmageddonExplosion()
+{
+    object owner = GetOwner(self);
+    object splashUnit = CreateObjectAt("AmbBeachBirds", GetObjectX(self), GetObjectY(self));
+
+    DeleteObjectTimer(CreateObjectAt("Explosion", GetObjectX(splashUnit), GetObjectY(splashUnit)), 11);
+    SetOwner(owner, splashUnit);
+    DrawGeometryRingAt("HealOrb", GetObjectX(self), GetObjectY(self), 0);
+    AroundSplashTriggered(self, 140.0, 130);
+    PlaySoundAround(splashUnit, 918);
+    DeleteObjectTimer(splashUnit, 3);
+}
+
+void ArmageddonCollide()
+{
+    int owner = GetOwner(self);
+
+    while (GetTrigger())
+    {
+        if (CurrentHealth(other) && IsAttackedBy(other, owner))
+        {
+            Damage(other, owner, 30, 0);
+        }
+        else if (!GetCaller())
+            DestroyWallAtUnitPos(self);
+        else
+            break;
+        ArmageddonExplosion();
+        Delete(self);
+        break;
+    }
+}
+
+int DemonsArmageddon(float xProfile, float yProfile, int owner)
+{
+    int mis = CreateObjectAt("TitanFireball", xProfile, yProfile);
+    int ptr = GetMemory(0x750710);
+
+    SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
+    SetMemory(ptr + 0x2fc, ArmageddonCollide);
+    SetOwner(owner, mis);
+    return mis;
 }
