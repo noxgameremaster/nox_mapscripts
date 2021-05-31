@@ -2735,6 +2735,7 @@ int LaiserSwordCreate(float x, float y)
 
     Enchant(unit, "ENCHANT_INFRAVISION", 0.0);
     SetWeaponProperties(GetMemory(0x750710), 5, 5, 20, 0);
+    WeaponClassCProperty1Entry(unit, 3, LaiserSwordStrike, WeaponClassCProperty3Table());
     CreateObjectAt("InvisibleLightBlueHigh", x, y);
     FrameTimerWithArg(1, unit, LaiserSwordFx);
     return unit;
@@ -2754,11 +2755,11 @@ void LaiserSwordFx(int unit)
 				Delete(fx);
             else if (MaxHealth(unit) ^ CurrentHealth(unit))
             {
-                if (!HasEnchant(owner, "ENCHANT_VILLAIN"))
-                {
-                    Enchant(owner, "ENCHANT_VILLAIN", 0.6);
-                    LaiserSwordDisplay(owner);
-                }
+                // if (!HasEnchant(owner, "ENCHANT_VILLAIN"))
+                // {
+                //     Enchant(owner, "ENCHANT_VILLAIN", 0.6);
+                //     LaiserSwordDisplay(owner);
+                // }
                 RestoreHealth(unit, MaxHealth(unit));
             }
 		}
@@ -2814,6 +2815,11 @@ void LaiserLifleTouched()
         Enchant(other, "ENCHANT_FREEZE", 1.0);
         Effect("VIOLET_SPARKS", GetObjectX(self), GetObjectY(self), 0.0, 0.0);
     }
+}
+
+void LaiserSwordStrike()
+{
+    LaiserSwordDisplay(other);
 }
 
 void HiddenShopDecorations()
@@ -4013,3 +4019,62 @@ void ChangePlayerDeathSound(int handle, int soundNumber)
 {
     SetMemory(handle + 0x258, soundNumber);
 }
+
+void WeaponClassCProperty1Entry(int wUnit, int slot, int execFunctionNumber, int tablePtr)
+{
+    int ptr = UnitToPtr(wUnit);
+
+    if (ptr)
+    {
+        SetMemory(ptr + 0x2fc, execFunctionNumber);
+        SetMemory(GetMemory(ptr + 0x2b4) + (slot * 4), tablePtr);
+    }
+}
+
+int WeaponClassPropertyExecScript()
+{
+    int arr[13], link;
+
+    if (!link)
+    {
+        arr[0] = 0x24448D50; arr[1] = 0xEC83520C; arr[2] = 0x85108B0C; arr[3] = 0x501C74D2; arr[4] = 0x02FC828B; arr[5] = 0x44890000;
+        arr[6] = 0x89580424; arr[7] = 0x8B082454; arr[8] = 0x44890440; arr[9] = 0xE5E80424; arr[10] = 0x83FFDB62; arr[11] = 0x585A0CC4;
+        arr[12] = 0x000090C3;
+        link = GetScrDataField(WeaponClassPropertyExecScript);
+        FixCallOpcode(link + 0x26, 0x507310);
+    }
+    return link;
+}
+
+int WeaponClassCProperty1Code()
+{
+    int code[21], call1 = 0x4e0702, call2 = 0x4e0722, call3 = 0x4e0731, nop;
+    int link;
+
+    if (!link)
+    {
+        link = GetScrDataField(WeaponClassCProperty1Code);
+        OpcodeCopiesAdvance(link, link + (21 * 4), 0x4e06f0, 0x4e073c);
+
+        SetMemory(link + 46, 0x83);
+        SetMemory(link + 61, 97);
+    }
+    return link;
+}
+
+int WeaponClassCProperty3Table()
+{
+    int dat[36], link;
+
+    if (!link)
+    {
+        dat[0] = GetMemory(0x97bb40 + (SToInt("Fire4") * 4));
+        dat[1] = 0x61; dat[6] = 0xb40000; dat[5] = 0x4b0; dat[7] = 0x1b2ff2; dat[9] = 1;
+        dat[10] = WeaponClassPropertyExecScript();
+        dat[13] = WeaponClassCProperty1Code();
+        dat[14] = ToInt(4.0);
+        link = GetScrDataField(WeaponClassCProperty3Table);
+    }
+    return link;
+}
+
