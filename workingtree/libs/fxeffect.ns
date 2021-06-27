@@ -1,0 +1,131 @@
+
+int g_importMoveOrb;
+int g_importUnitToPtr;
+int g_importPlaysound;
+int g_importGreenExplo;
+
+void SetMemory(int a, int v){}
+int GetMemory(int a){}
+int ToInt(float x) { StopScript(x); }
+
+int ImportUnitToPtrFunc()
+{
+    int arr[10], link;
+    int funcIndex = g_importUnitToPtr;
+
+    if (!link)
+    {
+        arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
+        arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3;
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * (-funcIndex) + 0x1c));
+    }
+    return link;
+}
+
+int UnitToPtr(int unit)
+{
+    int temp = GetMemory(0x5c336c), res;
+    SetMemory(0x5c336c, ImportUnitToPtrFunc());
+    res = Unknownb8(unit);
+    SetMemory(0x5c336c, temp);
+	return res;
+}
+
+int ImportPlaySoundAround()
+{
+	int arr[17], link;
+    int funcIndex = g_importPlaysound;
+
+	if (!link)
+	{
+		arr[0] = 0x50196068; arr[1] = 0x72506800; arr[2] = 0x50560050; arr[3] = 0x082454FF;
+		arr[4] = 0x54FFF08B; arr[5] = 0x006A0824; arr[6] = 0x5650006A; arr[7] = 0x1C2454FF;
+		arr[8] = 0x5810C483; arr[9] = 0x08C4835E; arr[10] = 0x909090C3;
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * (-funcIndex) + 0x1c));
+	}
+	return link;
+}
+
+void PlaySoundAround(int sUnit, int sNumber)
+{
+	int unitPtr = UnitToPtr(sUnit), temp = GetMemory(0x5c325c);
+
+	if (unitPtr)
+	{
+		SetMemory(0x5c325c, ImportPlaySoundAround());
+		Unused74(unitPtr, sNumber);
+		SetMemory(0x5c325c, temp);
+	}
+}
+
+int ImportGreenExplosionFunc()
+{
+    int arr[17], link;
+    int funcIndex = g_importGreenExplo;
+
+    if (!link)
+    {
+        arr[0] = 0x32006856; arr[1] = 0x50680052; arr[2] = 0x68005072; arr[3] = 0x00403560; arr[4] = 0x54FF086A;
+		arr[5] = 0xC4830424; arr[6] = 0xFFF08B04; arr[7] = 0x89042454; arr[8] = 0x2454FF06; arr[9] = 0x04468904;
+		arr[10] = 0x0000C868; arr[11] = 0x54FF5600; arr[12] = 0xC4831024; arr[13] = 0x425D6814; arr[14] = 0xFF560040;
+		arr[15] = 0x83042454; arr[16] = 0xC35E08C4; 
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * (-funcIndex) + 0x1c));
+    }
+    return link;
+}
+
+void GreenExplosion(float x, float y)
+{
+    int temp = GetMemory(0x5c31f4);
+
+    SetMemory(0x5c31f4, ImportGreenExplosionFunc());
+    Unused5a(ToInt(y), ToInt(x));
+    SetMemory(0x5c31f4, temp);
+}
+
+int ImportOrbMoveFunc()
+{
+	int arr[6], link;
+    int funcIndex = g_importMoveOrb;
+
+	if (!link)
+	{
+		arr[0] = 0x52353068; arr[1] = 0x72506800; arr[2] = 0x14FF0050; arr[3] = 0x54FF5024; arr[4] = 0xC4830824; arr[5] = 0x9090C30C;
+		link = GetMemory(GetMemory(0x75ae28) + (0x30 * (-funcIndex) + 0x1c));
+	}
+	return link;
+}
+
+void LinearOrbMove(int unit, float x_vect, float y_vect, float speed, int time)
+{
+	int ptr = UnitToPtr(unit), temp = GetMemory(0x5c336c);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x50, ToInt(x_vect));
+		SetMemory(ptr + 0x54, ToInt(y_vect));
+		SetMemory(ptr + 0x70, ToInt(speed));
+		SetMemory(0x5c336c, ImportOrbMoveFunc());
+		Unknownb8(ptr);
+		SetMemory(0x5c336c, temp);
+		DeleteObjectTimer(unit, time);
+	}
+}
+
+void NOXLibraryEntryPointFunction()
+{
+    "export ToInt";
+    "export ImportUnitToPtrFunc";
+    "export UnitToPtr";
+    "export ImportOrbMoveFunc";
+    "export LinearOrbMove";
+    "export ImportPlaySoundAround";
+    "export PlaySoundAround";
+    "export ImportGreenExplosionFunc";
+    "export GreenExplosion";
+
+    g_importMoveOrb = ImportOrbMoveFunc;
+    g_importUnitToPtr = ImportUnitToPtrFunc;
+    g_importPlaysound = ImportPlaySoundAround;
+    g_importGreenExplo = ImportGreenExplosionFunc;
+}
