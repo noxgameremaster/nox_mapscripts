@@ -4,8 +4,10 @@ int player[20];
 int GAME_MODE = 2; //game_mode (0: auto_pick, 1: all_pick)
 int MODEL[10]; //character
 int FAN_CHAK[10]; //chakrum
-int MAGIC_ORB[80]; //heal_orb, charm_orb, mana_orb , white_orb
+// int MAGIC_ORB[80]; //heal_orb, charm_orb, mana_orb , white_orb
 int COOLDOWN[40]; //skill_complete_value (0-9: R, 10-19: S, 20-29: D, 30-39: J)
+int ORB_NOTIFIER[40];
+int USERSKILL_TIME[40];
 
 int DEBUGMODE;
 
@@ -452,7 +454,7 @@ void loopPreservePlayerTable()
                     AudioEvent("RegenerationOn", 102);
                     Delete(GetLastItem(player[k]));
                 }
-                cooldownDotSystem(k);
+                UserSkillCooldownSystem(k);
             }
         }
     }
@@ -495,24 +497,23 @@ int BkRevent(int num)
     return arr[num];
 }
 
-void DecreaseCooldown(int arg_0)
+void FixDecreaseCooldown(int plrIndex)
 {
-    int i;
-    //40, 50, 60, 70
-    //41, 51, 61, 71
-    for(i = 0; i < 40 ; i += 10)
+    int t, plrUnit = player[plrIndex];
+
+    for (t = 0 ; t < 40 ; t += 10)
     {
-        if (MAGIC_ORB[arg_0 + 40 + i])
+        if (USERSKILL_TIME[t + plrIndex] > 0)
         {
-            MAGIC_ORB[arg_0 + 40 + i] --;
-            if (!MAGIC_ORB[arg_0 + 40 + i])
-                UniPrint(player[arg_0], "지금 " + ToStr(SToInt(skillName()) + (i / 10)) + " 스킬 쿨다운이 완료되었습니다");
+            USERSKILL_TIME[t + plrIndex]--;
+            if (!USERSKILL_TIME[t + plrIndex])
+                UniPrint(plrUnit, "지금 " + ToStr(SToInt(skillName()) + (t / 10)) + " 스킬 쿨다운이 완료되었습니다");
         }
-        else if (!IsObjectOn(MAGIC_ORB[arg_0 + i]) && CurrentHealth(player[arg_0]))
+        else if (!IsObjectOn(ORB_NOTIFIER[plrIndex + t]) && CurrentHealth(plrUnit))
         {
-            MAGIC_ORB[arg_0 + i] = CreateObject(ToStr(SToInt(cooldownDotType()) + (i / 10)), 103);
-            Frozen(MAGIC_ORB[arg_0 + i], true);
-            UnitNoCollide(MAGIC_ORB[arg_0 + i]);
+            ORB_NOTIFIER[t + plrIndex] = CreateObjectAt(ToStr(SToInt(cooldownDotType()) + (t / 10)), GetObjectX(plrUnit), GetObjectY(plrUnit));
+            Frozen(ORB_NOTIFIER[t + plrIndex], true);
+            UnitNoCollide(ORB_NOTIFIER[t + plrIndex]);
         }
     }
 }
@@ -530,13 +531,15 @@ string cooldownDotType()
 
     return table;
 }
-void cooldownDotSystem(int arg_0) {
-    int i;
+void UserSkillCooldownSystem(int plrIndex)
+{
+    int t;
 
-    DecreaseCooldown(arg_0);
-    for(i = 0 ; i < 40 ; i += 10) {
-        if (IsObjectOn(MAGIC_ORB[arg_0 + i]))
-            MoveObject(MAGIC_ORB[arg_0 + i], GetObjectX(player[arg_0]) + dotPosX(i / 10), GetObjectY(player[arg_0]) - 60.0);
+    FixDecreaseCooldown(plrIndex);
+    for (t = 0 ; t < 40 ; t += 10)
+    {
+        if (IsObjectOn(ORB_NOTIFIER[plrIndex + t]))
+            MoveObject(ORB_NOTIFIER[plrIndex + t], GetObjectX(player[plrIndex]) + dotPosX(t / 10), GetObjectY(player[plrIndex]) - 60.0);
     }
 }
 float dotPosX(int arg_0) {
@@ -610,17 +613,18 @@ void randomRespawnLocation() {
     AudioEvent("BlindOff", var_0);
 }
 
-void resetMonsterPlaced(int arg_0) {
-    int var_0;
+void resetMonsterPlaced(int plrIndex)
+{
+    object location = plrIndex + 4;
 
-    var_0 = arg_0 + 4;
-    if (arg_0 < 5) {
-        MoveObject(MODEL[arg_0], GetWaypointX(var_0) - 32.0, GetWaypointY(var_0) - 32.0);
-        LookWithAngle(MODEL[arg_0], 32);
+    if (plrIndex < 5)
+    {
+        MoveObject(MODEL[plrIndex], GetWaypointX(location) - 32.0, GetWaypointY(location) - 32.0);
+        LookWithAngle(MODEL[plrIndex], 32);
     }
     else {
-        MoveObject(MODEL[arg_0], GetWaypointX(var_0) + 32.0, GetWaypointY(var_0) + 32.0);
-        LookWithAngle(MODEL[arg_0], 160);
+        MoveObject(MODEL[plrIndex], GetWaypointX(location) + 32.0, GetWaypointY(location) + 32.0);
+        LookWithAngle(MODEL[plrIndex], 160);
     }
 
     //Dots devide.
@@ -628,13 +632,21 @@ void resetMonsterPlaced(int arg_0) {
     //dots: 0-9, 10-19, 20-29, 30-39
     //value: 40-49, 50-59, 60-69, 70-79
 
-    for(var_0 = arg_0 ; var_0 < 40 ; var_0 += 10) {
-        if (IsObjectOn(MAGIC_ORB[var_0]))
-            Delete(MAGIC_ORB[var_0]);
+    // for(var_0 = plrIndex ; var_0 < 40 ; var_0 += 10) {
+    //     if (IsObjectOn(MAGIC_ORB[var_0]))
+    //         Delete(MAGIC_ORB[var_0]);
+    //     if (GAME_MODE)
+    //         MAGIC_ORB[var_0 + 40] = 0;
+    // }
+    int t;
+    for (t = 0 ; t < 40 ; t += 10)
+    {
+        if (IsObjectOn(ORB_NOTIFIER[plrIndex + t]))
+            Delete(ORB_NOTIFIER[plrIndex + t]);
         if (GAME_MODE)
-            MAGIC_ORB[var_0 + 40] = 0;
+            USERSKILL_TIME[plrIndex + t] = 0;
     }
-    Frozen(MODEL[arg_0], 1);
+    Frozen(MODEL[plrIndex], true);
 }
 
 void skillNothing(int plr)
@@ -651,14 +663,19 @@ void skillSneak(int arg_0)
     }
     if (DEBUGMODE == true)
         UniPrint(GetHost(), PlayerIngameNick(player[arg_0]) + " 이 J 키를 눌렀습니다");
-    if (!MAGIC_ORB[arg_0 + 40] && !HasEnchant(player[arg_0], "ENCHANT_ANCHORED"))
+    if (!USERSKILL_TIME[arg_0])       //here
     {
+        if (HasEnchant(player[arg_0], "ENCHANT_ANCHORED"))
+        {
+            UniPrint(player[arg_0], "아직 그 능력을 사용할 수 없어요");
+            return;
+        }
         if (!COOLDOWN[arg_0])
         {
-            MAGIC_ORB[arg_0 + 40] = time[arg_0] * 30;
+            USERSKILL_TIME[arg_0] = time[arg_0] * 30;
             COOLDOWN[arg_0] = 1;
             CallFunctionWithArg(SkillAFuncPtr() + arg_0, arg_0);
-            Delete(MAGIC_ORB[arg_0]);
+            Delete(ORB_NOTIFIER[arg_0]);
             if (DEBUGMODE)
                 UniPrintToAll(PlayerIngameNick(player[arg_0]) + " 스킬발동1");
         }
@@ -668,7 +685,7 @@ void skillSneak(int arg_0)
         }
     }
     else
-        NotifyCurrentCooldown(arg_0, MAGIC_ORB[arg_0 + 40]);
+        NotifyCurrentCooldown(arg_0, USERSKILL_TIME[arg_0]);
 }
 
 void skillEyeofwolf(int arg_0)
@@ -682,14 +699,19 @@ void skillEyeofwolf(int arg_0)
     }
     if (DEBUGMODE == true)
         UniPrint(GetHost(), PlayerIngameNick(player[arg_0]) + " 이 L 키를 눌렀습니다");
-    if (!MAGIC_ORB[arg_0 + 50] && !HasEnchant(player[arg_0], "ENCHANT_ANCHORED"))
+    if (!USERSKILL_TIME[arg_0 + 10])
     {
+        if (HasEnchant(player[arg_0], "ENCHANT_ANCHORED"))
+        {
+            UniPrint(player[arg_0], "아직 그 능력을 사용할 수 없어요");
+            return;
+        }
         if (!COOLDOWN[arg_0 + 10])
         {
             COOLDOWN[arg_0 + 10] = 1;
-            MAGIC_ORB[arg_0 + 50] = time[arg_0] * 30;
+            USERSKILL_TIME[arg_0 + 10] = time[arg_0] * 30;
             CallFunctionWithArg(SkillSFuncPtr() + arg_0, arg_0);
-            Delete(MAGIC_ORB[arg_0 + 10]);
+            Delete(ORB_NOTIFIER[arg_0 + 10]);
             if (DEBUGMODE)
                 UniPrintToAll(PlayerIngameNick(player[arg_0]) + " 스킬발동2");
         }
@@ -699,7 +721,7 @@ void skillEyeofwolf(int arg_0)
         }
     }
     else
-        NotifyCurrentCooldown(arg_0, MAGIC_ORB[arg_0 + 50]);
+        NotifyCurrentCooldown(arg_0, USERSKILL_TIME[arg_0 + 10]);
 }
 
 void harpoonEvent(int arg_0)
@@ -713,14 +735,19 @@ void harpoonEvent(int arg_0)
     }
     if (DEBUGMODE == true)
         UniPrint(GetHost(), PlayerIngameNick(player[arg_0]) + " 이 K 키를 눌렀습니다");
-    if (!MAGIC_ORB[arg_0 + 60] && !HasEnchant(player[arg_0], "ENCHANT_ANCHORED"))
+    if (!USERSKILL_TIME[arg_0 + 20])
     {
+        if (HasEnchant(player[arg_0], "ENCHANT_ANCHORED"))
+        {
+            UniPrint(player[arg_0], "아직 그 능력을 사용할 수 없어요");
+            return;
+        }
         if (!COOLDOWN[arg_0 + 20])
         {
             COOLDOWN[arg_0 + 20] = 1;
-            MAGIC_ORB[arg_0 + 60] = time[arg_0] * 30;
+            USERSKILL_TIME[arg_0 + 20] = time[arg_0] * 30;
             CallFunctionWithArg(SkillDFuncPtr() + arg_0, arg_0);
-            Delete(MAGIC_ORB[arg_0 + 20]);
+            Delete(ORB_NOTIFIER[arg_0 + 20]);
             if (DEBUGMODE)
                 UniPrintToAll(PlayerIngameNick(player[arg_0]) + " 스킬발동3");
         }
@@ -730,7 +757,7 @@ void harpoonEvent(int arg_0)
         }
     }
     else
-        NotifyCurrentCooldown(arg_0, MAGIC_ORB[arg_0 + 60]);
+        NotifyCurrentCooldown(arg_0, USERSKILL_TIME[arg_0 + 20]);
 }
 
 void skillOnJump(int arg_0)
@@ -744,14 +771,19 @@ void skillOnJump(int arg_0)
         time[0] = 50; time[1] = 15; time[2] = 35; time[3] = 30; time[4] = 40;
         time[5] = 3; time[6] = 20; time[7] = 10; time[8] = 70; time[9] = 3;
     }
-    if (!MAGIC_ORB[arg_0 + 70] && !HasEnchant(player[arg_0], "ENCHANT_ANCHORED"))
+    if (!USERSKILL_TIME[arg_0 + 30])
     {
+        if (HasEnchant(player[arg_0], "ENCHANT_ANCHORED"))
+        {
+            UniPrint(player[arg_0], "아직 그 능력을 사용할 수 없어요");
+            return;
+        }
         if (!COOLDOWN[arg_0 + 30])
         {
-            MAGIC_ORB[arg_0 + 70] = time[arg_0] * 30;
+            USERSKILL_TIME[arg_0 + 30] = time[arg_0] * 30;
             COOLDOWN[arg_0 + 30] = 1;
             CallFunctionWithArg(SkillJFuncPtr() + arg_0, arg_0);
-            Delete(MAGIC_ORB[arg_0 + 30]);
+            Delete(ORB_NOTIFIER[arg_0 + 30]);
             if (DEBUGMODE)
                 UniPrintToAll(PlayerIngameNick(player[arg_0]) + " 스킬발동4");
         }
@@ -761,7 +793,7 @@ void skillOnJump(int arg_0)
         }
     }
     else
-        NotifyCurrentCooldown(arg_0, MAGIC_ORB[arg_0 + 70]);
+        NotifyCurrentCooldown(arg_0, USERSKILL_TIME[arg_0 + 30]);
 }
 
 //43 way not used
@@ -4216,5 +4248,3 @@ void DebugModeSetting()
             UniPrint(other, "디버그 모드 활성화");
     }
 }
-
-//@ignore_object_type
