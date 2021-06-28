@@ -7,6 +7,10 @@
 
 #import "playerupdate"
 #import "coopteam"
+#import "spellutil"
+
+#import "callmethod"
+#import "itemproperty"
 
 #define NULLPTR         0 
 #define ITEM_NULL_PROPERTY      0x5a00a4
@@ -43,6 +47,7 @@ void RegistSignMessage(int sUnit, string sMsg){}
 int MathAbs(int num){}
 int ImportUseItemFunc(){}
 int ImportUnitDieFunc(){}
+int ImportAllowAllDrop(){}
 
 void DiePlayerHandlerEntry(int plrUnit){}
 void SelfDamageClassEntry(int plrUnit){}
@@ -50,6 +55,12 @@ void ResetPlayerHandlerWhenExitMap(){}
 
 void MakeCoopTeam(){}
 void RemoveCoopTeamMode(){}
+int CallFunctionWithArgInt(int func, int arg){}
+void SetArmorProperties(int armor, int qual, int mt_lv, int afx1, int afx2){}
+void SetWeaponProperties(int weapon, int power, int mt_lv, int wfx1, int wfx2){}
+
+void RemoveTreadLightly(int plrUnit){}
+int GetSpellNumber(string spell){}
 
 int DrawMagicIcon(int wp)
 {
@@ -196,28 +207,6 @@ int VoiceList(int num)
         }
     }
     return list[num];
-}
-
-void CalleeArg(int arg)
-{
-    CalleeArg(arg);
-}
-
-void CallFunctionWithArg(int func, int arg)
-{
-    int link, ptr;
-
-    if (!link)
-    {
-        CancelTimer(FrameTimerWithArg(10, CalleeArg, CalleeArg));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x20));
-        Delete(ptr);
-    }
-    else
-    {
-        SetMemory(link + 0x10, func);
-        CalleeArg(arg);
-    }
 }
 
 string ToStr(int x)
@@ -512,30 +501,6 @@ int GetUnitStatus(int unit)
     return 0;
 }
 
-int ImportGetSpellNumber()
-{
-	int arr[11], link;
-
-	if (!link)
-	{
-		arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x4085048B; arr[3] = 0x680097BB; arr[4] = 0x004243F0; arr[5] = 0x2454FF50;
-		arr[6] = 0x08C48304; arr[7] = 0x50723068; arr[8] = 0x54FF5000; arr[9] = 0xC4830424; arr[10] = 0xC3C0310C;
-        CancelTimer(FrameTimerWithArg(10, ImportGetSpellNumber, ImportGetSpellNumber));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x1c));
-	}
-	return link;
-}
-
-int GetSpellNumber(string spell)
-{
-	int temp = GetMemory(0x5c3204), res;
-
-	SetMemory(0x5c3204, ImportGetSpellNumber());
-	res = Unused5e(spell);
-	SetMemory(0x5c3204, temp);
-	return res * 4;
-}
-
 int GetOwner(int unit)
 {
     int ptr = UnitToPtr(unit), res;
@@ -609,17 +574,13 @@ void MapInitialize()
 {
     MapLastUnit = CreateObject("InvisibleLightBlueLow", 1);
     MusicEvent();
-    CallFunctionWithArg(0, 0);
-    CallFunctionWithArgInt(0, 0);
     ImportBinTable();
-    ImportGetSpellNumber();
 
     InitMathSine(1);
 
     VoiceList(0);
     MasterUnit();
     initializeGuardTower(25);
-    InitInvPropertiesSet();
     
     MapLang = !CheckGameKorLanguage();
     ObjectOn(Object("mainSwitchForPlayer"));
@@ -2015,93 +1976,6 @@ string StaffList(int sIdx)
     return staffs[sIdx];
 }
 
-int WeaponPower(int num)
-{
-    int addr[6] = {ITEM_NULL_PROPERTY, 0x5BA714, 0x5BA72C, 0x5BA744, 0x5BA75C, 0x5BA774};
-    int *ptr = addr[num];
-
-    return ptr[0];
-}
-
-int ArmorQuality(int num)
-{
-    int addr[6] = {ITEM_NULL_PROPERTY, 0x5BA7A4, 0x5BA7BC, 0x5BA7D4, 0x5BA7EC, 0x5BA804};
-    int *ptr = addr[num];
-
-    return ptr[0];
-}
-
-int MaterialList(int num)
-{
-    int addr[6] = {ITEM_NULL_PROPERTY, 0x5ba834, 0x5ba84c, 0x5ba864, 0x5ba87c, 0x5ba894};
-    int *ptr = addr[num];
-
-    return ptr[0];
-}
-
-int WeaponEffect(int num)
-{
-    int addr[37];
-
-    if (!addr[0])
-    {
-        addr[0] = ITEM_NULL_PROPERTY;
-        addr[1] = 0x5BA1BC; addr[2] = 0x5BA1D4; addr[3] = 0x5BA1EC; addr[4] = 0x5BA204; addr[5] = 0x5BA21C; addr[6] = 0x5BA234; addr[7] = 0x5BA24C; addr[8] = 0x5BA264;
-        addr[9] = 0x5BA27C; addr[10] = 0x5BA294; addr[11] = 0x5BA2AC; addr[12] = 0x5BA2C4; addr[13] = 0x5BA2DC; addr[14] = 0x5BA2F4; addr[15] = 0x5BA30C; addr[16] = 0x5BA324;
-        addr[17] = 0x5BA33C; addr[18] = 0x5BA354; addr[19] = 0x5BA36C; addr[20] = 0x5BA384; addr[21] = 0x5BA39C; addr[22] = 0x5BA3B4; addr[23] = 0x5BA3CC; addr[24] = 0x5BA3E4;
-        addr[25] = 0x5BA3FC; addr[26] = 0x5BA414; addr[27] = 0x5BA42C; addr[28] = 0x5BA444;
-        addr[29] = 0x5BA63C; addr[30] = 0x5BA654; addr[31] = 0x5BA66C; addr[32] = 0x5BA684;
-        addr[33] = 0x5BA69C; addr[34] = 0x5BA6B4; addr[35] = 0x5BA6CC; addr[36] = 0x5BA6E4;
-        return 0;
-    }
-    return GetMemory(addr[num]);
-}
-
-int ArmorEffect(int num)
-{
-    int addr[21];
-
-    if (!addr[0])
-    {
-        addr[0] = ITEM_NULL_PROPERTY;
-        addr[1] = 0x5BA45C; addr[2] = 0x5BA474; addr[3] = 0x5BA48C; addr[4] = 0x5BA4A4; addr[5] = 0x5BA4BC; addr[6] = 0x5BA4D4; addr[7] = 0x5BA4EC; addr[8] = 0x5BA504;
-        addr[9] = 0x5BA51C; addr[10] = 0x5BA534; addr[11] = 0x5BA54C; addr[12] = 0x5BA564; addr[13] = 0x5BA57C; addr[14] = 0x5BA594; addr[15] = 0x5BA5AC; addr[16] = 0x5BA5C4;
-        addr[17] = 0x5BA5DC; addr[18] = 0x5BA5F4; addr[19] = 0x5BA60C; addr[20] = 0x5BA624;
-        return 0;
-    }
-    return GetMemory(addr[num]);
-}
-
-void SetWeaponProperties(int sUnit, int power, int mt_lv, int wfx1, int wfx2)
-{
-    int k, ptr = UnitToPtr(sUnit);
-
-    if (ptr)
-    {
-        SetMemory(GetMemory(ptr + 0x2b4), WeaponPower(power));
-        SetMemory(GetMemory(ptr + 0x2b4) + 4, MaterialList(mt_lv));
-        SetMemory(GetMemory(ptr + 0x2b4) + 8, WeaponEffect(wfx1));
-        SetMemory(GetMemory(ptr + 0x2b4) + 12, WeaponEffect(wfx2));
-        for (k = 31 ; k >= 0 ; k -= 1)
-            SetMemory(ptr + 0x230 + (k * 4), 0x200);
-    }
-}
-
-void SetArmorProperties(int sUnit, int qual, int mt_lv, int afx1, int afx2)
-{
-    int k, ptr = UnitToPtr(sUnit);
-
-    if (ptr)
-    {
-        SetMemory(GetMemory(ptr + 0x2b4), ArmorQuality(qual));
-        SetMemory(GetMemory(ptr + 0x2b4) + 4, MaterialList(mt_lv));
-        SetMemory(GetMemory(ptr + 0x2b4) + 8, ArmorEffect(afx1));
-        SetMemory(GetMemory(ptr + 0x2b4) + 12, ArmorEffect(afx2));
-        for (k = 31 ; k >= 0 ; k -= 1)
-            SetMemory(ptr + 0x230 + (k * 4), 0x200);
-    }
-}
-
 void OblivionCopies(int sUnit)
 {
     int nUnit = CreateObjectAt("OblivionHeart", GetObjectX(sUnit), GetObjectY(sUnit));
@@ -2130,28 +2004,6 @@ void OblivionDrop()
         OblivionCopies(self);
     }
     Delete(self);
-}
-
-int CalleeArgInt(int arg)
-{
-    return CalleeArgInt(arg);
-}
-
-int CallFunctionWithArgInt(int func, int arg)
-{
-    int link;
-
-    if (!link)
-    {
-        CancelTimer(FrameTimerWithArg(10, CalleeArgInt, CalleeArgInt));
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * GetMemory(GetMemory(0x83395c) + 8) + 0x20));
-        return 0;
-    }
-    else
-    {
-        SetMemory(link + 0x10, func);
-        return CalleeArgInt(arg);
-    }
 }
 
 void FlareWandMissile(int sWand)
@@ -2438,15 +2290,6 @@ void UseItemFunc7()
         else
             UniPrint(other, "힘을내요 미스터리~ (15 초간 체력회복 속도 증가)");
     }
-}
-
-void InitInvPropertiesSet()
-{
-    WeaponEffect(0);
-    ArmorEffect(0);
-    WeaponPower(0);
-    ArmorQuality(0);
-    MaterialList(0);
 }
 
 string ObstacleNameTable(int index)
@@ -3465,47 +3308,6 @@ void HostPlayerSelectLanguage()
     UniPrint(GetHost(), "Please select map language");
     RegistSignMessage(Object("LangSign1"), "Language: Korea");
     RegistSignMessage(Object("LangSign2"), "Language: US");
-}
-
-int ImportRemoveSneakDelay()
-{
-    int arr[7], link;
-
-    if (!link)
-    {
-        arr[0] = 0x72506850; arr[1] = 0x14FF0050; arr[2] = 0xC3006824; arr[3] = 0x046A004F; arr[4] = 0x2454FF50; arr[5] = 0x10C48308; arr[6] = 0x9090C358;
-        link = &arr;
-    }
-    return link;
-}
-
-void RemoveTreadLightly(int plrUnit)
-{
-    int ptr = UnitToPtr(plrUnit), temp = GetMemory(0x5c336c);
-
-    if (ptr)
-    {
-        if (GetMemory(ptr + 0x08) & 0x04)
-        {
-            SetMemory(0x5c336c, ImportRemoveSneakDelay());
-            Unknownb8(ptr);
-            SetMemory(0x5c336c, temp);
-        }
-    }
-}
-
-int ImportAllowAllDrop()
-{
-	int arr[19], link;
-
-	if (!link)
-	{
-		arr[0] = 0x550CEC83; arr[1] = 0x14246C8B; arr[2] = 0x24748B56; arr[3] = 0xECAE391C; arr[4] = 0x74000001; arr[5] = 0xC0315E08; arr[6] = 0x0CC4835D;
-		arr[7] = 0x0845F6C3; arr[8] = 0x68207404; arr[9] = 0x0053EBF0; arr[10] = 0x2454FF56; arr[11] = 0x08C48304; arr[12] = 0x0F74C085; arr[13] = 0x53EC8068;
-		arr[14] = 0x56016A00; arr[15] = 0x082454FF; arr[16] = 0x680CC483; arr[17] = 0x004ED301; arr[18] = 0x909090C3;
-		link = &arr;
-	}
-	return link;
 }
 
 int ImportChestCollide()
