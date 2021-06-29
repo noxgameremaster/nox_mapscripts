@@ -1,0 +1,22 @@
+
+#import "unitutil"
+#import "printutil"
+#import "username"
+
+void UniPrint(int sUnit, string sMsg) extern{}
+int CreateObjectAt(string name, float x, float y) extern{}
+
+string PlayerIngameNick(int sUnit)extern{}
+
+void PressRedBeacon()
+{
+	UniPrint(other, PlayerIngameNick(other) + " 님께서 빨강 비콘을 밟았습니다");
+	CreateObjectAt("Ruby", GetObjectX(other), GetObjectY(other));
+}
+
+void PressBlueBeacon()
+{
+	UniPrint(other, "파란색 비콘을 밟으셨네요");
+	CreateObjectAt("Diamond", GetObjectX(other), GetObjectY(other));
+}
+
