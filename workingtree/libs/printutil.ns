@@ -291,7 +291,7 @@ void UniBroadcast(string sMsg)
 void NOXLibraryEntryPointFunction()
 {
     "export SToInt";
-    "export ToInt";
+    "export ToStr";
     "export SetMemory";
     "export GetMemory";
     "export needinit ImportUnitToPtrFunc";

@@ -1,4 +1,6 @@
 
+int g_importUnitDie;
+int g_importUnitDrop;
 int g_importUnitCollide;
 int g_importUseitem;
 int g_importCreateAt;
@@ -97,6 +99,36 @@ int ImportUnitCollideFunc()
     return link;
 }
 
+int ImportUnitDieFunc()
+{
+    int arr[9], link;
+    int funcIndex = g_importUnitDie;
+
+    if (!link)
+    {
+        arr[0] = 0x50731068; arr[1] = 0x8B565000; arr[2] = 0x8B102474; arr[3] = 0x00022886;
+        arr[4] = 0x006A5600; arr[5] = 0x2454FF50; arr[6] = 0x0CC48314; arr[7] = 0xC483585E;
+        arr[8] = 0x9090C304; 
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * (-funcIndex) + 0x1c));
+    }
+    return link;
+}
+
+int ImportUnitDropFunc() //0x2fc
+{
+    int arr[10], link;
+    int funcIndex = g_importUnitDrop;
+
+    if (!link)
+    {
+        arr[0] = 0x50731068; arr[1] = 0x55565300; arr[2] = 0x14245C8B; arr[3] = 0x1824748B;
+        arr[4] = 0x02FCAE8B; arr[5] = 0x53560000; arr[6] = 0x2454FF55; arr[7] = 0x0CC48318;
+        arr[8] = 0x835B5E5D; arr[9] = 0x90C304C4;
+        link = GetMemory(GetMemory(0x75ae28) + (0x30 * (-funcIndex) + 0x1c));
+    }
+    return link;
+}
+
 void NOXLibraryEntryPointFunction()
 {
     "export SToInt";
@@ -109,9 +141,13 @@ void NOXLibraryEntryPointFunction()
     "export UnitToPtr";
     "export needinit ImportUseItemFunc";
     "export ImportUnitCollideFunc";
+    "export ImportUnitDieFunc";
+    "export ImportUnitDropFunc";
 
     g_importCreateAt = ImportCreateAtFunc;
     g_importUnitToPtr = ImportUnitToPtrFunc;
     g_importUseitem = ImportUseItemFunc;
     g_importUnitCollide = ImportUnitCollideFunc;
+    g_importUnitDie = ImportUnitDieFunc;
+    g_importUnitDrop = ImportUnitDropFunc;
 }

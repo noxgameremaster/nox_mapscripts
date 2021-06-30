@@ -1,35 +1,18 @@
 
+int g_importGreenLightning;
 int g_importMoveOrb;
-int g_importUnitToPtr;
 int g_importPlaysound;
 int g_importGreenExplo;
 
+//dependency
 void SetMemory(int a, int v){}
 int GetMemory(int a){}
-int ToInt(float x) { StopScript(x); }
-
-int ImportUnitToPtrFunc()
-{
-    int arr[10], link;
-    int funcIndex = g_importUnitToPtr;
-
-    if (!link)
-    {
-        arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
-        arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3;
-        link = GetMemory(GetMemory(0x75ae28) + (0x30 * (-funcIndex) + 0x1c));
-    }
-    return link;
-}
-
-int UnitToPtr(int unit)
-{
-    int temp = GetMemory(0x5c336c), res;
-    SetMemory(0x5c336c, ImportUnitToPtrFunc());
-    res = Unknownb8(unit);
-    SetMemory(0x5c336c, temp);
-	return res;
-}
+int ToInt(float x) { }
+float ToFloat(int x){}
+string ToStr(int x) {}
+int GetScrDataField(int x){}
+int UnitToPtr(int unit) {}
+//
 
 int ImportPlaySoundAround()
 {
@@ -112,20 +95,44 @@ void LinearOrbMove(int unit, float x_vect, float y_vect, float speed, int time)
 	}
 }
 
+int ImportGreenLightningFunc()
+{
+    int arr[21], link;
+
+    if (!link)
+    {
+		arr[0] = 0x5D685657; arr[1] = 0x68004042; arr[2] = 0x00523790; arr[3] = 0x50725068; arr[4] = 0x35606800;
+		arr[5] = 0x106A0040; arr[6] = 0x042454FF; arr[7] = 0x8B08C483; arr[8] = 0x2414FFF0; arr[9] = 0x14FFF88B;
+		arr[10] = 0x0C468924; arr[11] = 0x892414FF; arr[12] = 0x14FF0846; arr[13] = 0x04468924; arr[14] = 0x892414FF;
+		arr[15] = 0xFF565706; arr[16] = 0x830C2454; arr[17] = 0xFF5608C4; arr[18] = 0x830C2454; arr[19] = 0x5F5E10C4; arr[20] = 0x909090C3; 
+		int flink = g_importGreenLightning;
+        link = GetScrDataField(-flink);
+    }
+    return link;
+}
+
+void GreenLightningFx(int x1, int y1, int x2, int y2, int time)
+{
+    int temp = GetMemory(0x5c321c);
+
+    SetMemory(0x5c321c, ImportGreenLightningFunc());
+    Effect(ToStr(x1), ToFloat(y1), ToFloat(x2), ToFloat(y2), ToFloat(time));
+    SetMemory(0x5c321c, temp);
+}
+
 void NOXLibraryEntryPointFunction()
 {
-    "export ToInt";
-    "export ImportUnitToPtrFunc";
-    "export UnitToPtr";
     "export ImportOrbMoveFunc";
     "export LinearOrbMove";
     "export ImportPlaySoundAround";
     "export PlaySoundAround";
     "export ImportGreenExplosionFunc";
     "export GreenExplosion";
+	"export ImportGreenLightningFunc";
+	"export GreenLightningFx";
 
     g_importMoveOrb = ImportOrbMoveFunc;
-    g_importUnitToPtr = ImportUnitToPtrFunc;
     g_importPlaysound = ImportPlaySoundAround;
     g_importGreenExplo = ImportGreenExplosionFunc;
+	g_importGreenLightning = ImportGreenLightningFunc;
 }
