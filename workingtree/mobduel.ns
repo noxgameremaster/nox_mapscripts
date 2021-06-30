@@ -1,4 +1,19 @@
 
+#import "username"
+#import "callmethod"
+#import "typecast"
+#import "unitutil"
+#import "fxeffect"
+#import "printutil"
+#import "imageutil"
+#import "mathlab"
+#import "mathspiral"
+#import "cmdline"
+
+#import "playerupdate"
+
+#define NULLPTR         0
+#define MATH_PI         3.141592
 
 int player[20];
 int GAME_MODE = 2; //game_mode (0: auto_pick, 1: all_pick)
@@ -11,39 +26,52 @@ int USERSKILL_TIME[40];
 
 int DEBUGMODE;
 
-int EnableMemoryReadWriteFunction(int t) { }
+void EnableMemoryIO() extern{}
 
-float ToFloat(int arg) { StopScript(arg); }
-int ToInt(float arg) { StopScript(arg); }
-string ToStr(int arg) { StopScript(arg); }
-int SToInt(string arg) { StopScript(arg); }
-int GetMemory(int addr) { return Unknownb9(addr); }
-float GetMemoryFloat(int addr) { StopScript(Unknownb9(addr)); }
-void SetMemory(int addr, int value) { Unused59(addr, value); }
+float UnitRatioX(int unit, int target, float size) extern{}
+float UnitRatioY(int unit, int target, float size) extern{}
+int CreateObjectAt(string name, float x, float y) extern{}
+void CallFunctionWithArg(int func, int arg) extern{}
+void SetMemory(int addr, int value) extern{}
+int GetMemory(int addr) extern{}
+string PlayerIngameNick(int sUnit) extern{}
+float ToFloat(int x) extern{}
+void UniChatMessage(int sUnit, string sMsg, int duration) extern{}
+void PlaySoundAround(int sUnit, int sNumber) extern{}
+int UnitToPtr(int unit) extern{}
+int GetScrCodeField(int functionName) extern{}
 
-int GetScrDataField(int functionName)
-{
-    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x1c));
-}
-
-int GetScrCodeField(int functionName)
-{
-    return GetMemory(GetMemory(0x75ae28) + (0x30 * functionName + 0x20));
-}
-
-int FixCallOpcode(int curAddr, int targetAddr)
-{
-    SetMemory(curAddr + 1, targetAddr - curAddr - 5);
-}
+void ResetPlayerHandlerWhenExitMap() extern{}
+void RegistSignMessage(int sUnit, string sMsg) extern{}
+void UniPrintToAll(string sMsg) extern{}
+void UniPrint(int sUnit, string sMsg) extern{}
+void SelfDamageClassEntry(int plrUnit) extern{}
+void GreenLightningFx(int x1, int y1, int x2, int y2, int time) extern{}
+int FloatToInt(float x) extern{}
+int ToInt(float x) extern{}
+int ImportUnitCollideFunc() extern{}
+void GreenExplosion(float x, float y) extern{}
+int ImageResourceDrawFunctionFix(int bptr) extern{}
+void ApplyImageResourceFix(int thingId, int rscPtr, int drawF) extern{}
+void CmdLine(string commandMessage, int isShow) extern{}
+float IntToFloat(int x) extern{}
+void LinearOrbMove(int unit, float x_vect, float y_vect, float speed, int time) extern{}
+float UnitAngleCos(int unit, float size) extern{}
+float UnitAngleSin(int unit, float size) extern{}
+void InitMathSine(int wp) extern{}
+float MathSine(int angle, float size) extern{}
+float MathSpiral(int num) extern{}
 
 void SetUnitMaxHealth(int unit, int amount)
 {
-    int ptr = UnitToPtr(unit);
+    int *ptr = UnitToPtr(unit);
 
-    if (ptr)
+    if (ptr != NULLPTR)
     {
-        SetMemory(GetMemory(ptr + 0x22c), amount);
-        SetMemory(GetMemory(ptr + 0x22c) + 0x4, amount);
+        int *hpslot = ptr[139];
+
+        hpslot[0] = amount;
+        hpslot[1] = amount;
     }
 }
 
@@ -53,13 +81,11 @@ int WizardRedBinTable()
 	if (!link)
 	{
 		arr[0] = 1635412311; arr[1] = 1699898482; arr[2] = 100;
-		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
-		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
-		arr[15] = 0; arr[16] = 80000; arr[17] = 300; arr[18] = 100; arr[19] = 50; 
-		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 40; arr[24] = 1067869798; 
-		arr[25] = 0; arr[26] = 4; arr[27] = 4;
+		arr[16] = 80000; arr[17] = 300; arr[18] = 100; arr[19] = 50; 
+		arr[21] = 1065353216; arr[23] = 40; arr[24] = 1067869798; 
+		arr[26] = 4; arr[27] = 4;
 		arr[53] = 1128792064; arr[54] = 4; 
-		link = GetScrDataField(WizardRedBinTable);
+		link = &arr;
 	}
 	return link;
 }
@@ -69,19 +95,13 @@ int FireSpriteBinTable()
 	int arr[62], link;
 	if (!link)
 	{
-		arr[0] = 1701996870; arr[1] = 1769107539; arr[2] = 25972; arr[3] = 0; arr[4] = 0; 
-		arr[5] = 0; arr[6] = 0; arr[7] = 0; arr[8] = 0; arr[9] = 0; 
-		arr[10] = 0; arr[11] = 0; arr[12] = 0; arr[13] = 0; arr[14] = 0; 
-		arr[15] = 0; arr[16] = 0; arr[17] = 85; arr[18] = 25; arr[19] = 70; 
-		arr[20] = 0; arr[21] = 1065353216; arr[22] = 0; arr[23] = 65544; arr[24] = 1065353216; 
-		arr[25] = 0; arr[26] = 0; arr[27] = 0; arr[28] = 0; arr[29] = 0; 
-		arr[30] = 0; arr[31] = 0; arr[32] = 0; arr[33] = 0; arr[34] = 0; 
-		arr[35] = 0; arr[36] = 0; arr[37] = 1801545047; arr[38] = 1701996870; arr[39] = 1819042146; 
-		arr[40] = 0; arr[41] = 0; arr[42] = 0; arr[43] = 0; arr[44] = 0; 
-		arr[45] = 0; arr[46] = 0; arr[47] = 0; arr[48] = 0; arr[49] = 0; 
-		arr[50] = 0; arr[51] = 0; arr[52] = 0; arr[53] = 1128792064; arr[54] = 0; 
-		arr[55] = 15; arr[56] = 21; arr[57] = 0; arr[58] = 5545472; arr[59] = 0; 
-		link = GetScrDataField(FireSpriteBinTable);
+		arr[0] = 1701996870; arr[1] = 1769107539; arr[2] = 25972;
+		arr[17] = 85; arr[18] = 25; arr[19] = 70; 
+		arr[21] = 1065353216; arr[23] = 65544; arr[24] = 1065353216; 
+		arr[37] = 1801545047; arr[38] = 1701996870; arr[39] = 1819042146; 
+		arr[53] = 1128792064;
+		arr[55] = 15; arr[56] = 21; arr[58] = 5545472; 
+		link = &arr;
 	}
 	return link;
 }
@@ -96,115 +116,64 @@ void RedWizardInit(int unit)
 
 int VoiceList(int num)
 {
-    int list[75], addr, k;
+	int vlist[75], vlistCount;
 
-    if (!list[0])
-    {
-        addr = GetMemory(0x663eec);
-        for (k = 0 ; k < 75 ; k ++)
-        {
-            list[k] = addr;
-            addr = GetMemory(addr + 0x4c);
-        }
-    }
-    return list[num];
-}
+	if (vlistCount == 0)
+	{
+		int *ptr = 0x663eec, u;
 
-int ImportCreateAtFunc()
-{
-    int arr[20], link;
-
-    if (!link)
-    {
-        arr[0] = 0xAA506856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xFF502414; arr[4] = 0x50042454;
-        arr[5] = 0x082454FF; arr[6] = 0x4085048B; arr[7] = 0x680097BB; arr[8] = 0x004E3810; arr[9] = 0x2454FF50;
-        arr[10] = 0x08C48304; arr[11] = 0xF685F08B; arr[12] = 0x006A0A74; arr[13] = 0x2454FF56; arr[14] = 0x08C48314;
-        arr[15] = 0x50723068; arr[16] = 0x54FF5600; arr[17] = 0xC4830424; arr[18] = 0x5EC03118; arr[19] = 0x909090C3; 
-        link = GetScrDataField(ImportCreateAtFunc);
-    }
-    return link;
-}
-
-int CreateObjectAt(string name, float x, float y)
-{
-    int temp = GetMemory(0x5c3160), res;
-
-    SetMemory(0x5c3160, ImportCreateAtFunc());
-    res = CreateMover(SToInt(name), ToInt(x), y);
-    SetMemory(0x5c3160, temp);
-    if (res) return GetMemory(res + 0x2c);
-    else return 0;
+		ptr = ptr[0];
+		for (u = 0 ; u < 75 ; u += 1)
+		{
+			vlist[u] = ptr;
+			ptr = ptr[19];
+		}
+	}
+	return vlist[num];
 }
 
 int GetUnitThingID(int unit)
 {
-    int ptr = UnitToPtr(unit);
+    int *ptr = UnitToPtr(unit);
 
     if (ptr)
-        return GetMemory(ptr + 0x4);
+        return ptr[1];
     return 0;
 }
 
 int GetOwner(int unit)
 {
-    int ptr = UnitToPtr(unit), res;
+    int *ptr = UnitToPtr(unit);
 
     if (ptr)
     {
-        res = GetMemory(ptr + 0x1fc);
-        if (res)
-            return GetMemory(res + 0x2c);
+        int *owner = ptr[127];
+        if (owner != NULLPTR)
+            return owner[11];
     }
     return 0;
 }
 
-int ImportUnitToPtrFunc()
-{
-    int arr[10], ptr, link;
-    if (!arr[0])
-    {
-        arr[0] = 0x50725068; arr[1] = 0x2414FF00; arr[2] = 0x511B6068; arr[3] = 0x54FF5000; arr[4] = 0xC4830424;
-        arr[5] = 0x7230680C; arr[6] = 0xFF500050; arr[7] = 0x83042454; arr[8] = 0xC03108C4; arr[9] = 0x909090C3; 
-        link = GetScrDataField(ImportUnitToPtrFunc);
-    }
-    return link;
-}
-
-int UnitToPtr(int unit)
-{
-    int temp = GetMemory(0x5c336c), res;
-    SetMemory(0x5c336c, ImportUnitToPtrFunc());
-    res = Unknownb8(unit);
-    SetMemory(0x5c336c, temp);
-	return res;
-}
-
 void MapExit()
 {
-    SelfDamageClassMapExit();
+    ResetPlayerHandlerWhenExitMap();
 }
 
 void MapInitialize()
 {
-    int t = EnableMemoryReadWriteFunction(0);
-    
     VoiceList(0);
     setGoldResetBeacon(1, 0);
     initializeStruct(-1);
-    ImportUniChatCore();
-    ImportUniPrintCore();
-    ImportUseItemFunc();
-    ImportPlaySoundAround();
-    ImportOrbMoveFunc();
+    
     BkRevent(-1);
-    mathSpiral(-1);
-    MathSine(44, 1.0 / 57.3);
+    // MathSine(44, 1.0 / 57.3);
+    InitMathSine(44);
     initializeSelectBeacon();
     initializeChak();
     initializeCharacters();
     stoneGolemInv();
     //loop
-    loopPreservePlayerTable();
+    FrameTimer(20, PreservePlayerLoop);
     FrameTimer(1, InitializeSkillFuncs);
     FrameTimer(30, LoopSearchIndex);
     
@@ -219,8 +188,6 @@ void MapInitialize()
 
 void initializeStruct(int arg_0) {
     //characterName(arg_0);
-    stepSound(arg_0);
-    stepSoundDelay(arg_0);
     dotPosX(arg_0);
     getRangeAttackCount(arg_0);
     wispExplosionPos(arg_0, 0.0);
@@ -232,15 +199,7 @@ void initializeStruct(int arg_0) {
 void InitializeSkillFuncs()
 {
     PlayerInputTable(-1);
-    ImportUnitToPtrFunc();
-    ImportGreenExplosionFunc();
-    ImportGreenLightningFunc();
-    // skillEyeofwolf(0);
-    // skillOnJump(0);
-    // skillSneak(0);
-    // harpoonEvent(0, 0);
-    ImportCreateAtFunc();
-    CallFunctionWithArg(0, 0);
+    
     InitRandSelector(4388.0, 4184.0);
 
     RegistSignMessage(Object("gameModeSign1"), "게임모드: 부활 시 캐릭터 재선택 가능");
@@ -315,52 +274,29 @@ void characterPut() {
         }
     }
 }
-string characterName()
+string CharacterName(int index)
 {
-    string table = "드라이아이드"; "데몬"; "기계골렘"; "스톤골렘"; "비홀더"; "레드 위자드"; "호렌더스"; "헤쿠바"; "오우거로드"; "리치로드";
+    string table[] = {"드라이아이드", "데몬", "기계골렘", "스톤골렘", "비홀더", "레드 위자드", "호렌더스", "헤쿠바", "오우거로드", "리치로드"};
         
-    return table;
+    return table[index];
 }
 
-string stepSound(int num)
+string StepSound(int num)
 {
-    string arr[10];
+    string arr[10] = {
+        "EmberDemonMove", "DemonMove", "MechGolemMove", "GolemMove", "ShadeMove",
+        "ShadeMove", "ShadeMove", "ShadeMove", "OgreBruteMove", "OgreBruteMove"
+    };
 
-    if (num < 0)
-    {
-        arr[0] = "EmberDemonMove";
-        arr[1] = "DemonMove";
-        arr[2] = "MechGolemMove";
-        arr[3] = "GolemMove";
-        arr[4] = "ShadeMove";
-        arr[5] = arr[0];
-        arr[6] = arr[0];
-        arr[7] = arr[0];
-        arr[8] = "OgreBruteMove";
-        arr[9] = arr[0];
-        return arr[0];
-    }
     return arr[num];
 }
 
-float stepSoundDelay(int num)
+float StepSoundDelay(int num)
 {
-    float arr[10];
-
-    if (num < 0)
-    {
-        arr[0] = 0.4;
-        arr[1] = 0.25;
-        arr[2] = 0.4;
-        arr[3] = 0.4;
-        arr[4] = 0.3;
-        arr[5] = 0.4;
-        arr[6] = 0.4;
-        arr[7] = 0.4;
-        arr[8] = 0.4;
-        arr[9] = 0.4;
-        return arr[0];
-    }
+    float arr[10] = {
+        0.4, 0.25, 0.4, 0.4, 0.3,
+        0.4, 0.4, 0.4, 0.4, 0.4
+    };
     return arr[num];
 }
 
@@ -388,77 +324,121 @@ void selectMonster()
             SetOwner(player[plr], MODEL[plr]);
             ChangeGold(player[plr], -10);
             ChangeGold(player[plr], plr + 1);
-            UniPrintToAll(PlayerIngameNick(player[plr]) + " 님께서 " + ToStr(SToInt(characterName()) + plr) + "을 선택하셨습니다");
+            UniPrintToAll(PlayerIngameNick(player[plr]) + " 님께서 " + CharacterName(plr) + "을 선택하셨습니다");
             Pickup(player[plr], FAN_CHAK[plr]);
             UniPrint(player[plr], "쿨다운 보는법: 빨간색-L 키 / 초록색-J 키 / 파란색-K 키 / 흰색-점프 키");
         }
     }
 }
 
-void loopPreservePlayerTable()
+void PlayerOnAlive(int plr)
 {
-    int k;
-    float dis;
+    int plrUnit = player[plr];
 
-    for (k = 9 ; k >= 0 ; k --)
+    MoveObject(BkRevent(plr), GetObjectX(plrUnit), GetObjectY(plrUnit));
+    PlayerInputHandler(plr);
+
+    float dis = Distance(GetObjectX(plrUnit), GetObjectY(plrUnit) + 4.0, GetObjectX(MODEL[plr]), GetObjectY(MODEL[plr]));
+
+    if (dis <= 1.0 && HasEnchant(MODEL[plr], "ENCHANT_VILLAIN"))  //stop
     {
-        if (player[k + 10] && !CurrentHealth(player[k]))
+        PauseObject(MODEL[plr], 1);
+        EnchantOff(MODEL[plr], "ENCHANT_VILLAIN");
+    }
+    else if (dis > 1.0)     //run
+    {
+        Frozen(MODEL[plr], false);
+        Enchant(MODEL[plr], "ENCHANT_VILLAIN", 0.0);
+        if (!HasEnchant(MODEL[plr], "ENCHANT_DETECTING"))
         {
-            UniPrintToAll(ToStr(SToInt(characterName()) + k) + "(" + PlayerIngameNick(player[k]) + ")이(가) 격추되었습니다");
-            player[k] = 0;
-            MoveObject(FAN_CHAK[k], GetWaypointX(104), GetWaypointY(104));
-            resetMonsterPlaced(k);
-            player[k + 10] = 0;
+            MoveWaypoint(14, GetObjectX(MODEL[plr]), GetObjectY(MODEL[plr]));
+            AudioEvent(StepSound(plr), 14);
+            Enchant(MODEL[plr], "ENCHANT_DETECTING", StepSoundDelay(plr));
         }
-        else if (CurrentHealth(player[k]))
-        {
-            MoveObject(BkRevent(k), GetObjectX(player[k]), GetObjectY(player[k]));
-            if (GetUnitFlags(player[k]) & 0x40)
-            {
-                if (HasItem(player[k], FAN_CHAK[k]))
-                    Drop(player[k], FAN_CHAK[k]);
-                player[k] = 0;
-            }
-            else
-            {
-                dis = Distance(GetObjectX(player[k]), GetObjectY(player[k]) + 4.0, GetObjectX(MODEL[k]), GetObjectY(MODEL[k]));
-                if (dis <= 1.0 && HasEnchant(MODEL[k], "ENCHANT_VILLAIN")) { //stop
-                    PauseObject(MODEL[k], 1);
-                    EnchantOff(MODEL[k], "ENCHANT_VILLAIN");
-                }
-                else if (dis > 1.0) { //run
-                    Frozen(MODEL[k], 0);
-                    Enchant(MODEL[k], "ENCHANT_VILLAIN", 0.0);
-                    if (!HasEnchant(MODEL[k], "ENCHANT_DETECTING")) {
-                        MoveWaypoint(14, GetObjectX(MODEL[k]), GetObjectY(MODEL[k]));
-                        AudioEvent(stepSound(k), 14);
-                        Enchant(MODEL[k], "ENCHANT_DETECTING", stepSoundDelay(k));
-                    }
-                    Frozen(MODEL[k], 1);
-                    LookWithAngle(MODEL[k], GetDirection(player[k]));
-                    Walk(MODEL[k], GetObjectX(MODEL[k]), GetObjectY(MODEL[k]));
-                    MoveObject(MODEL[k], GetObjectX(player[k]), GetObjectY(player[k]) + 4.0);
-                }
-                if (!HasEnchant(player[k], "ENCHANT_INVISIBLE"))
-                    Enchant(player[k], "ENCHANT_INVISIBLE", 0.0);
-                PlayerInputHandler(k);
+        Frozen(MODEL[plr], true);
+        LookWithAngle(MODEL[plr], GetDirection(plrUnit));
+        Walk(MODEL[plr], GetObjectX(MODEL[plr]), GetObjectY(MODEL[plr]));
+        MoveObject(MODEL[plr], GetObjectX(plrUnit), GetObjectY(plrUnit) + 4.0);
+    }
+    if (!HasEnchant(plrUnit, "ENCHANT_INVISIBLE"))
+        Enchant(plrUnit, "ENCHANT_INVISIBLE", 0.0);
 
-                if (HasEnchant(player[k], "ENCHANT_PROTECT_FROM_MAGIC"))
+    if (HasEnchant(plrUnit, "ENCHANT_PROTECT_FROM_MAGIC"))
+    {
+        RestoreHealth(plrUnit, 1);
+        Effect("GREATER_HEAL", GetObjectX(plrUnit), GetObjectY(plrUnit), GetObjectX(plrUnit), GetObjectY(plrUnit) - 200.0);
+    }
+    else if (HasEnchant(GetLastItem(plrUnit), "ENCHANT_VILLAIN"))
+    {
+        MoveWaypoint(102, GetObjectX(plrUnit), GetObjectY(plrUnit));
+        RestoreHealth(plrUnit, 50);
+        AudioEvent("RegenerationOn", 102);
+        Delete(GetLastItem(plrUnit));
+    }
+    UserSkillCooldownSystem(plr);
+}
+
+void PlayerOnDeath(int plr)
+{
+    int plrUnit = player[plr];
+
+    UniPrintToAll(CharacterName(plr) + "(" + PlayerIngameNick(plrUnit) + ")이(가) 격추되었습니다");
+    player[plr] = 0;
+}
+
+void PlayerOnExit(int plr)
+{
+    if (HasItem(player[plr], FAN_CHAK[plr]))
+        Drop(player[plr], FAN_CHAK[plr]);
+    MoveObject(FAN_CHAK[plr], GetWaypointX(104), GetWaypointY(104));
+    resetMonsterPlaced(plr);
+    player[plr + 10] = 0;
+}
+
+int CheckPlayerDeathFlag(int sPlr)
+{
+    return player[sPlr + 10] & 0x80000000;
+}
+
+void SetPlayerDeathFlag(int sPlr)
+{
+    player[sPlr + 10] ^= 0x80000000;
+}
+
+void PreservePlayerLoop()
+{
+    int i;
+
+    for (i = 9 ; i >= 0 ; i -= 1)
+    {
+        while (true)
+        {
+            if (MaxHealth(player[i]))
+            {
+                if (GetUnitFlags(player[i]) & 0x40)
+                    1;
+                else if (CurrentHealth(player[i]))
                 {
-                    RestoreHealth(player[k], 1);
-                    Effect("GREATER_HEAL", GetObjectX(player[k]), GetObjectY(player[k]), GetObjectX(player[k]), GetObjectY(player[k]) - 200.0);
+                    PlayerOnAlive(i);
+                    break;
                 }
-                else if (HasEnchant(GetLastItem(player[k]), "ENCHANT_VILLAIN")) {
-                    MoveWaypoint(102, GetObjectX(player[k]), GetObjectY(player[k]));
-                    RestoreHealth(player[k], 50);
-                    AudioEvent("RegenerationOn", 102);
-                    Delete(GetLastItem(player[k]));
+                else
+                {
+                    if (CheckPlayerDeathFlag(i)) break;
+                    else
+                    {
+                        PlayerOnDeath(i);
+                        SetPlayerDeathFlag(i);
+                    }
+                    break;
                 }
-                UserSkillCooldownSystem(k);
             }
+            if (player[i + 10])
+                PlayerOnExit(i);
+            break;
         }
     }
-    FrameTimer(1, loopPreservePlayerTable);
+    FrameTimer(1, PreservePlayerLoop);
 }
 
 void PlayerInputHandler(int plr)
@@ -507,29 +487,29 @@ void FixDecreaseCooldown(int plrIndex)
         {
             USERSKILL_TIME[t + plrIndex]--;
             if (!USERSKILL_TIME[t + plrIndex])
-                UniPrint(plrUnit, "지금 " + ToStr(SToInt(skillName()) + (t / 10)) + " 스킬 쿨다운이 완료되었습니다");
+                UniPrint(plrUnit, "지금 " + SkillName(t / 10) + " 스킬 쿨다운이 완료되었습니다");
         }
         else if (!IsObjectOn(ORB_NOTIFIER[plrIndex + t]) && CurrentHealth(plrUnit))
         {
-            ORB_NOTIFIER[t + plrIndex] = CreateObjectAt(ToStr(SToInt(cooldownDotType()) + (t / 10)), GetObjectX(plrUnit), GetObjectY(plrUnit));
+            ORB_NOTIFIER[t + plrIndex] = CreateObjectAt(CooldownDotType(t / 10), GetObjectX(plrUnit), GetObjectY(plrUnit));
             Frozen(ORB_NOTIFIER[t + plrIndex], true);
             UnitNoCollide(ORB_NOTIFIER[t + plrIndex]);
         }
     }
 }
 
-string skillName()
+string SkillName(int index)
 {
-    string table = "L 키(빨간색)"; "J 키(초록색)"; "K 키(파란색)"; "점프(흰색)";
+    string table[] = {"L 키(빨간색)", "J 키(초록색)", "K 키(파란색)", "점프(흰색)"};
 
-    return table;
+    return table[index];
 }
 
-string cooldownDotType()
+string CooldownDotType(int index)
 {
-    string table = {"OldDarkWoodenChair3", "OldDarkWoodenChair1", "OldDarkWoodenChair2", "OldDarkWoodenChair4"};
+    string table[] = {"OldDarkWoodenChair3", "OldDarkWoodenChair1", "OldDarkWoodenChair2", "OldDarkWoodenChair4"};
 
-    return table;
+    return table[index];
 }
 void UserSkillCooldownSystem(int plrIndex)
 {
@@ -663,7 +643,7 @@ void skillSneak(int arg_0)
     }
     if (DEBUGMODE == true)
         UniPrint(GetHost(), PlayerIngameNick(player[arg_0]) + " 이 J 키를 눌렀습니다");
-    if (!USERSKILL_TIME[arg_0])       //here
+    if (!USERSKILL_TIME[arg_0])
     {
         if (HasEnchant(player[arg_0], "ENCHANT_ANCHORED"))
         {
@@ -694,8 +674,8 @@ void skillEyeofwolf(int arg_0)
 
     if (!time[0])
     {
-        time[0] = 45; time[1] = 30; time[2] = 30; time[3] = 30; time[4] = 30;
-        time[5] = 40; time[6] = 30; time[7] = 30; time[8] = 50; time[9] = 60;
+        time[0] = 40; time[1] = 30; time[2] = 30; time[3] = 30; time[4] = 30;
+        time[5] = 40; time[6] = 30; time[7] = 30; time[8] = 50; time[9] = 80;
     }
     if (DEBUGMODE == true)
         UniPrint(GetHost(), PlayerIngameNick(player[arg_0]) + " 이 L 키를 눌렀습니다");
@@ -768,7 +748,7 @@ void skillOnJump(int arg_0)
         UniPrint(GetHost(), PlayerIngameNick(player[arg_0]) + " 이 점프 키를 눌렀습니다");
     if (!time[0])
     {
-        time[0] = 50; time[1] = 15; time[2] = 35; time[3] = 30; time[4] = 40;
+        time[0] = 30; time[1] = 15; time[2] = 35; time[3] = 30; time[4] = 40;
         time[5] = 3; time[6] = 20; time[7] = 10; time[8] = 70; time[9] = 3;
     }
     if (!USERSKILL_TIME[arg_0 + 30])
@@ -846,18 +826,17 @@ void DetectedSpecificIndex(int curId)
 void LoopSearchIndex()
 {
     int curId, tempId;
-    int link;
+    int *ptr = 0x750710;
 
-    if (!link)
-        link = GetScrDataField(LoopSearchIndex);
-    while (Unknownb9(0x750710))
+    ptr = ptr[0];
+    while (ptr != NULLPTR)
     {
-        Unused59(link + 4, Unknownb9(Unknownb9(0x750710) + 0x2c));
+        tempId = ptr[11];
         if (curId)
         {
             while (curId < tempId)
             {
-                Unused59(link, curId + 1);
+                curId += 1;
                 DetectedSpecificIndex(curId);
             }
             break;
@@ -880,7 +859,7 @@ void normalAttackEvent(int plr, int cur)
             MoveWaypoint(95, GetObjectX(cur), GetObjectY(cur));
             while(k < getRangeAttackCount(plr))
             {
-                mis = CreateObject(ToStr(SToInt(MissileNameTables()) + plr), 95);
+                mis = CreateObject(MissileNameTables(plr), 95);
                 Enchant(mis, "ENCHANT_FREEZE", 0.0);
                 SetOwner(player[plr], mis);
                 LookWithAngle(mis, GetDirection(player[plr]));
@@ -914,13 +893,13 @@ int getRangeAttackCount(int num)
     return info[num];
 }
 
-string MissileNameTables()
+string MissileNameTables(int index)
 {
-    string table = {
+    string table[] = {
         "YellowStarShot", "PitifulFireball", "MercArcherArrow", "ThrowingStone", "LightningBolt",
         "ImpShot", "MercArcherArrow", "DeathBallFragment", "OgreShuriken", "CherubArrow"
         };
-    return table;
+    return table[index];
 }
 
 void spawnMapPotions()
@@ -1132,8 +1111,8 @@ void RWizSkillA(int arg_0)
         }
         else
         {
-            pos_x = mathSpiral(var_0 * 2);
-            pos_y = mathSpiral(var_0 * 2 + 1);
+            pos_x = MathSpiral(var_0 * 2);
+            pos_y = MathSpiral(var_0 * 2 + 1);
             if (!var_0)
             {
                 MoveWaypoint(62, GetObjectX(pointer), GetObjectY(pointer));
@@ -1148,11 +1127,6 @@ void RWizSkillA(int arg_0)
                     SetCallback(unit[i], 9, RWizTouched);
                 }
             }
-            /*MoveWaypoint(63, GetWaypointX(62) + pos_x, GetWaypointY(62) + pos_y);
-            Effect(name, GetWaypointX(63), GetWaypointY(63), 0.0, 0.0);
-            MoveObject(unit[0], GetWaypointX(63), GetWaypointY(63));*/
-
-            //for (i = 45 ; i <= 315 ; i += 45)
             for (i = 0 ; i <= 315 ; i += 45)
             {
                 MoveWaypoint(63, GetWaypointX(62) + Rx_ratio(pos_x, pos_y, i), GetWaypointY(62) + Ry_ratio(pos_x, pos_y, i));
@@ -1356,7 +1330,7 @@ void GWizSkillS(int arg_0) {
             MoveWaypoint(105, GetObjectX(var_1), GetObjectY(var_1));
             MoveWaypoint(46, GetObjectX(var_2), GetObjectY(var_2));
             if (var_0 % 3 == 0) {
-                localRisk(arg_0, 80, 105, 60.0);
+                LocalRisk(arg_0, 80, 105, 60.0);
             }
             PushObject(var_1, -3.5, GetObjectX(var_2), GetObjectY(var_2));
             rhombusRaiserFX(var_1);
@@ -1482,7 +1456,7 @@ void RWizSkillS(int arg_0) {
         if (var_0 == 0) {
             var_1 = CreateObject("moonglow", 2);
             SetOwner(player[arg_0], var_1);
-            Enchant(player[arg_0], "ENCHANT_INVULNERABLE", 3.0);
+            // Enchant(player[arg_0], "ENCHANT_INVULNERABLE", 3.0);
             var_0 = -1;
         }
         else if (var_0 == -1) {
@@ -1535,7 +1509,7 @@ void horrendousSkillS(int arg_0) {
             DeleteObjectTimer(var_1, 22);
             AudioEvent("CrossBowShoot", 70);
             var_0 += 1;
-            localRisk(arg_0, 2, 69, 300.0);
+            LocalRisk(arg_0, 2, 69, 300.0);
         }
         FrameTimerWithArg(1, arg_0, horrendousSkillS);
     }
@@ -1743,7 +1717,11 @@ void DemonSkillD(int plr)
         }
         else if (progress == 1)
         {
-            object flame = CreateObjectAt("FireSprite", GetObjectX(glowPoint), GetObjectY(glowPoint));
+            object flame;
+            if (IsVisibleTo(player[plr], glowPoint))
+                flame = CreateObjectAt("FireSprite", GetObjectX(glowPoint), GetObjectY(glowPoint));
+            else
+                flame = CreateObjectAt("FireSprite", GetObjectX(player[plr]), GetObjectY(player[plr]));
             Delete(glowPoint);
             LinkFireSpriteBin(flame);
             UnitNoCollide(flame);
@@ -1805,27 +1783,29 @@ void beholderSkillD(int arg_0) {
     COOLDOWN[arg_0 + 20] = 0;
 }
 
-void RWizSkillD(int arg_0) {
-    int var_0;
-    int var_1;
+void RWizSkillD(int plr)
+{
+    int durate, statue;
 
-    if (CurrentHealth(player[arg_0]) > 0 && var_0 < 52) {
-        if (var_0 == 0) {
-            MoveWaypoint(67, GetObjectX(player[arg_0]) + UnitAngleCos(player[arg_0], 30.0), GetObjectY(player[arg_0]) + UnitAngleSin(player[arg_0], 30.0));
-            var_1 = CreateObject("MovableStatueVictory4SW", 67);
-            SetOwner(player[arg_0], var_1);
-            LookWithAngle(var_1, arg_0);
+    if (CurrentHealth(player[plr]) > 0 && durate < 52)
+    {
+        if (durate == 0)
+        {
+            MoveWaypoint(67, GetObjectX(player[plr]) + UnitAngleCos(player[plr], 30.0), GetObjectY(player[plr]) + UnitAngleSin(player[plr], 30.0));
+            statue = CreateObject("MovableStatueVictory4SW", 67);
+            SetOwner(player[plr], statue);
+            // LookWithAngle(var_1, plr);
         }
         else {
-            lightningRisk(var_1);
+            LightningRisk(statue, plr);
         }
-        var_0 += 1;
-        FrameTimerWithArg(1, arg_0, RWizSkillD);
+        durate += 1;
+        FrameTimerWithArg(1, plr, RWizSkillD);
     }
     else {
-        var_0 = 0;
-        COOLDOWN[arg_0 + 20] = 0;
-        Delete(var_1);
+        durate = 0;
+        COOLDOWN[plr + 20] = 0;
+        Delete(statue);
     }
 }
 
@@ -2607,7 +2587,7 @@ void RWizTouched()
     if (IsAttackedBy(other, player[own]) && !HasEnchant(other, "ENCHANT_ETHEREAL"))
     {
         Enchant(other, "ENCHANT_ETHEREAL", 1.5);
-        Damage(other, player[own], 125, 14);
+        Damage(other, player[own], 95, 14);
     }
 }
 
@@ -2623,22 +2603,28 @@ void explosionDelayFireStorm(int arg_0) {
     DeleteObjectTimer(var_1, 1);
 }
 
-void lightningRisk(int arg_0) {
-    int var_0 = GetDirection(arg_0);
-    int var_1 = 0;
-    float var_2;
+void LightningRisk(int statue, int currentplrIndex)
+{
+    int u, me = player[currentplrIndex];
 
-    while(var_1 < 10) {
-        if (CurrentHealth(player[var_1]) > 0 && var_1 != var_0) {
-            var_2 = Distance(GetObjectX(player[var_1]), GetObjectY(player[var_1]), GetObjectX(arg_0), GetObjectY(arg_0));
-            if (var_2 < 350.0 && IsVisibleTo(player[var_1], arg_0)) {
-                Effect("LIGHTNING", GetObjectX(arg_0), GetObjectY(arg_0), GetObjectX(player[var_1]), GetObjectY(player[var_1]));
-                Damage(player[var_1], player[var_0], 2, 16);
-                MoveWaypoint(101, GetObjectX(player[var_1]), GetObjectY(player[var_1]));
-                AudioEvent("LightningBolt", 101);
+    for (u = 9 ; u >= 0 ; u -= 1)
+    {
+        int you = player[u];
+
+        if (you == me)
+            continue;
+        if (!CurrentHealth(you))
+            continue;
+
+        if (IsVisibleTo(statue, you) || IsVisibleTo(you, statue))
+        {
+            if (Distance(GetObjectX(you), GetObjectY(you), GetObjectX(statue), GetObjectY(statue)) < 310.0)
+            {
+                Damage(you, me, 2, 16);
+                PlaySoundAround(you, 78);
+                Effect("LIGHTNING", GetObjectX(statue), GetObjectY(statue), GetObjectX(you), GetObjectY(you));
             }
         }
-        var_1 ++;
     }
 }
 
@@ -2648,7 +2634,7 @@ void controlBlock(int plr, int glowPoint, float size, int mode)
     int blocks[40], i;
     float pointX = GetObjectX(glowPoint), pointY = GetObjectY(glowPoint) + 100.0;
 
-    for (i = 0 ; i < 40 ; i ++)
+    for (i = 0 ; i < 40 ; i += 1)
     {
         if (mode == false)
         {
@@ -2667,18 +2653,16 @@ void controlBlock(int plr, int glowPoint, float size, int mode)
     }
 }
 
-void localRisk(int plr, int amount, object location, float range)
+void LocalRisk(int plr, int amount, object location, float range)
 {
     //index, damage_value, area, range
-    float distSize;
     int i;
 
-    for (i = 0; i < 10 ; i ++)
+    for (i = 0; i < 10 ; i += 1)
     {
         if (CurrentHealth(player[i]) && i != plr)
         {
-            distSize = Distance(GetObjectX(player[i]), GetObjectY(player[i]), GetWaypointX(location), GetWaypointY(location));
-            if (distSize < range)
+            if (Distance(GetObjectX(player[i]), GetObjectY(player[i]), GetWaypointX(location), GetWaypointY(location)) < range)
                 Damage(player[i], player[plr], amount, 14);
         }
     }
@@ -2715,7 +2699,7 @@ void WarHarpoonTouched()
     {
         if (CurrentHealth(other) && IsAttackedBy(other, owner))
         {
-            Damage(other, owner, 100, 0);
+            Damage(other, owner, 75, 0);
             DrawGeometryRingAt("CharmOrb", GetObjectX(other), GetObjectY(other), 0);
             break;
         }
@@ -2770,20 +2754,17 @@ void AroundSplashTriggered(object splashUnit, float range, int amount)
 {
     int i, owner = GetOwner(splashUnit);
     
-    for (i = 0 ; i < 10 ; i ++)
+    for (i = 0 ; i < 10 ; i += 1)
     {
-        if (player[i] ^ owner)
+        if (player[i] == owner)
+            continue;
+        if (CurrentHealth(player[i]))
         {
-            if (CurrentHealth(player[i]))
+            if (IsVisibleTo(player[i], splashUnit) || IsVisibleTo(splashUnit, player[i]))
             {
-                if (IsVisibleTo(player[i], splashUnit) || IsVisibleTo(splashUnit, player[i]))
-                {
-                    float tempDist = Distance(GetObjectX(player[i]), GetObjectY(player[i]), GetObjectX(splashUnit), GetObjectY(splashUnit));
-                    if (tempDist < range)
-                    {
-                        Damage(player[i], owner, amount, 0);
-                    }
-                }
+                float tempDist = Distance(GetObjectX(player[i]), GetObjectY(player[i]), GetObjectX(splashUnit), GetObjectY(splashUnit));
+                if (tempDist < range)
+                    Damage(player[i], owner, amount, 0);
             }
         }
     }
@@ -2869,11 +2850,11 @@ int ogreSpawnBarrel(int mode, int wp)
     }
 }
 
-string OgreTables()
+string OgreTables(int index)
 {
-    string table = {"Barrellotd", "PiledBarrels1", "Crate1", "Crate2", "Coffin2"};
+    string table[] = {"Barrellotd", "PiledBarrels1", "Crate1", "Crate2", "Coffin2"};
 
-    return table;
+    return table[index];
 }
 
 void catchOgrePlayer()
@@ -2909,7 +2890,7 @@ void catchOgrePlayer()
                 }
                 else
                 {
-                    trash = CreateObjectAt(ToStr(SToInt(OgreTables()) + Random(0, 4)), GetObjectX(enemy), GetObjectY(enemy));
+                    trash = CreateObjectAt(OgreTables(Random(0, 4)), GetObjectX(enemy), GetObjectY(enemy));
                     UnitNoCollide(trash);
                     Raise(trash, 200.0);
                 }
@@ -2963,11 +2944,12 @@ void LichStatueCollide()
 
 int LichStatue(float xProfile, float yProfile, int index)
 {
-    int statue = CreateObjectAt(ToStr(SToInt(SpiritStatues()) + ((index % 16) / 2)), xProfile, yProfile);
-    int ptr = GetMemory(0x750710);
+    int statue = CreateObjectAt(SpiritStatues((index % 16) / 2), xProfile, yProfile);
+    int *ptr = 0x750710;
 
-    SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    SetMemory(ptr + 0x2fc, LichStatueCollide);
+    ptr = ptr[0];
+    ptr[174] = ImportUnitCollideFunc();
+    ptr[191] = LichStatueCollide;
 
     return statue;
 }
@@ -2978,7 +2960,7 @@ void flagMode(int plr, int mode)
     int unit[18];
     int i;
 
-    for (i = 0 ; i < 18 ; i ++)
+    for (i = 0 ; i < 18 ; i += 1)
     {
         if (!mode)
         {
@@ -2998,13 +2980,13 @@ void flagMode(int plr, int mode)
     }
 }
 
-string SpiritStatues()
+string SpiritStatues(int index)
 {
-    string table = {
+    string table[] = {
         "MovableStatue2f", "MovableStatue2e", "MovableStatue2d", "MovableStatue2c", "MovableStatue2b", "MovableStatue2a", "MovableStatue2h", "MovableStatue2g"
         };
 
-    return table;
+    return table[index];
 }
 
 void lichTouched()
@@ -3086,84 +3068,6 @@ float Ry_ratio(float x, float y, int angle)
     return (MathSine(angle, 1.0) * x) + (MathSine(angle + 90, 1.0) * y);
 }
 
-float mathSpiral(int num)
-{
-    float pos_xy[198];
-
-    if (num == -1)
-    {
-        pos_xy[0] = 104.378106; pos_xy[1] = -87.789521;pos_xy[2] = 101.162975; pos_xy[3] = -89.408868;pos_xy[4] = 97.908932; pos_xy[5] = -90.948525;
-        pos_xy[6] = 94.617582; pos_xy[7] = -92.406723;pos_xy[8] = 91.290607; pos_xy[9] = -93.781695;pos_xy[10] = 87.929770; pos_xy[11] = -95.071682;pos_xy[12] = 84.536915; pos_xy[13] = -96.274933;
-        pos_xy[14] = 81.113972; pos_xy[15] = -97.389711;pos_xy[16] = 77.662960; pos_xy[17] = -98.414290;pos_xy[18] = 74.185985; pos_xy[19] = -99.346962;pos_xy[20] = 70.685247; pos_xy[21] = -100.186039;
-        pos_xy[22] = 67.163042; pos_xy[23] = -100.929855;pos_xy[24] = 63.621760; pos_xy[25] = -101.576772;pos_xy[26] = 60.063894; pos_xy[27] = -102.125180;pos_xy[28] = 56.492040; pos_xy[29] = -102.573506;
-        pos_xy[30] = 52.908897; pos_xy[31] = -102.920212;pos_xy[32] = 49.317274; pos_xy[33] = -103.163805;pos_xy[34] = 45.720088; pos_xy[35] = -103.302838;pos_xy[36] = 42.120372; pos_xy[37] = -103.335916;
-        pos_xy[38] = 38.521271; pos_xy[39] = -103.261703;pos_xy[40] = 34.926053; pos_xy[41] = -103.078924;pos_xy[42] = 31.338102; pos_xy[43] = -102.786377;pos_xy[44] = 27.760926; pos_xy[45] = -102.382933;
-        pos_xy[46] = 24.198160; pos_xy[47] = -101.867546;pos_xy[48] = 20.653565; pos_xy[49] = -101.239262;pos_xy[50] = 17.131032; pos_xy[51] = -100.497220;pos_xy[52] = 13.634583; pos_xy[53] = -99.640671;
-        pos_xy[54] = 10.168372; pos_xy[55] = -98.668977;pos_xy[56] = 6.736692; pos_xy[57] = -97.581623;pos_xy[58] = 3.343967; pos_xy[59] = -96.378231;pos_xy[60] = -0.005238; pos_xy[61] = -95.058564;
-        pos_xy[62] = -3.306223; pos_xy[63] = -93.622544;pos_xy[64] = -6.554149; pos_xy[65] = -92.070256;pos_xy[66] = -9.744037; pos_xy[67] = -90.401966;pos_xy[68] = -12.870773; pos_xy[69] = -88.618134;
-        pos_xy[70] = -15.929105; pos_xy[71] = -86.719426;pos_xy[72] = -18.913646; pos_xy[73] = -84.706728;pos_xy[74] = -21.818878; pos_xy[75] = -82.581166;pos_xy[76] = -24.639152; pos_xy[77] = -80.344116;
-        pos_xy[78] = -27.368694; pos_xy[79] = -77.997228;pos_xy[80] = -30.001610; pos_xy[81] = -75.542442;pos_xy[82] = -32.531892; pos_xy[83] = -72.982006;pos_xy[84] = -34.953425; pos_xy[85] = -70.318499;
-        pos_xy[86] = -37.259997; pos_xy[87] = -67.554850;pos_xy[88] = -39.445306; pos_xy[89] = -64.694364;pos_xy[90] = -41.502977; pos_xy[91] = -61.740744;pos_xy[92] = -43.426573; pos_xy[93] = -58.698117;
-        pos_xy[94] = -45.209611; pos_xy[95] = -55.571059;pos_xy[96] = -46.845586; pos_xy[97] = -52.364626;pos_xy[98] = -48.327984; pos_xy[99] = -49.084378;pos_xy[100] = -49.650316; pos_xy[101] = -45.736413;
-        pos_xy[102] = -50.806140; pos_xy[103] = -42.327396;pos_xy[104] = -51.789098; pos_xy[105] = -38.864593;pos_xy[106] = -52.592949; pos_xy[107] = -35.355902;pos_xy[108] = -53.211614; pos_xy[109] = -31.809888;
-        pos_xy[110] = -53.639221; pos_xy[111] = -28.235819;pos_xy[112] = -53.870160; pos_xy[113] = -24.643697;pos_xy[114] = -53.899146; pos_xy[115] = -21.044297;pos_xy[116] = -53.721281; pos_xy[117] = -17.449202;
-        pos_xy[118] = -53.332138; pos_xy[119] = -13.870832;pos_xy[120] = -52.727842; pos_xy[121] = -10.322482;pos_xy[122] = -51.905175; pos_xy[123] = -6.818345;pos_xy[124] = -50.861676; pos_xy[125] = -3.373547;
-        pos_xy[126] = -49.595773; pos_xy[127] = -0.004161;pos_xy[128] = -48.106915; pos_xy[129] = 3.272775;pos_xy[130] = -46.395733; pos_xy[131] = 6.439250;pos_xy[132] = -44.464204; pos_xy[133] = 9.476286;
-        pos_xy[134] = -42.315853; pos_xy[135] = 12.363955;pos_xy[136] = -39.955964; pos_xy[137] = 15.081413;pos_xy[138] = -37.391819; pos_xy[139] = 17.606962;pos_xy[140] = -34.632967; pos_xy[141] = 19.918131;
-        pos_xy[142] = -31.691513; pos_xy[143] = 21.991800;pos_xy[144] = -28.582448; pos_xy[145] = 23.804365;pos_xy[146] = -25.323998; pos_xy[147] = 25.331957;pos_xy[148] = -21.938010; pos_xy[149] = 26.550730;
-        pos_xy[150] = -18.450372; pos_xy[151] = 27.437235;pos_xy[152] = -14.891448; pos_xy[153] = 27.968899;pos_xy[154] = -11.296547; pos_xy[155] = 28.124631;pos_xy[156] = -7.706387; pos_xy[157] = 27.885600;
-        pos_xy[158] = -4.167558; pos_xy[159] = 27.236202;pos_xy[160] = -0.732943; pos_xy[161] = 26.165283;pos_xy[162] = 2.537954; pos_xy[163] = 24.667670;pos_xy[164] = 5.578826; pos_xy[165] = 22.746070;
-        pos_xy[166] = 8.316648; pos_xy[167] = 20.413429;pos_xy[168] = 10.672181; pos_xy[169] = 17.695843;pos_xy[170] = 12.561130; pos_xy[171] = 14.636114;pos_xy[172] = 13.896316; pos_xy[173] = 11.298037;
-        pos_xy[174] = 14.591389; pos_xy[175] = 7.771479;pos_xy[176] = 14.566900; pos_xy[177] = 4.178176;pos_xy[178] = 13.759913; pos_xy[179] = 0.677930;pos_xy[180] = 12.138983; pos_xy[181] = -2.525645;
-        pos_xy[182] = 9.727097; pos_xy[183] = -5.181917;pos_xy[184] = 6.636254; pos_xy[185] = -6.997113;pos_xy[186] = 3.118011; pos_xy[187] = -7.655334;pos_xy[188] = -0.367525; pos_xy[189] = -6.878490;
-        pos_xy[190] = -3.075499; pos_xy[191] = -4.572578;pos_xy[192] = -3.967222; pos_xy[193] = -1.158741;pos_xy[194] = -2.116754; pos_xy[195] = 1.763844;pos_xy[196] = 0.985692; pos_xy[197] = 0.962476;
-        return 0.0;
-    }
-    return pos_xy[num];
-}
-
-float WayRatioX(int wp1, int wp2)
-{
-    return (GetWaypointX(wp1) - GetWaypointX(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
-}
-
-float WayRatioY(int wp1, int wp2)
-{
-    return (GetWaypointY(wp1) - GetWaypointY(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
-}
-
-float GetSineValue(int wp, float c)
-{
-    float x_ratio = WayRatioX(wp, wp + 1), y_ratio = WayRatioY(wp, wp + 1), res;
-
-    res = GetWaypointX(wp) - GetWaypointX(wp + 1);
-    MoveWaypoint(wp + 1, GetWaypointX(wp) - (c * y_ratio) - x_ratio, GetWaypointY(wp) + (c * x_ratio) - y_ratio);
-    return res;
-}
-
-float MathSine(int angle, float size)
-{
-    float var_0[91];
-    int i, k;
- 
-    if (!ToInt(var_0[90]))
-    {
-        MoveWaypoint(angle + 1, GetWaypointX(angle), GetWaypointY(angle) - 1.0);
-        for (i = 0 ; i <= 90 ; i ++)
-        {
-            var_0[i] = GetSineValue(angle, size);
-            Delete(k + i + 1);
-        }
-        return var_0[0];
-    }
-    k = angle / 90;
-    i = angle - (k * 90);
-
-    if (k % 2) i = 90 - i;
-    if ((angle / 180) % 2) return -var_0[i] * size;
-	else return var_0[i] * size;
-}
-
 int SentryRay()
 {
     int ray;
@@ -3179,122 +3083,13 @@ int SentryRay()
 
 void SetRayRadian(int owner, int ray_ptr)
 {
-    SetMemory(GetMemory(ray_ptr + 0x2ec), ToInt(3.141592 / 180.0 * IntToFloat(GetDirection(owner)) * 45.0 / 32.0));
+    SetMemory(GetMemory(ray_ptr + 0x2ec), ToInt(MATH_PI / 180.0 * IntToFloat(GetDirection(owner)) * 45.0 / 32.0));
     ObjectOn(GetMemory(ray_ptr + 0x2c));
 }
 
 void DisableRay(int ray)
 {
     ObjectOff(ray);
-}
-
-float IntToFloat(int x)
-{
-    int i;
-    int pos = x;
-    float result = 0.0;
- 
-    if (pos < 0)
-        pos = -pos;
-    for (i = 0; i < 32; i ++)
-    {
-        if (pos & 0x80000000)
-            result += 1.0;
-        pos = pos << 1;
-        if (i != 31)
-            result *= 2.0;
-    }
-    if (x < 0)
-        return -result;
-    else
-        return result;
-}
-
-float UnitAngleCos(int unit, float size)
-{
-    return MathSine((GetDirection(unit) * 45 / 32) + 90, size);
-}
-
-float UnitAngleSin(int unit, float size)
-{
-    return MathSine(GetDirection(unit) * 45 / 32, size);
-}
-
-string PlayerName(int ptr)
-{
-    int addr = GetMemory(0x97bb40), xwis_id = GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x830;
-
-	SetMemory(addr, GetMemory(xwis_id));
-    SetMemory(addr + 4, GetMemory(xwis_id + 4));
-    SetMemory(addr + 8, GetMemory(xwis_id + 8));
-	StopScript(0);
-}
-
-int ImportGreenLightningFunc()
-{
-    int arr[21], link;
-
-    if (!link)
-    {
-		arr[0] = 0x5D685657; arr[1] = 0x68004042; arr[2] = 0x00523790; arr[3] = 0x50725068; arr[4] = 0x35606800;
-		arr[5] = 0x106A0040; arr[6] = 0x042454FF; arr[7] = 0x8B08C483; arr[8] = 0x2414FFF0; arr[9] = 0x14FFF88B;
-		arr[10] = 0x0C468924; arr[11] = 0x892414FF; arr[12] = 0x14FF0846; arr[13] = 0x04468924; arr[14] = 0x892414FF;
-		arr[15] = 0xFF565706; arr[16] = 0x830C2454; arr[17] = 0xFF5608C4; arr[18] = 0x830C2454; arr[19] = 0x5F5E10C4; arr[20] = 0x909090C3; 
-        link = GetScrDataField(ImportGreenLightningFunc);
-    }
-    return link;
-}
-
-void GreenLightningFx(int x1, int y1, int x2, int y2, int time)
-{
-    int temp = GetMemory(0x5c321c);
-
-    SetMemory(0x5c321c, ImportGreenLightningFunc());
-    Effect(ToStr(x1), ToFloat(y1), ToFloat(x2), ToFloat(y2), ToFloat(time));
-    SetMemory(0x5c321c, temp);
-}
-
-int ImportGreenExplosionFunc()
-{
-    int arr[17], ptr, link;
-    if (!arr[0])
-    {
-        arr[0] = 0x32006856; arr[1] = 0x50680052; arr[2] = 0x68005072; arr[3] = 0x00403560; arr[4] = 0x54FF086A;
-		arr[5] = 0xC4830424; arr[6] = 0xFFF08B04; arr[7] = 0x89042454; arr[8] = 0x2454FF06; arr[9] = 0x04468904;
-		arr[10] = 0x0000C868; arr[11] = 0x54FF5600; arr[12] = 0xC4831024; arr[13] = 0x425D6814; arr[14] = 0xFF560040;
-		arr[15] = 0x83042454; arr[16] = 0xC35E08C4; 
-        link = GetScrDataField(ImportGreenExplosionFunc);
-    }
-    return link;
-}
-
-void GreenExplosion(float x, float y)
-{
-    int temp = GetMemory(0x5c31f4);
-
-    SetMemory(0x5c31f4, ImportGreenExplosionFunc());
-    Unused5a(ToInt(y), ToInt(x));
-    SetMemory(0x5c31f4, temp);
-}
-
-void CallFunctionWithArg(int func, int arg)
-{
-    int link;
-
-    if (!link)
-    {
-        link = GetScrCodeField(CalleeArg);
-    }
-    else
-    {
-        SetMemory(link + 0x10, func);
-        CalleeArg(arg);
-    }
-}
-
-void CalleeArg(int arg)
-{
-    CalleeArg(arg);
 }
 
 void UnitNoCollide(int unit)
@@ -3319,41 +3114,6 @@ int GetUnitFlags(int unit)
     return 0;
 }
 
-float UnitRatioX(int unit, int target, float size)
-{
-    return (GetObjectX(unit) - GetObjectX(target)) * size / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target));
-}
-
-float UnitRatioY(int unit, int target, float size)
-{
-    return (GetObjectY(unit) - GetObjectY(target)) * size / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target));
-}
-
-int FloatToInt(float x)
-{
-    int i, result = 0;
-    float pos = x;
-
-    if (pos < 0.0) pos = -pos;
-    pos = pos / 2147483648.0;
-    if (pos < 2.0)
-    { 
-        for (i = 0 ; i < 32 ; i ++)
-        {
-            if (pos >= 1.0)
-            {
-                result ++;
-                pos -= 1.0;
-            }
-            if (i != 31) result = result << 1;
-            pos *= 2.0;
-        }
-    }
-    else result = 0x7fffffff;
-    if (x < 0.0) return -result;
-    else return result;
-}
-
 void SelectRandomUnit()
 {
     int arr[10], k, idx = 0;
@@ -3371,7 +3131,7 @@ void SelectRandomUnit()
     else
     {
         MoveObject(other, GetWaypointX(3), GetWaypointY(3));
-        Print("에러_ 더 이상 선택가능한 캐릭터가 없습니다");
+        UniPrint(other, "에러_ 더 이상 선택가능한 캐릭터가 없습니다");
     }
 }
 
@@ -3465,313 +3225,6 @@ void LinkFireSpriteBin(int unit)
         SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, FireSpriteBinTable());
 }
 
-int ImportUniChatCore()
-{
-    int arr[10], link;
-
-    if (!link)
-    {
-        arr[0] = 0xC0685657; arr[1] = 0x6800528A; arr[2] = 0x00507250; arr[3] = 0x8B2414FF; arr[4] = 0x2414FFF8;
-        arr[5] = 0x14FFF08B; arr[6] = 0x56505724; arr[7] = 0x102454FF; arr[8] = 0x5E14C483; arr[9] = 0x9090C35F;
-        link = GetScrDataField(ImportUniChatCore);
-    }
-    return link;
-}
-
-void UniChatCore(int plrPtr, int sPtr, int sTime)
-{
-    int temp = GetMemory(0x5c3320);
-
-    SetMemory(0x5c3320, ImportUniChatCore());
-    GroupRunAway(sPtr, plrPtr, sTime);
-    SetMemory(0x5c3320, temp);
-}
-
-int ImportUniPrintCore()
-{
-    int arr[8], link;
-
-    if (!link)
-    {
-        arr[0] = 0x9EB06856; arr[1] = 0x5068004D; arr[2] = 0xFF005072; arr[3] = 0xF08B2414; arr[4] = 0x502414FF;
-        arr[5] = 0x2454FF56; arr[6] = 0x10C4830C; arr[7] = 0x9090C35E; 
-        link = GetScrDataField(ImportUniPrintCore);
-    }
-    return link;
-}
-
-void UniPrintCore(int plrPtr, int sPtr)
-{
-    int temp = GetMemory(0x5c31f4);
-
-    SetMemory(0x5c31f4, ImportUniPrintCore());
-    Unused5a(sPtr, plrPtr);
-    SetMemory(0x5c31f4, temp);
-}
-
-int GetByteValue(int ptr)
-{
-    return GetMemory(ptr) & 0xff;
-}
-
-void WriteAddressWordValue(int addr, int word)
-{
-    int temp = GetMemory(addr) & 0xffff0000;
-    SetMemory(addr, temp | word);
-}
-
-void NoxUtf8ToUnicode(int src, int dest)
-{
-    int i = 0, byt;
-
-    while (1)
-    {
-        byt = GetByteValue(src + i);
-        if (!byt) break;
-        if (!(byt & 0x80))
-        {
-            WriteAddressWordValue(dest, byt);
-            i ++;
-        }
-        else if ((byt & 0xe0) == 0xc0)
-        {
-            WriteAddressWordValue(dest, ((byt & 0x1f) <<6) | (GetByteValue(src + i + 1) & 0x3f));
-            i += 2;
-        }
-        else if ((byt & 0xf0) == 0xe0)
-        {
-            WriteAddressWordValue(dest, ((byt & 0xf) << 12) | ((GetByteValue(src + i + 1) & 0x3f) << 6) | (GetByteValue(src + i + 2) & 0x3f));
-            i += 3;
-        }
-        dest += 2;
-    }
-    WriteAddressWordValue(dest, 0);
-}
-
-void UniPrint(int sUnit, string sMsg)
-{
-    int wDest[200];
-    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
-
-    if (ptr)
-    {
-        str = GetMemory(0x97bb40 + (str * 4));
-        if (!link)
-            link = GetScrDataField(UniPrint);
-        NoxUtf8ToUnicode(str, link + 8);
-        UniPrintCore(ptr, link + 8);
-    }
-}
-
-void UniChatMessage(int sUnit, string sMsg, int duration)
-{
-    int wDest[200];
-    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg), link;
-
-    if (ptr)
-    {
-        str = GetMemory(0x97bb40 + (str * 4));
-        if (!link)
-            link = GetScrDataField(UniChatMessage);
-        NoxUtf8ToUnicode(str, link + 12);
-        UniChatCore(ptr, link + 12, duration);
-    }
-}
-
-void UniPrintToAll(string sMsg)
-{
-    int wDest[200];
-    int plrPtr = 0x62f9e0, link, str = SToInt(sMsg), i;
-
-    if (!link)
-        link = GetScrDataField(UniPrint) + 4;
-    str = GetMemory(0x97bb40 + (str * 4));
-    NoxUtf8ToUnicode(str, link);
-    for (i = 0 ; i < 32 ; i ++)
-    {
-        if (GetMemory(plrPtr))
-            UniPrintCore(GetMemory(plrPtr), link);
-        plrPtr += 0x12dc;
-    }
-}
-
-int MathAbs(int num)
-{
-    if (num < 0)
-        num = -num;
-    return num;
-}
-
-int CheckSignDelay(int sPtr, int gap)
-{
-    int cFps = GetMemory(0x84ea04);
-
-    if (MathAbs(cFps - GetMemory(sPtr)) > gap)
-    {
-        SetMemory(sPtr, cFps);
-        return 1;
-    }
-    return 0;
-}
-
-void SignNotification()
-{
-    int otPtr = GetMemory(0x979720), sePtr = GetMemory(0x979724);
-
-    if (otPtr && sePtr)
-    {
-        if (CheckSignDelay(GetMemory(sePtr + 0x2e0) + 100, 60))
-        {
-            UniPrint(other, ToStr(GetMemory(sePtr + 0x2f0)));
-            //UniPrintCore(otPtr, GetMemory(sePtr + 0x2e0));
-        }
-    }
-}
-
-void RegistSignMessage(int sUnit, string sMsg)
-{
-    int ptr = UnitToPtr(sUnit), str = SToInt(sMsg);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x2f0, str);
-        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        SetMemory(ptr + 0x2fc, SignNotification);
-    }
-}
-
-int ImportUseItemFunc()
-{
-    int arr[10], link;
-    if (!link)
-    {
-        arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x1424748B; arr[3] = 0x18246C8B;
-        arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
-        arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
-        link = GetScrDataField(ImportUseItemFunc);
-    }
-    return link;
-}
-
-int GetWordValue(int num)
-{
-	return num & 0xffff;
-}
-
-void WriteAddressByteValue(int addr, int byt)
-{
-	int temp = GetMemory(addr) & 0xffffff00;
-	SetMemory(addr, temp | byt);
-}
-
-int NoxUnicodeToUtf8(int src, int destPtr)
-{
-	int i, byt, dest = destPtr;
-
-	for (i = 0 ; i < 20 ; i ++)
-	{
-		byt = GetWordValue(GetMemory(src));
-        if (!byt) break;
-		if (byt < 0x80)
-		{
-			WriteAddressByteValue(dest, byt);
-			dest ++;
-		}
-		else if (byt < 0x800)
-		{
-			WriteAddressByteValue(dest, ((byt >> 6) & 0x1f) | 0xc0);
-			WriteAddressByteValue(dest + 1, (byt & 0x3f) | 0x80);
-			dest += 2;
-		}
-		else
-		{
-			WriteAddressByteValue(dest, ((byt >> 12) & 0x0f) | 0xe0);
-			WriteAddressByteValue(dest + 1, ((byt >> 6) & 0x3f) | 0x80);
-			WriteAddressByteValue(dest + 2, (byt & 0x3f) | 0x80);
-			dest += 3;
-		}
-        src += 2;
-	}
-    WriteAddressByteValue(dest, 0);
-	return dest - destPtr;
-}
-
-string PlayerIngameNick(int sUnit)
-{
-    string emptyName = {
-        "00:01234567890123456789abcd0123456789abxyz", "01:01234567890123456789abcd0123456789abxyz",
-        "02:01234567890123456789abcd0123456789abxyz", "03:01234567890123456789abcd0123456789abxyz",
-        "04:01234567890123456789abcd0123456789abxyz", "05:01234567890123456789abcd0123456789abxyz",
-        "06:01234567890123456789abcd0123456789abxyz", "07:01234567890123456789abcd0123456789abxyz",
-        "08:01234567890123456789abcd0123456789abxyz", "09:01234567890123456789abcd0123456789abxyz",
-        "10:01234567890123456789abcd0123456789abxyz", "11:01234567890123456789abcd0123456789abxyz",
-        "12:01234567890123456789abcd0123456789abxyz", "13:01234567890123456789abcd0123456789abxyz",
-        "14:01234567890123456789abcd0123456789abxyz", "15:01234567890123456789abcd0123456789abxyz",
-        "16:01234567890123456789abcd0123456789abxyz", "17:01234567890123456789abcd0123456789abxyz",
-        "18:01234567890123456789abcd0123456789abxyz", "19:01234567890123456789abcd0123456789abxyz",
-        "20:01234567890123456789abcd0123456789abxyz", "21:01234567890123456789abcd0123456789abxyz",
-        "22:01234567890123456789abcd0123456789abxyz", "23:01234567890123456789abcd0123456789abxyz",
-        "24:01234567890123456789abcd0123456789abxyz", "25:01234567890123456789abcd0123456789abxyz",
-        "26:01234567890123456789abcd0123456789abxyz", "27:01234567890123456789abcd0123456789abxyz",
-        "28:01234567890123456789abcd0123456789abxyz", "29:01234567890123456789abcd0123456789abxyz",
-        "30:01234567890123456789abcd0123456789abxyz", "31:01234567890123456789abcd0123456789abxyz"};
-    int ptr = UnitToPtr(sUnit), plrIndex, destPtr, srcPtr;
-    
-    if (ptr)
-    {
-        if (GetMemory(ptr + 0x08) & 4)
-        {
-            plrIndex = GetMemory(GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x810);
-            destPtr = GetMemory(0x97bb40 + ((SToInt(emptyName) + plrIndex) * 4));
-            srcPtr = GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x889;
-            NoxUnicodeToUtf8(srcPtr, destPtr);
-            return ToStr(SToInt(emptyName) + plrIndex);
-        }
-    }
-    return "NULL";
-}
-
-int ImportCheckSelfDamage()
-{
-    int arr[14], link;
-
-    if (!link)
-    {
-        arr[0] = 0x4C8B5651; arr[1] = 0xC9850C24; arr[2] = 0x748B2374; arr[3] = 0xF6851024; arr[4] = 0xF1391B74; arr[5] = 0x8B501374; arr[6] = 0x0001FC86;
-        arr[7] = 0x74C08500; arr[8] = 0x58F08B05; arr[9] = 0xEB58ECEB; arr[10] = 0xC3595E04; arr[11] = 0x68595E90; arr[12] = 0x004E17B0; arr[13] = 0x909090C3;
-        link = GetScrDataField(ImportCheckSelfDamage);
-    }
-    return link;
-}
-
-void SelfDamageClassEntry(int plrUnit)
-{
-    int ptr = UnitToPtr(plrUnit);
-
-    if (ptr)
-        SetMemory(ptr + 0x2cc, ImportCheckSelfDamage());
-}
-
-void SelfDamageClassMapExit()
-{
-    int i, pTable = 0x62f9e0, ptr;
-    int link = GetScrDataField(SelfDamageClassMapExit);
-
-    for (i = 31 ; i >= 0 ; Unused59(link, Unknownb9(link) - 1))
-    {
-        SetMemory(link + 8, GetMemory(pTable));
-        if (ptr)
-        {
-            SetMemory(ptr + 0x2cc, 0x4e17b0);
-            // SetMemory(ptr + 0x2d4, 0x54d2b0);
-            // if (GetMemory(ptr + 0x2e8) ^ 0x4E62F0)      //@brief. 관객모드가 아닐 경우에만 되돌립니다//
-                // SetMemory(GetMemory(pTable) + 0x2e8, 0x4f8100);     //@brief. 업데이트 되돌리기//
-            // CancelPlayerDialogWithPTR(GetMemory(pTable));
-        }
-        Unused59(link + 4, Unknownb9(link + 4) + 0x12dc);
-    }
-}
-
 int GetPlayerIndex(int plrUnit)
 {
     int ptr = UnitToPtr(plrUnit);
@@ -3796,65 +3249,12 @@ int ValidPlayerCheck(int plrUnit)
     return false;
 }
 
-int NoxOpcodeCmdLine()
-{
-    int arr[8], link;
-
-    if (!link)
-    {
-        arr[0] = 0x49E85650; arr[1] = 0x85FFDB62; arr[2] = 0x8B1174C0; arr[3] = 0x8D30FFF0;
-        arr[4] = 0x30FF0446; arr[5] = 0xCF2C68E8; arr[6] = 0x08C483FF; arr[7] = 0x90C3585E;
-        link = GetScrDataField(NoxOpcodeCmdLine);
-        FixCallOpcode(link + 2, 0x507250);
-        FixCallOpcode(link + 0x14, 0x443c80);
-    }
-    return link;
-}
-
-void CmdLine(string commandMessage, int isShow)
-{
-    int destPtr = GetScrDataField(CmdLine) + 12;
-    int dest[100];
-    int srcPtr = GetMemory(0x97bb40 + (SToInt(commandMessage) * 4));
-    int previousFunctionPtr = GetMemory(0x5c3108);
-
-    NoxUtf8ToUnicode(srcPtr, destPtr);
-    SetMemory(0x5c3108, NoxOpcodeCmdLine());
-    Unused1f(GetScrDataField(CmdLine) + 4);
-    SetMemory(0x5c3108, previousFunctionPtr);
-}
-
-int ImportStreamCopy()
-{
-    int arr[8], link;
-
-    if (!link)
-    {
-        arr[0] = 0x50515756; arr[1] = 0xDB6247E8; arr[2] = 0xE8C88BFF; arr[3] = 0xFFDB6240; arr[4] = 0x39E8F88B; arr[5] = 0x8BFFDB62; arr[6] = 0x58A5F3F0; arr[7] = 0xC35E5F59;
-        link = GetScrDataField(ImportStreamCopy);
-        FixCallOpcode(link + 4, 0x507250);
-        FixCallOpcode(link + 0xb, 0x507250);
-        FixCallOpcode(link + 0x12, 0x507250);
-    }
-    return link;
-}
-
-void StreamCopy(int src, int dst, int len)
-{
-    int temp = GetMemory(0x5c3320);
-
-    SetMemory(0x5c3320, ImportStreamCopy());
-    GroupRunAway(src, dst, len);
-    SetMemory(0x5c3320, temp);
-}
-
 int NetClientExec()
 {
-    int arr[3], link;
+    int arr[3];
 
     arr[0] = 0xdf;
-    link = GetScrDataField(NetClientExec);
-    return link;
+    return (&arr);
 }
 
 void ClientSetMemory(int user, int targetAddr, int byte)
@@ -3875,7 +3275,7 @@ int ImportNetSendClient()
         arr[0] = 0x40EBC068; arr[1] = 0x72506800; arr[2] = 0x83500050; arr[3] = 0x54FF10EC; arr[4] = 0x44891424;
         arr[5] = 0x54FF0C24; arr[6] = 0x44891424; arr[7] = 0x54FF0824; arr[8] = 0x44891424; arr[9] = 0x54FF0424;
         arr[10] = 0x04891424; arr[11] = 0x2454FF24; arr[12] = 0x10C48318; arr[13] = 0x08C48358; arr[14] = 0x909090C3;
-        link = GetScrDataField(ImportNetSendClient);
+        link = &arr;
     }
     return link;
 }
@@ -3915,34 +3315,6 @@ void DelayLink(int pUnit)
     ClientSetMemory(pUnit, 0x69ba98 + 2, 0x75);
 }
 
-int ImageResourceDrawFunctionFix(int bptr)
-{
-    int arr[58];
-
-    arr[0] = 0x83EC8B55; arr[1] = 0x8B5608EC; arr[2] = 0x358B0845; arr[3] = 0x0069F224; arr[4] = 0x8BFC4589; arr[5] = 0x348B6C40; arr[6] = 0xF8758986;
-    arr[7] = 0x5D5350A1; arr[8] = 0x60768B00; arr[9] = 0x1374F039; arr[10] = 0xB8F8758B; arr[11] = 0x004BCC20; arr[12] = 0x8B584689; arr[13] = 0x4689FC75;
-    arr[14] = 0x5EC03158; arr[15] = 0x5D08C483; arr[16] = 0x909090C3; arr[17] = 0x83EC8B55; arr[18] = 0x8B5620EC; arr[19] = 0xE8560C75; arr[20] = 0xFFFFFFAC;
-    arr[21] = 0x8504C483; arr[22] = 0x8B2274C0; arr[23] = 0xC0850846; arr[24] = 0x31561B74; arr[25] = 0x708B66F6; arr[26] = 0x4860A108; arr[27] = 0x348D0069;
-    arr[28] = 0xB0048DF6; arr[29] = 0x8BF04589; arr[30] = 0xEC458900; arr[31] = 0xE445895E; arr[32] = 0x3474C085; arr[33] = 0x896C468B; arr[34] = 0xB68BF445;
-    arr[35] = 0x00000130; arr[36] = 0x8904768B; arr[37] = 0x068BFC75; arr[38] = 0x8BF84589; arr[39] = 0x69F22435; arr[40] = 0xF4458B00; arr[41] = 0x8B86348D;
-    arr[42] = 0x74468B36; arr[43] = 0x89F0758B; arr[44] = 0xFC458B06; arr[45] = 0x3089F631; arr[46] = 0x8B08758D; arr[47] = 0xFF500446; arr[48] = 0xBA96E836;
-    arr[49] = 0xC483FFD6; arr[50] = 0x458B5008; arr[51] = 0x74C085E4; arr[52] = 0xFC458B10; arr[53] = 0x89F8758B; arr[54] = 0xF0458B30; arr[55] = 0x89EC758B;
-    arr[56] = 0x835E5830; arr[57] = 0xC35D20C4;
-    StreamCopy(GetScrDataField(ImageResourceDrawFunctionFix) + 4, bptr, 58);
-    return bptr + 0x44;
-}
-
-void ApplyImageResourceFix(int thingId, int rscPtr, int drawF)
-{
-    int chandle = GetMemory(0x5d5350);
-    int tPtr = GetMemory(GetMemory(0x69f224) + (thingId * 4));
-
-    //SetMemory(tPtr + 0x54, chandle);
-    SetMemory(tPtr + 0x60, chandle);
-    SetMemory(tPtr + 0x58, drawF);
-    SetMemory(tPtr + 0x74, rscPtr);
-}
-
 void RectangleImageKeyJ()
 { }
 
@@ -3957,22 +3329,6 @@ void RectangleImageSpacebar()
 
 void BitaPowerDrinkImage()
 { }
-
-int TestPacket()
-{
-    int first = 0x020002a8, second = 0, third = 0x31000001;
-    int nop = 0;
-
-    return GetScrDataField(TestPacket);
-}
-
-void ClientTestPacket()
-{
-    int packet = TestPacket();
-    //A8 13 03 04 2E 05 8A 05 1E B4 00 F8 AD 20 00 04 B2 6C AD E0 B4 20 00 F5 AC B0 C0 FC C8 58 C7 20 00 38 C1 25 B8 D0 C5 20 00 18 BC 00 B3 58 D5 74 BA 20 00 A9 C6 1C C1 58 D5 C0 C9 20 00 4A C5 94 B2 E4 B2 21 00 00 00 00
-
-    NetClientSendRaw(31, 0, packet, 13);
-}
 
 void PlayerClassCommonWhenEntry()
 {
@@ -3991,15 +3347,15 @@ void PlayerClassCommonWhenEntry()
 
 void ClientMain()
 {
-    int v0;
+    int enabled;
 
-    if (!v0)
+    if (!enabled)
     {
-        v0 = EnableMemoryReadWriteFunction(0);
+        EnableMemoryIO();
         SetMemory(0x69ba98, 0x43de10);
         PlayerClassCommonWhenEntry();
 
-        v0 ++;
+        enabled = true;
     }
 }
 
@@ -4041,7 +3397,7 @@ void NetServerMapped(int pIndex, int plrUnit)   //@brief. 서버 측 처리를 �
 
 void NetClientMapped(int pIndex, int plrUnit)   //@brief. 여기에서 클라이언트 메인을 구성합니다
 {
-    UniPrintToAll("클라이언트 매핑 진입" + IntToString(pIndex));
+    UniPrintToAll("클라이언트 진입 내부id:" + IntToString(pIndex));
     // ClientEntry(plrUnit);
     FrameTimerWithArg(3, plrUnit, ClientEntry);
 }
@@ -4064,9 +3420,9 @@ void NetClientRegist(int pIndex, int plrPtr)
 
 void NetClientLoop()
 {
-    int u, link = GetScrDataField(NetClientLoop);
+    int u;
 
-    for (u = 0 ; u < 32 ; SetMemory(link, u + 1))
+    for (u = 0 ; u < 32 ; u += 1)
     {
         if (GetMemory(0x62f9e0 + (u * 0x12dc)))
             NetClientRegist(u, GetMemory(0x62f9e0 + (u * 0x12dc)));
@@ -4089,96 +3445,28 @@ void DestroyWallAtUnitPos(int sUnit)
     WallBreak(Wall(rx / 23, (rx - ty) / 23));
 }
 
-int ImportUnitCollideFunc()
-{
-    int arr[10], link;
-
-    if (!link)
-    {
-        arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x14246C8B; arr[3] = 0x1824748B;
-        arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
-        arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
-        link = GetScrDataField(ImportUnitCollideFunc);
-    }
-    return link;
-}
-
-int ImportPlaySoundAround()
-{
-	int arr[17], link;
-
-	if (!link)
-	{
-		arr[0] = 0x50196068; arr[1] = 0x72506800; arr[2] = 0x50560050; arr[3] = 0x082454FF;
-		arr[4] = 0x54FFF08B; arr[5] = 0x006A0824; arr[6] = 0x5650006A; arr[7] = 0x1C2454FF;
-		arr[8] = 0x5810C483; arr[9] = 0x08C4835E; arr[10] = 0x909090C3;
-        link = GetScrDataField(ImportPlaySoundAround);
-	}
-	return link;
-}
-
-void PlaySoundAround(int sUnit, int sNumber)
-{
-	int unitPtr = UnitToPtr(sUnit), temp = GetMemory(0x5c325c);
-
-	if (unitPtr)
-	{
-		SetMemory(0x5c325c, ImportPlaySoundAround());
-		Unused74(unitPtr, sNumber);
-		SetMemory(0x5c325c, temp);
-	}
-}
-
-int ImportOrbMoveFunc()
-{
-	int arr[6], link;
-
-	if (!link)
-	{
-		arr[0] = 0x52353068; arr[1] = 0x72506800; arr[2] = 0x14FF0050; arr[3] = 0x54FF5024; arr[4] = 0xC4830824; arr[5] = 0x9090C30C;
-		link = GetScrDataField(ImportOrbMoveFunc);
-	}
-	return link;
-}
-
-void LinearOrbMove(int unit, float x_vect, float y_vect, float speed, int time)
-{
-	int ptr = UnitToPtr(unit), temp = GetMemory(0x5c336c);
-
-	if (ptr)
-	{
-		SetMemory(ptr + 0x50, ToInt(x_vect));
-		SetMemory(ptr + 0x54, ToInt(y_vect));
-		SetMemory(ptr + 0x70, ToInt(speed));
-		SetMemory(0x5c336c, ImportOrbMoveFunc());
-		Unknownb8(ptr);
-		SetMemory(0x5c336c, temp);
-		DeleteObjectTimer(unit, time);
-	}
-}
-
 void DrawGeometryRingAt(string orbName, float xProfile, float yProfile, int angleAdder)
 {
-    int u, link = GetScrDataField(DrawGeometryRingAt) + 16;
+    int u;
     float speed = 2.3;
 
-    for ( u = 0 ; u < 60 ; SetMemory(link, u + 1))
+    for ( u = 0 ; u < 60 ; u += 1)
         LinearOrbMove(CreateObjectAt(orbName, xProfile, yProfile), MathSine((u * 6) + 90 + angleAdder, -12.0), MathSine((u * 6) + angleAdder, -12.0), speed, 10);
 }
 
 void DrawSpreadOrbFx(string orbName, float xProfile, float yProfile, int angleAdder)
 {
-    int u, link = GetScrDataField(DrawSpreadOrbFx) + 16;
+    int u;
     float speed = 2.4;
 
-    for (u = 0 ; u < 60 ; SetMemory(link, u + 1))
+    for (u = 0 ; u < 60 ; u += 1)
         LinearOrbMove(CreateObjectAt(orbName, xProfile, yProfile), MathSine((u * 6) + 90 + angleAdder, -24.0), MathSine((u * 6) + angleAdder, -24.0), speed, 12);
 }
 
 void DemonsBloodFestival(int baseUnit)
 {
     int count = GetDirection(baseUnit);
-    string orbName = {"CharmOrb", "HealOrb", "WhiteOrb", "DrainManaOrb"};
+    string orbName[] = {"CharmOrb", "HealOrb", "WhiteOrb", "DrainManaOrb"};
 
     while (true)
     {
@@ -4186,7 +3474,7 @@ void DemonsBloodFestival(int baseUnit)
         {
             LookWithAngle(baseUnit, count - 1);
             DrawGeometryRingAt("HealOrb", GetObjectX(baseUnit), GetObjectY(baseUnit), count);
-            DrawSpreadOrbFx(ToStr(SToInt(orbName) + (count % 4)) , GetObjectX(baseUnit), GetObjectY(baseUnit), count);
+            DrawSpreadOrbFx(orbName[count % 4] , GetObjectX(baseUnit), GetObjectY(baseUnit), count);
             FrameTimerWithArg(1, baseUnit, DemonsBloodFestival);
             break;
         }
