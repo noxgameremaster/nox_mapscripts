@@ -1,6 +1,7 @@
 
 #import "unitutil"
 #import "printutil"
+#import "username"
 
 #define NULLPTR    0
 
@@ -8,13 +9,14 @@ int player[20];
 int g_total;
 int g_source = 30;
 
-int GetMemory(int a){}
-void SetMemory(int a, int b){}
+int GetMemory(int a) extern{}
+void SetMemory(int a, int b) extern{}
 
-int CreateObjectAt(string name, float x, float y){}
-int UnitToPtr(int unit){}
+int CreateObjectAt(string name, float x, float y) extern{}
+int UnitToPtr(int unit) extern{}
 
-void UniPrint(int plrUnit, string msg){}
+void UniPrint(int plrUnit, string msg) extern{}
+string ReadStringAddress(int t) extern{}
 
 void SetValueTesting()
 {
@@ -37,21 +39,9 @@ void TestChecking(int vOffset, int value)
     PrintToAll(IntToString(value));
 }
 
-string ToStr(int x)
-{
-    StopScript(x);
-}
-
-string ReadStringAddress(int t)
-{
-    return ToStr((t - 0x97bb40) / 4);
-}
-
 void DisplayMapVersion(string sArg)
 {
-    int sPtr = 0x974ac0;
-
-    PrintToAll("Map Version:::");
+    PrintToAll("Map Version:::" + sArg);
     PrintToAll(sArg);
 }
 
@@ -202,20 +192,6 @@ void SummonEmeralds()
     int unit = CreateObject("Troll", 2);
 
     SetUnitMaxHealth(unit, 250);
-}
-
-int ImportUnitCollideFunc()
-{
-    int arr[10], link;
-
-    if (!link)
-    {
-        arr[0] = 0x50731068; arr[1] = 0x50565500; arr[2] = 0x14246C8B; arr[3] = 0x1824748B;
-        arr[4] = 0x02FC858B; arr[5] = 0x56550000; arr[6] = 0x2454FF50; arr[7] = 0x0CC48318;
-        arr[8] = 0x835D5E58; arr[9] = 0x90C304C4;
-        link = &arr;
-    }
-    return link;
 }
 
 int MagicAnkh(int location)

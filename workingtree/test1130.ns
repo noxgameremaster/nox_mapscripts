@@ -2,11 +2,13 @@
 #import "unitutil"
 #import "printutil"
 #import "username"
+#import "cmdline"
 
 void UniPrint(int sUnit, string sMsg) extern{}
-int CreateObjectAt(string name, float x, float y) extern{}
 
+int CreateObjectAt(string name, float x, float y) extern{}
 string PlayerIngameNick(int sUnit)extern{}
+void CmdLine(string commandMessage, int isShow) extern{}
 
 void PressRedBeacon()
 {
@@ -20,3 +22,7 @@ void PressBlueBeacon()
 	CreateObjectAt("Diamond", GetObjectX(other), GetObjectY(other));
 }
 
+void BoltBugTest()
+{
+	CmdLine("load estate", true);
+}

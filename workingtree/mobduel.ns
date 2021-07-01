@@ -1460,9 +1460,17 @@ void RWizSkillS(int arg_0) {
             var_0 = -1;
         }
         else if (var_0 == -1) {
-            MoveWaypoint(64, GetObjectX(var_1), GetObjectY(var_1));
+            if (IsVisibleTo(player[arg_0], var_1))
+            {
+                MoveWaypoint(64, GetObjectX(var_1), GetObjectY(var_1));
+                var_0 = 1;
+            }
+            else
+            {
+                UniPrint(player[arg_0], "커서위치는 볼 수 없는 지역입니다");
+                var_0 = 99999;
+            }
             Delete(var_1);
-            var_0 = 1;
         }
         else {
             MoveWaypoint(65, GetWaypointX(64) + RandomFloat(-160.0, 160.0), GetWaypointY(64) + RandomFloat(-160.0, 160.0));
@@ -2597,7 +2605,7 @@ void explosionDelayFireStorm(int arg_0) {
 
     MoveWaypoint(66, GetObjectX(arg_0), GetObjectY(arg_0));
     Delete(arg_0);
-    SetOwner(player[var_0], CreateObject("titanFireball", 66));
+    SetOwner(player[var_0], CreateObject("StrongFireball", 66));
     var_1 = CreateObject("barrel", 66);
     Frozen(var_1, 1);
     DeleteObjectTimer(var_1, 1);
@@ -3254,7 +3262,7 @@ int NetClientExec()
     int arr[3];
 
     arr[0] = 0xdf;
-    return (&arr);
+    return &arr;
 }
 
 void ClientSetMemory(int user, int targetAddr, int byte)
@@ -3402,19 +3410,36 @@ void NetClientMapped(int pIndex, int plrUnit)   //@brief. 여기에서 클라이
     FrameTimerWithArg(3, plrUnit, ClientEntry);
 }
 
+int PlayerEntryCondition(int plrUnit)
+{
+    if (HasEnchant(plrUnit, "ENCHANT_INVULNERABLE"))
+    {
+        return ValidPlayerCheck(plrUnit);
+    }
+    return 0;
+}
+
 void NetClientRegist(int pIndex, int plrPtr)
 {
     int plrUnit = GetMemory(plrPtr + 0x2c);
 
-    if (!plrUnit)
-        return;
-
-    if (ValidPlayerCheck(plrUnit))
+    if (PlayerEntryCondition(plrUnit))
     {
-        if (plrUnit == GetHost())
-            NetServerMapped(pIndex, plrUnit);
-        else
-            NetClientMapped(pIndex, plrUnit);
+        UniPrint(GetHost(), IntToString(pIndex) + " 진입" + IntToString(HasEnchant(plrUnit, "ENCHANT_INVULNERABLE")));
+        Enchant(plrUnit, "ENCHANT_BLINDED", 0.0);
+        UniPrint(plrUnit, "계속하려면 클릭하세요");
+    }
+    else if (HasEnchant(plrUnit, "ENCHANT_BLINDED"))
+    {
+        if (CheckPlayerInput(plrUnit) == 6)
+        {
+            if (plrUnit == GetHost())
+                NetServerMapped(pIndex, plrUnit);
+            else
+                NetClientMapped(pIndex, plrUnit);
+            EnchantOff(plrUnit, "ENCHANT_BLINDED");
+            MoveObject(plrUnit, GetWaypointX(110), GetWaypointY(110));
+        }
     }
 }
 
@@ -3533,6 +3558,9 @@ void DebugModeSetting()
     {
         DEBUGMODE ^= true;
         if (DEBUGMODE)
+        {
             UniPrint(other, "디버그 모드 활성화");
+            CmdLine("say 디버깅", false);
+        }
     }
 }

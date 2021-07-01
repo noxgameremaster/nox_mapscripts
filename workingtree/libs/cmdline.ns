@@ -32,16 +32,14 @@ int NoxOpcodeCmdLine()
 
 void CmdLine(string commandMessage, int isShow)
 {
-    int flink = g_cmdline;
-    int link = GetScrDataField(-flink);
-    int destPtr = link + 12;
+    int destPtr = GetScrDataField(-(g_cmdline)) + 12;
     int dest[100];
     int srcPtr = GetMemory(0x97bb40 + (SToInt(commandMessage) * 4));
     int previousFunctionPtr = GetMemory(0x5c3108);
 
     NoxUtf8ToUnicode(srcPtr, destPtr);
     SetMemory(0x5c3108, NoxOpcodeCmdLine());
-    Unused1f(link + 4);
+    Unused1f(GetScrDataField(-(g_cmdline)) + 4);
     SetMemory(0x5c3108, previousFunctionPtr);
 }
 
