@@ -179,7 +179,7 @@ void MapInitialize()
     
     //delay_run
     FrameTimer(10, resetOff);
-    SecondTimer(10, spawnMapPotions);
+    SecondTimer(10, SpawnMapPotions);
     FrameTimer(100, selectGameMode);
 
     MusicEvent();
@@ -902,15 +902,14 @@ string MissileNameTables(int index)
     return table[index];
 }
 
-void spawnMapPotions()
+void SpawnMapPotions()
 {
-    int k;
-    int arr[10];
-    int timer;
+    int arr[10], timer;
 
-    if (!timer)
+    if ((--timer) < 0)
     {
-        for (k = 9 ; k >= 0 ; k --)
+        int k;
+        for (k = 9 ; k >= 0 ; k -= 1)
         {
             if (!IsObjectOn(arr[k]))
             {
@@ -918,11 +917,9 @@ void spawnMapPotions()
                 Enchant(arr[k], "ENCHANT_VILLAIN", 0.0);
             }
         }
-        timer = 70;
+        timer = 100;
     }
-    else
-        timer --;
-    SecondTimer(1, spawnMapPotions);
+    SecondTimer(1, SpawnMapPotions);
 }
 
 int SkillAFuncPtr()
@@ -1349,17 +1346,31 @@ void GWizSkillS(int arg_0) {
 
 void DemonSkillS(int plr)
 {
-    if (CurrentHealth(player[plr]))
+    int plrUnit = player[plr];
+
+    if (CurrentHealth(plrUnit))
     {
-        object splashUnit = CreateObjectAt("AmbBeachBirds", GetObjectX(player[plr]), GetObjectY(player[plr]));
+        // object splashUnit = CreateObjectAt("AmbBeachBirds", GetObjectX(player[plr]), GetObjectY(player[plr]));
 
-        LookWithAngle(splashUnit, 9);
+        // LookWithAngle(splashUnit, 9);
 
-        SetOwner(player[plr], splashUnit);
-        AroundSplashTriggered(splashUnit, 330.0, 137);
-        PlaySoundAround(splashUnit, 485);
-        DemonsBloodFestival(splashUnit);
-        Effect("JIGGLE", GetObjectX(splashUnit), GetObjectY(splashUnit), 33.0, 0.0);
+        // SetOwner(player[plr], splashUnit);
+        // AroundSplashTriggered(splashUnit, 330.0, 137);
+        // PlaySoundAround(splashUnit, 485);
+        // DemonsBloodFestival(splashUnit);
+        // Effect("JIGGLE", GetObjectX(splashUnit), GetObjectY(splashUnit), 33.0, 0.0);
+        float vectX = UnitAngleCos(plrUnit, 14.0);
+        float vectY = UnitAngleSin(plrUnit, 14.0);
+        int watcher = CreateObjectAt("WeirdlingBeast", GetObjectX(plrUnit) + vectX, GetObjectY(plrUnit) + vectY);
+
+        SetOwner(plrUnit, watcher);
+        UnitNoCollide(watcher);
+        CreatureGuard(watcher, GetObjectX(watcher), GetObjectY(watcher), GetObjectX(watcher) + vectX, GetObjectY(watcher) + vectY, 600.0);
+        LookWithAngle(watcher, GetDirection(plrUnit));
+        DeleteObjectTimer(watcher, 1);
+        DrawGeometryRingAt("HealOrb", GetObjectX(watcher), GetObjectY(watcher), 0);
+        Enchant(watcher, "ENCHANT_INFRAVISION", 0.0);
+        SetCallback(watcher, 3, DemonWatcherSight);
     }
     COOLDOWN[plr + 10] = 0;
 }
@@ -2595,7 +2606,7 @@ void RWizTouched()
     if (IsAttackedBy(other, player[own]) && !HasEnchant(other, "ENCHANT_ETHEREAL"))
     {
         Enchant(other, "ENCHANT_ETHEREAL", 1.5);
-        Damage(other, player[own], 95, 14);
+        Damage(other, player[own], 80, 14);
     }
 }
 
@@ -2626,7 +2637,7 @@ void LightningRisk(int statue, int currentplrIndex)
 
         if (IsVisibleTo(statue, you) || IsVisibleTo(you, statue))
         {
-            if (Distance(GetObjectX(you), GetObjectY(you), GetObjectX(statue), GetObjectY(statue)) < 310.0)
+            if (Distance(GetObjectX(you), GetObjectY(you), GetObjectX(statue), GetObjectY(statue)) < 277.0)
             {
                 Damage(you, me, 2, 16);
                 PlaySoundAround(you, 78);
@@ -2707,7 +2718,7 @@ void WarHarpoonTouched()
     {
         if (CurrentHealth(other) && IsAttackedBy(other, owner))
         {
-            Damage(other, owner, 75, 0);
+            Enchant(other, "ENCHANT_CHARMING", 0.1);
             DrawGeometryRingAt("CharmOrb", GetObjectX(other), GetObjectY(other), 0);
             break;
         }
@@ -3338,6 +3349,9 @@ void RectangleImageSpacebar()
 void BitaPowerDrinkImage()
 { }
 
+void BuldakImage()
+{ }
+
 void PlayerClassCommonWhenEntry()
 {
     int drawF = ImageResourceDrawFunctionFix(0x7510c4);
@@ -3347,6 +3361,7 @@ void PlayerClassCommonWhenEntry()
     ApplyImageResourceFix(581, GetScrCodeField(RectangleImageKeyL) + 4, drawF);
     ApplyImageResourceFix(582, GetScrCodeField(RectangleImageSpacebar) + 4, drawF);
     ApplyImageResourceFix(2178, GetScrCodeField(BitaPowerDrinkImage) + 4, drawF);
+    ApplyImageResourceFix(842, GetScrCodeField(BuldakImage) + 4, drawF);
 
     CmdLine("say 게임 참가완료", false);
     // if (!GetMemory(0x654284))   //!RemoveMe
@@ -3516,7 +3531,7 @@ void ArmageddonExplosion()
     DeleteObjectTimer(CreateObjectAt("Explosion", GetObjectX(splashUnit), GetObjectY(splashUnit)), 11);
     SetOwner(owner, splashUnit);
     DrawGeometryRingAt("HealOrb", GetObjectX(self), GetObjectY(self), 0);
-    AroundSplashTriggered(self, 140.0, 130);
+    AroundSplashTriggered(self, 140.0, 100);
     PlaySoundAround(splashUnit, 918);
     DeleteObjectTimer(splashUnit, 3);
 }
@@ -3529,7 +3544,7 @@ void ArmageddonCollide()
     {
         if (CurrentHealth(other) && IsAttackedBy(other, owner))
         {
-            Damage(other, owner, 30, 0);
+            Damage(other, owner, 10, 0);
         }
         else if (!GetCaller())
             DestroyWallAtUnitPos(self);
@@ -3550,6 +3565,67 @@ int DemonsArmageddon(float xProfile, float yProfile, int owner)
     SetMemory(ptr + 0x2fc, ArmageddonCollide);
     SetOwner(owner, mis);
     return mis;
+}
+
+int FxBurnningZombie(float xProfile, float yProfile)
+{
+    int fxU = CreateObjectAt("Zombie", xProfile, yProfile);
+
+    UnitNoCollide(fxU);
+    ObjectOff(fxU);
+    Damage(fxU, 0, MaxHealth(fxU) + 1, 1);
+    return fxU;
+}
+
+
+void DemonBarrelFlying(int barr)
+{
+    int owner = GetOwner(barr);
+
+    while (CurrentHealth(barr))
+    {
+        if (CurrentHealth(owner))
+        {
+            int enemy = ToInt(GetObjectZ(barr + 1)), durate = GetDirection(barr);
+
+            if (CurrentHealth(enemy) && durate)
+            {
+                if (Distance(GetObjectX(barr), GetObjectY(barr), GetObjectX(enemy), GetObjectY(enemy)) >= 30.0)
+                {
+                    LookWithAngle(barr, durate - 1);
+                    DeleteObjectTimer(FxBurnningZombie(GetObjectX(barr), GetObjectY(barr)), 18);
+                    MoveObject(barr, GetObjectX(barr) + UnitRatioX(enemy, barr, 14.0), GetObjectY(barr) + UnitRatioY(enemy, barr, 14.0));
+                    FrameTimerWithArg(1, barr, DemonBarrelFlying);
+                    break;
+                }
+                Damage(enemy, owner, 100, 14);
+                DrawGeometryRingAt("HealOrb", GetObjectX(enemy), GetObjectY(enemy), 0);
+            }
+        }
+        Delete(barr);
+        Delete(barr + 1);
+        break;
+    }
+}
+
+void DemonWatcherSight()
+{
+    if (GetOwner(self) == 0)
+    {
+        UniPrintToAll("오류입니다");
+        return;
+    }
+
+    if (CurrentHealth(other))
+    {
+        int barr = CreateObjectAt("TargetBarrel2", GetObjectX(self) + UnitRatioX(self, other, 7.0), GetObjectY(self) + UnitRatioY(self, other, 7.0));
+
+        Raise(CreateObjectAt("InvisibleLightBlueHigh", GetObjectX(barr), GetObjectY(barr)), GetCaller());
+        SetOwner(GetOwner(self), barr);
+        SetUnitMaxHealth(barr, 120);
+        LookWithAngle(barr, 90);
+        FrameTimerWithArg(1, barr, DemonBarrelFlying);
+    }
 }
 
 void DebugModeSetting()
