@@ -41,7 +41,8 @@ int MonsterStrikeHookSub()
 
 int MonsterStrikeCodeSection()
 {
-    int code[48];
+	int padding[10];
+    int code[48], endChunk = 0xdeadface;
 }
 
 void MonsterStrikeDefaultCallback()
@@ -54,7 +55,7 @@ int MonsterStrikeHandlerCopiedCode(int callback)
 
     if (!link)
     {
-        link = GetScrDataField(-(g_monsterCodeSection));
+        link = GetScrDataField(-(g_monsterCodeSection)) + 40;
         OpcodeCopiesAdvance(link, CallNode00549380(), 0x549380, 0x549434);
         subPart = MonsterStrikeHookSub();
         SetMemory(subPart + 27, link + 0x7b);
@@ -70,6 +71,7 @@ int MonsterStrikeHandlerCopiedCode(int callback)
 
 void InitMonsterStrikeHandler()
 {
+	MonsterStrikeCodeSection();
 	MonsterStrikeHandlerCopiedCode(-(g_monsterStrikeDefaultCallback));
 }
 
