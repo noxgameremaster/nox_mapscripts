@@ -1,21 +1,24 @@
 
-#import "typecast"
-#import "printutil"
-#import "unitutil"
-#import "mathlab"
-#import "callmethod"
-#import "fxeffect"
-#import "fixtellstory"
+#include "builtins.h"
+#include "libs\typecast.h"
+#include "libs\printutil.h"
+#include "libs\unitutil.h"
+#include "libs\mathlab.h"
+#include "libs\callmethod.h"
+#include "libs\fxeffect.h"
+#include "libs\fixtellstory.h"
+#include "libs\playerupdate.h"
+#include "libs\coopteam.h"
+#include "libs\spellutil.h"
+#include "libs\itemproperty.h"
+#include "libs\username.h"
 
-#import "playerupdate"
-#import "coopteam"
-#import "spellutil"
-
-#import "itemproperty"
-#import "username"
 
 #define NULLPTR         0 
 #define ITEM_NULL_PROPERTY      0x5a00a4
+
+#define SELF -2
+#define OTHER -1
 
 int player[20];
 int MapLang = 0;
@@ -27,51 +30,6 @@ int MapLastUnit;
 int HCenterUnit;
 int PlrInven[10], PlrNodePtr[10];
 
-int GetMemory(int a) extern{}
-void SetMemory(int a, int b) extern{}
-
-void UniPrint(int sUnit, string sMsg) extern{}
-void UniPrintToAll(string sMsg) extern{}
-void UniChatMessage(int sUnit, string sMsg, int duration) extern{}
-int CreateObjectAt(string name, float x, float y)extern{}
-int UnitToPtr(int unit) extern{}
-void UniBroadcast(string sMsg) extern{}
-void NoxUtf8ToUnicode(int src, int dest)extern{}
-void InitMathSine(int wp)extern{}
-float UnitRatioX(int unit, int target, float size) extern{}
-float UnitRatioY(int unit, int target, float size) extern{}
-float UnitAngleCos(int unit, float size) extern{}
-float UnitAngleSin(int unit, float size) extern{}
-int ImportUnitCollideFunc() extern{}
-void PlaySoundAround(int sUnit, int sNumber) extern{}
-void TellStoryUnitName(string sAudio, string sDesc, string sUnitName) extern{}
-void RegistSignMessage(int sUnit, string sMsg) extern{}
-int MathAbs(int num) extern{}
-int ImportUseItemFunc() extern{}
-int ImportUnitDieFunc() extern{}
-int ImportAllowAllDrop() extern{}
-
-void DiePlayerHandlerEntry(int plrUnit) extern{}
-void SelfDamageClassEntry(int plrUnit) extern{}
-void ResetPlayerHandlerWhenExitMap() extern{}
-
-void MakeCoopTeam() extern{}
-void RemoveCoopTeamMode() extern{}
-int CallFunctionWithArgInt(int func, int arg) extern{}
-void SetArmorProperties(int armor, int qual, int mt_lv, int afx1, int afx2) extern{}
-void SetWeaponProperties(int weapon, int power, int mt_lv, int wfx1, int wfx2) extern{}
-
-void RemoveTreadLightly(int plrUnit) extern{}
-int GetSpellNumber(string spell) extern{}
-string PlayerIngameNick(int sUnit) extern{}
-
-int ToInt(float x) extern{}
-int FloatToInt(float x) extern{}
-string ReadStringAddress(int t) extern{}
-
-float ToFloat(int x) extern{}
-
-void CancelPlayerDialogWithPTR(int plrPtr) extern{}
 
 int DrawMagicIcon(int wp)
 {
@@ -218,16 +176,6 @@ int VoiceList(int num)
         }
     }
     return list[num];
-}
-
-string ToStr(int x) extern
-{
-    StopScript(x);
-}
-
-int SToInt(string x) extern
-{
-    StopScript(x);
 }
 
 int ColorMaidenAt(int red, int grn, int blue, float xProfile, float yProfile)
@@ -570,12 +518,12 @@ void TurnOffLights()
         door = Object("ServiceDoor");
     if (IsLocked(door))
     {
-        UniPrint(other, "도시 지하 공동구로 향하는 엘리베이터의 게이트가 열렸습니다.");
+        UniPrint(OTHER, "도시 지하 공동구로 향하는 엘리베이터의 게이트가 열렸습니다.");
         UnlockDoor(door);
     }
     else
     {
-        UniPrint(other, "게이트를 잠궜습니다.");
+        UniPrint(OTHER, "게이트를 잠궜습니다.");
         LockDoor(door);
     }
 }
@@ -672,7 +620,7 @@ void getPlayer()
 {
     int plr, i;
 
-    if (CurrentHealth(other))
+    if (CurrentHealth(OTHER))
     {
         plr = CheckPlayer();
         for (i = 9 ; i >= 0 && plr < 0 ; i --)
@@ -687,7 +635,7 @@ void getPlayer()
         if (plr + 1)
             PlayerJoinTheMap(plr);
         else
-            PlayerFailJoin(other);
+            PlayerFailJoin(OTHER);
     }
 }
 
@@ -855,12 +803,12 @@ int checkMapBoundary(int location)
 
 void DeathTouched()
 {
-    int owner = GetOwner(self);
+    int owner = GetOwner(SELF);
 
-    if (CurrentHealth(other) && IsAttackedBy(other, owner))
+    if (CurrentHealth(OTHER) && IsAttackedBy(OTHER, owner))
     {
-        Damage(other, owner, 200, 13);
-        Enchant(other, "ENCHANT_CHARMING", 0.8);
+        Damage(OTHER, owner, 200, 13);
+        Enchant(OTHER, "ENCHANT_CHARMING", 0.8);
     }
 }
 
@@ -915,22 +863,22 @@ void buyYourPet()
     int idx;
     int plr = CheckPlayer();
     //location: 134
-    if (GetGold(other) >= 70000 && plr >= 0)
+    if (GetGold(OTHER) >= 70000 && plr >= 0)
     {
         idx = StackIndex(10);
         if (idx >= 0)
         {
             if (MapLang)
-                UniPrint(other, "I purchased a bodyguard.");
+                UniPrint(OTHER, "I purchased a bodyguard.");
             else
-                UniPrint(other, "잔도를 구입하셨습니다.");
-            MoveWaypoint(134, GetObjectX(other), GetObjectY(other));
+                UniPrint(OTHER, "잔도를 구입하셨습니다.");
+            MoveWaypoint(134, GetObjectX(OTHER), GetObjectY(OTHER));
             unit = CreateObject("AirshipCaptain", 134);
             CreateObject("InvisibleLightBlueHigh", 134);
             LookWithAngle(unit + 1, plr);
             Raise(unit + 1, ToFloat(idx));
             SetOwner(player[plr], unit);
-            ChangeGold(other, -70000);
+            ChangeGold(OTHER, -70000);
             SetCallback(unit, 3, XandorWeapon);
             SetCallback(unit, 5, XandorDead);
             SetDialog(unit, "NORMAL", guardUnit, nullPointer);
@@ -949,7 +897,7 @@ void XandorDead()
 {
     int ptr = GetTrigger() + 1;
 
-    DeleteObjectTimer(self, 60);
+    DeleteObjectTimer(SELF, 60);
     StackIndex(ToInt(GetObjectZ(ptr)));
     Delete(ptr);
 }
@@ -959,17 +907,17 @@ void XandorWeapon()
     int plr = GetDirection(GetTrigger() + 1);
 
     if (!MaxHealth(player[plr]))
-        Damage(self, 0, 9999, 14);
-    else if (CurrentHealth(self))
+        Damage(SELF, 0, 9999, 14);
+    else if (CurrentHealth(SELF))
     {
-        if (CurrentHealth(other))
+        if (CurrentHealth(OTHER))
         {
-            Effect("SENTRY_RAY", GetObjectX(self), GetObjectY(self), GetObjectX(other), GetObjectY(other));
-            Damage(other, player[plr], 75, 16);
+            Effect("SENTRY_RAY", GetObjectX(SELF), GetObjectY(SELF), GetObjectX(OTHER), GetObjectY(OTHER));
+            Damage(OTHER, player[plr], 75, 16);
         }
-        if (!HasEnchant(self, "ENCHANT_VILLAIN"))
+        if (!HasEnchant(SELF, "ENCHANT_VILLAIN"))
         {
-            Enchant(self, "ENCHANT_VILLAIN", 0.0);
+            Enchant(SELF, "ENCHANT_VILLAIN", 0.0);
             FrameTimerWithArg(22, GetTrigger(), XandorResetSight);
         }
     }
@@ -984,16 +932,16 @@ void XandorResetSight(int unit)
 
 void guardUnit()
 {
-    if (!IsAttackedBy(self, other) && !HasEnchant(other, "ENCHANT_VILLAIN"))
+    if (!IsAttackedBy(SELF, OTHER) && !HasEnchant(OTHER, "ENCHANT_VILLAIN"))
     {
-        Enchant(other, "ENCHANT_VILLAIN", 3.0);
-        CreatureFollow(self, other);
-        AggressionLevel(self, 0.83);
+        Enchant(OTHER, "ENCHANT_VILLAIN", 3.0);
+        CreatureFollow(SELF, OTHER);
+        AggressionLevel(SELF, 0.83);
         if (MapLang)
-            UniChatMessage(self, "잔도, 남은체력: " + IntToString(CurrentHealth(self)), 150);
+            UniChatMessage(SELF, "잔도, 남은체력: " + IntToString(CurrentHealth(SELF)), 150);
         else
-            UniChatMessage(self, "Jandor, HP: " + IntToString(CurrentHealth(self)), 150);
-        MoveWaypoint(141, GetObjectX(self), GetObjectY(self));
+            UniChatMessage(SELF, "Jandor, HP: " + IntToString(CurrentHealth(SELF)), 150);
+        MoveWaypoint(141, GetObjectX(SELF), GetObjectY(SELF));
         AudioEvent("BigGong", 141);
     }
 }
@@ -1035,21 +983,21 @@ void SetUnit1C(int sUnit, int sData)
 
 void OrbClassCollide()
 {
-    int owner = GetOwner(self);
+    int owner = GetOwner(SELF);
 
     while (1)
     {
-        if (CurrentHealth(other) && IsAttackedBy(other, owner))
+        if (CurrentHealth(OTHER) && IsAttackedBy(OTHER, owner))
         {
-            Damage(other, owner, 300, 14);
-            Enchant(other, "ENCHANT_CHARMING", 0.3);
-            Effect("YELLOW_SPARKS", GetObjectX(self), GetObjectY(self), 0.0, 0.0);
+            Damage(OTHER, owner, 300, 14);
+            Enchant(OTHER, "ENCHANT_CHARMING", 0.3);
+            Effect("YELLOW_SPARKS", GetObjectX(SELF), GetObjectY(SELF), 0.0, 0.0);
         }
         else if (!GetCaller())
-            DestroyWallAtUnitPos(self);
+            DestroyWallAtUnitPos(SELF);
         else
             break;
-        Delete(self);
+        Delete(SELF);
         break;
     }
 }
@@ -1070,13 +1018,13 @@ int OrbClassTakeShot(int sOwner)
 void OrbClassUseStaff()
 {
     int cFps = GetMemory(0x84ea04);
-    int cTime = GetUnit1C(self);
+    int cTime = GetUnit1C(SELF);
 
     if (MathAbs(cFps - cTime) < 12)
         return;
     if (CurrentHealth(other))
     {
-        SetUnit1C(self, cFps);
+        SetUnit1C(SELF, cFps);
         PushObject(OrbClassTakeShot(other), 22.0, GetObjectX(other), GetObjectY(other));
         PlaySoundAround(other, 221);
     }
@@ -1100,30 +1048,30 @@ int OrbClassCreate(int sUnit)
 
 void ShopClassTradeOrb()
 {
-    if (GetAnswer(self) ^ 1) return;
-    if (GetGold(other) >= 50000)
+    if (GetAnswer(SELF) ^ 1) return;
+    if (GetGold(OTHER) >= 50000)
     {
-        EnchantOff(other, "ENCHANT_INVULNERABLE");
-        EnchantOff(other, "ENCHANT_SHIELD");
-        SetUnitHealth(other, 3000);
-        ChangeGold(other, -50000);
-        OrbClassCreate(other);
+        EnchantOff(OTHER, "ENCHANT_INVULNERABLE");
+        EnchantOff(OTHER, "ENCHANT_SHIELD");
+        SetUnitHealth(OTHER, 3000);
+        ChangeGold(OTHER, -50000);
+        OrbClassCreate(OTHER);
         TellStoryUnitName("oAo", "GUITrade.c:TradeVendorAccept", "씹사기 지팡이\n구입 완료!");
-        UniPrint(other, "거래가 완료되었습니다! 구입하신 망각의 지팡이는 당신 아래에 있어요");
+        UniPrint(OTHER, "거래가 완료되었습니다! 구입하신 망각의 지팡이는 당신 아래에 있어요");
     }
     else
     {
         if (MapLang)
-            UniPrint(other, " * There is not enough money. The purchase of a magic wand is 50,000 won..");
+            UniPrint(OTHER, " * There is not enough money. The purchase of a magic wand is 50,000 won..");
         else
-            UniPrint(other, " * 돈이 충분치 않습니다 . 망각의 지팡이 구입은 5만원 입니다 .");
+            UniPrint(OTHER, " * 돈이 충분치 않습니다 . 망각의 지팡이 구입은 5만원 입니다 .");
     }
 }
 
 void ShopClassDescTradeOrb()
 {
     TellStoryUnitName("oAo", "Wiz02:NecroSpiders", "씹사기 지팡이");
-    UniPrint(other, "망각의 지팡이를 구입하시겠어요? 1개당 50,000 골드가 요구됩니다");
+    UniPrint(OTHER, "망각의 지팡이를 구입하시겠어요? 1개당 50,000 골드가 요구됩니다");
 }
 
 int ShopClassOblivionOrbMarket(int sLocation)
@@ -1137,11 +1085,11 @@ int ShopClassOblivionOrbMarket(int sLocation)
 }
 
 void goIndoorDunmir() {
-    MoveObject(other, GetWaypointX(67), GetWaypointY(67));
+    MoveObject(OTHER, GetWaypointX(67), GetWaypointY(67));
 }
 
 void outIndoorDunmir() {
-    MoveObject(other, GetWaypointX(68), GetWaypointY(68));
+    MoveObject(OTHER, GetWaypointX(68), GetWaypointY(68));
 }
 
 void LoopManageKeys(int sArg)
@@ -1192,9 +1140,9 @@ int GauntletGate(int num)
 }
 
 void CaptainTakeBreak() {
-    if (CurrentHealth(self) < 5000 - 400) {
-        UniChatMessage(self, "Rules.c:Deaths", 90);
-        Damage(self, other, 5000, 14);
+    if (CurrentHealth(SELF) < 5000 - 400) {
+        UniChatMessage(SELF, "Rules.c:Deaths", 90);
+        Damage(SELF, OTHER, 5000, 14);
     }
 }
 
@@ -1248,36 +1196,36 @@ int CheckPotionThingID(int unit)
 
 void MonsterDeathHandler()
 {
-    CallFunctionWithArgInt(ItemDropFuncPtr() + Random(0, 9), self);
-    DeleteObjectTimer(self, 60);
+    CallFunctionWithArgInt(ItemDropFuncPtr() + Random(0, 9), SELF);
+    DeleteObjectTimer(SELF, 60);
 }
 
 void hurtEvent() {
-    if (HasClass(other, "WEAPON") && HasSubclass(other,"CHAKRAM"))
-        MoveObject(other, GetObjectX(self), GetObjectY(self));
-    else if (HasClass(other, "MISSILE") && HasSubclass(other, "MISSILE_COUNTERSPELL"))
+    if (HasClass(OTHER, "WEAPON") && HasSubclass(OTHER,"CHAKRAM"))
+        MoveObject(OTHER, GetObjectX(SELF), GetObjectY(SELF));
+    else if (HasClass(OTHER, "MISSILE") && HasSubclass(OTHER, "MISSILE_COUNTERSPELL"))
     {
-        CastSpellObjectObject("SPELL_COUNTERSPELL", self, self);
-        RestoreHealth(self, 100);
+        CastSpellObjectObject("SPELL_COUNTERSPELL", SELF, SELF);
+        RestoreHealth(SELF, 100);
     }
 }
 void collisionMonster()
 {
     int plr;
-    if (CurrentHealth(self) && HasClass(other, "WEAPON") && HasSubclass(other, "ARROW"))
+    if (CurrentHealth(SELF) && HasClass(OTHER, "WEAPON") && HasSubclass(OTHER, "ARROW"))
     {
-        plr = CheckOwner(other);
+        plr = CheckOwner(OTHER);
         if (plr >= 0)
         {
             if (CurrentHealth(player[plr]) && MaxHealth(player[plr]) == 150)
             {
-                MoveWaypoint(140, GetObjectX(self), GetObjectY(self));
-                MoveObject(self, 4294.0, 4041.0);
-                MoveObject(self, GetWaypointX(140), GetWaypointY(140));
+                MoveWaypoint(140, GetObjectX(SELF), GetObjectY(SELF));
+                MoveObject(SELF, 4294.0, 4041.0);
+                MoveObject(SELF, GetWaypointX(140), GetWaypointY(140));
                 if (GetWaypointX(140) > 300.0)
                     DeleteObjectTimer(CreateObject("ForceOfNatureCharge", 140), 28);
                 AudioEvent("CharmSuccess", 140);
-                Damage(self, player[plr], 99, 13);
+                Damage(SELF, player[plr], 99, 13);
                 Effect("SENTRY_RAY", GetWaypointX(140), GetWaypointY(140), GetObjectX(player[plr]), GetObjectY(player[plr]));
             }
         }
@@ -1353,22 +1301,22 @@ void beAttackedByBoss()
 {
     int r_pic;
 
-    if (CurrentHealth(self))
+    if (CurrentHealth(SELF))
     {
-        if (CurrentHealth(other))
+        if (CurrentHealth(OTHER))
         {
-            if (!HasEnchant(self,"ENCHANT_BURNING"))
+            if (!HasEnchant(SELF,"ENCHANT_BURNING"))
             {
                 r_pic = Random(0, 2);
-                Enchant(self, "ENCHANT_BURNING", 6.0);
+                Enchant(SELF, "ENCHANT_BURNING", 6.0);
                 if (!r_pic)
                 {
-                    MoveWaypoint(108, GetObjectX(self), GetObjectY(self));
-                    CastSpellObjectLocation("SPELL_EARTHQUAKE", self, GetWaypointX(108), GetWaypointY(108));
-                    CastSpellObjectLocation("SPELL_EARTHQUAKE", self, GetWaypointX(108), GetWaypointY(108));
+                    MoveWaypoint(108, GetObjectX(SELF), GetObjectY(SELF));
+                    CastSpellObjectLocation("SPELL_EARTHQUAKE", SELF, GetWaypointX(108), GetWaypointY(108));
+                    CastSpellObjectLocation("SPELL_EARTHQUAKE", SELF, GetWaypointX(108), GetWaypointY(108));
                     DeleteObjectTimer(CreateObject("ManaBombCharge", 108), 60);
-                    Enchant(self, "ENCHANT_INVULNERABLE", 0.0);
-                    Enchant(self, "ENCHANT_FREEZE", 0.0);
+                    Enchant(SELF, "ENCHANT_INVULNERABLE", 0.0);
+                    Enchant(SELF, "ENCHANT_FREEZE", 0.0);
                     AudioEvent("ManaBombCast", 108);
                     FrameTimerWithArg(57, GetTrigger(), manaBombStrike);
                 }
@@ -1379,7 +1327,7 @@ void beAttackedByBoss()
                 }
                 else
                 {
-                    MoveWaypoint(108, GetObjectX(self), GetObjectY(self));
+                    MoveWaypoint(108, GetObjectX(SELF), GetObjectY(SELF));
                     r_pic = CreateObject("InvisibleLightBlueHigh", 108);
                     CreateObject("InvisibleLightBlueHigh", 108);
                     Raise(r_pic, ToFloat(GetTrigger()));
@@ -1391,13 +1339,13 @@ void beAttackedByBoss()
             }
         }
         else {
-            if (HasClass(other, "FIRE"))
-                teleportToRandomLocation(self);
-            else if (HasClass(other, "MISSILE"))
+            if (HasClass(OTHER, "FIRE"))
+                teleportToRandomLocation(SELF);
+            else if (HasClass(OTHER, "MISSILE"))
             {
-                if (GetUnitThingID(other) ^ 706) return;
-                CastSpellObjectObject("SPELL_COUNTERSPELL", self, self);
-                RestoreHealth(self, 30);
+                if (GetUnitThingID(OTHER) ^ 706) return;
+                CastSpellObjectObject("SPELL_COUNTERSPELL", SELF, SELF);
+                RestoreHealth(SELF, 30);
             }
         }
     }
@@ -1432,14 +1380,14 @@ void straightFist()
 {
     int k;
     int unit;
-    float pos_x = UnitRatioX(self, other, -30.0);
-    float pos_y = UnitRatioY(self, other, -30.0);
+    float pos_x = UnitRatioX(SELF, other, -30.0);
+    float pos_y = UnitRatioY(SELF, other, -30.0);
     string name = "Wizard";
     string magic = "SPELL_FIST";
 
-    MoveWaypoint(108, GetObjectX(self) + pos_x, GetObjectY(self) + pos_y);
-    Enchant(self, "ENCHANT_FREEZE", 1.0);
-    Enchant(self, "ENCHANT_INVULNERABLE", 1.0);
+    MoveWaypoint(108, GetObjectX(SELF) + pos_x, GetObjectY(SELF) + pos_y);
+    Enchant(SELF, "ENCHANT_FREEZE", 1.0);
+    Enchant(SELF, "ENCHANT_INVULNERABLE", 1.0);
 
     unit = CreateObject("InvisibleLightBlueHigh", 108);
     for (k = 0 ; k < 18 ; k ++)
@@ -1449,7 +1397,7 @@ void straightFist()
         {
             CreateObject(name, 108);
             DeleteObjectTimer(unit + (k * 2) + 1, 1);
-            SetOwner(self, unit + (k * 2) + 1);
+            SetOwner(SELF, unit + (k * 2) + 1);
             CastSpellObjectLocation(magic, unit + (k * 2) + 1, GetWaypointX(108), GetWaypointY(108));
         }
     }
@@ -1476,7 +1424,7 @@ void BossCastMeteor(int ptr)
 
 void setDeathFromBoss()
 {
-    MoveWaypoint(108, GetObjectX(self), GetObjectY(self));
+    MoveWaypoint(108, GetObjectX(SELF), GetObjectY(SELF));
     Effect("WHITE_FLASH", GetWaypointX(108), GetWaypointY(108), 0.0, 0.0);
     Effect("JIGGLE", GetWaypointX(108), GetWaypointY(108), 75.0, 0.0);
     AudioEvent("FlagCapture", 108);
@@ -1688,7 +1636,7 @@ void noKeepHere()
 
 void enterBossRoom()
 {
-    ObjectOff(self);
+    ObjectOff(SELF);
     if (MapLang)
         UniPrintToAll("You entered the final boss room.");
     else
@@ -1719,14 +1667,14 @@ void pickKeyThenTeleportNpcs()
         else
             UniChatMessage(Object("dropNpc1"), "잡았다 요놈 ...! 흐흐흐 ...", 150);
         Effect("SMOKE_BLAST", GetWaypointX(120), GetWaypointY(120), 0.0, 0.0);
-        ObjectOff(self);
+        ObjectOff(SELF);
     }
     else if (Distance(GetObjectX(other), GetObjectY(other), GetWaypointX(121), GetWaypointY(121)) < 200.0)
     {
         MoveObject(Object("dropNpc3"), GetWaypointX(121), GetWaypointY(121));
         MoveObject(Object("dropNpc4"), GetWaypointX(121), GetWaypointY(121));
         Effect("SMOKE_BLAST", GetWaypointX(121), GetWaypointY(121), 0.0, 0.0);
-        ObjectOff(self);
+        ObjectOff(SELF);
     }
 }
 
@@ -1745,7 +1693,7 @@ void MovingSewerRows()
     {
         row = Object("SewerRowBase");
         AudioEvent("SpikeBlockMove", 73);
-        ObjectOff(self);
+        ObjectOff(SELF);
     }
     if (GetObjectX(row) <= 1184.0)
     {
@@ -1840,12 +1788,12 @@ void OblivionCopies(int sUnit)
 
 void OblivionDrop()
 {
-    if (MaxHealth(other))
+    if (MaxHealth(OTHER))
     {
-        MoveObject(self, GetObjectX(other), GetObjectY(other));
-        OblivionCopies(self);
+        MoveObject(SELF, GetObjectX(OTHER), GetObjectY(OTHER));
+        OblivionCopies(SELF);
     }
-    Delete(self);
+    Delete(SELF);
 }
 
 void FlareWandMissile(int sWand)
@@ -2027,14 +1975,14 @@ void BuffHealingHealth(int sUnit)
 
 void UseItemFunc1()
 {
-    Delete(self);
+    Delete(SELF);
     Enchant(other, "ENCHANT_SHOCK", 120.0);
 }
 
 void UseItemFunc2()
 {
     int home = HCenterUnit;
-    Delete(self);
+    Delete(SELF);
     if (IsVisibleTo(other, home) || IsVisibleTo(home, other))
     {
         if (MapLang)
@@ -2054,7 +2002,7 @@ void UseItemFunc3()
 {
     if (CurrentHealth(other))
     {
-        Delete(self);
+        Delete(SELF);
         SplashDamage(GetCaller(), 200, GetObjectX(other), GetObjectY(other), 180.0);
         Effect("WHITE_FLASH", GetObjectX(other), GetObjectY(other), 0.0, 0.0);
         DeleteObjectTimer(CreateObjectAt("ManaBombCharge", GetObjectX(other), GetObjectY(other)), 24);
@@ -2069,7 +2017,7 @@ void UseItemFunc4()
     {
         trap = CreateObjectAt("BearTrap", GetObjectX(other), GetObjectY(other));
         SetOwner(other, trap);
-        Delete(self);
+        Delete(SELF);
         if (MapLang)
             UniPrint(other, "A bear trap has been created on the floor. And pick it up and put it in inventory.");
         else
@@ -2085,7 +2033,7 @@ void UseItemFunc5()
     {
         trap = CreateObjectAt("PoisonGasTrap", GetObjectX(other), GetObjectY(other));
         SetOwner(other, trap);
-        Delete(self);
+        Delete(SELF);
         if (MapLang)
             UniPrint(other, "A poison gas trap has been created on the floor. And pick it up and put it in inventory");
         else
@@ -2095,7 +2043,7 @@ void UseItemFunc5()
 
 void UseItemFunc6()
 {
-    if (CurrentHealth(other))
+    if (CurrentHealth(OTHER))
     {
         RestoreHealth(other, MaxHealth(other) - CurrentHealth(other));
         if (IsPoisonedUnit(other))
@@ -2105,7 +2053,7 @@ void UseItemFunc6()
                 CastSpellObjectObject("SPELL_CURE_POISON", other, other);
         }
         Enchant(other, "ENCHANT_REFLECTIVE_SHIELD", 120.0);
-        Delete(self);
+        Delete(SELF);
         if (MapLang)
             UniPrint(other, "With the power of one million Gwanghwamun candles ...! (Full health recovery + Poison treatment, reflex shield for 2 minutes)");
         else
@@ -2117,9 +2065,9 @@ void UseItemFunc7()
 {
     int sUnit;
 
-    if (CurrentHealth(other))
+    if (CurrentHealth(OTHER))
     {
-        Delete(self);
+        Delete(SELF);
         if (HasEnchant(other, "ENCHANT_VILLAIN")) return;
         sUnit = CreateObjectAt("InvisibleLightBlueLow", GetObjectX(other), GetObjectY(other));
         SetOwner(other, sUnit);
@@ -2152,10 +2100,10 @@ string ObstacleNameTable(int index)
 
 void ObstacleBreaking()
 {
-    int idx = GetDirection(self), pic;
-    float xProfile = GetObjectX(self), yProfile = GetObjectY(self);
+    int idx = GetDirection(SELF), pic;
+    float xProfile = GetObjectX(SELF), yProfile = GetObjectY(SELF);
 
-    Delete(self);
+    Delete(SELF);
     pic = CreateObjectAt(ObstacleNameTable(idx + 16), xProfile, yProfile);
     CallFunctionWithArgInt(ItemDropFuncPtr() + Random(0, 9), pic);
 }
