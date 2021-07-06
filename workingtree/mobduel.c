@@ -1,16 +1,18 @@
 
-#import "username"
-#import "callmethod"
-#import "typecast"
-#import "unitutil"
-#import "fxeffect"
-#import "printutil"
-#import "imageutil"
-#import "mathlab"
-#import "mathspiral"
-#import "cmdline"
+#include "builtins.h"
+#include "libs\noxmemlib.h"
+#include "libs\username.h"
+#include "libs\callmethod.h"
+#include "libs\typecast.h"
+#include "libs\unitutil.h"
+#include "libs\fxeffect.h"
+#include "libs\printutil.h"
+#include "libs\imageutil.h"
+#include "libs\mathlab.h"
+#include "libs\mathspiral.h"
+#include "libs\cmdline.h"
 
-#import "playerupdate"
+#include "libs\playerupdate.h"
 
 #define NULLPTR         0
 #define MATH_PI         3.141592
@@ -25,42 +27,6 @@ int ORB_NOTIFIER[40];
 int USERSKILL_TIME[40];
 
 int DEBUGMODE;
-
-void EnableMemoryIO() extern{}
-
-float UnitRatioX(int unit, int target, float size) extern{}
-float UnitRatioY(int unit, int target, float size) extern{}
-int CreateObjectAt(string name, float x, float y) extern{}
-void CallFunctionWithArg(int func, int arg) extern{}
-void SetMemory(int addr, int value) extern{}
-int GetMemory(int addr) extern{}
-string PlayerIngameNick(int sUnit) extern{}
-float ToFloat(int x) extern{}
-void UniChatMessage(int sUnit, string sMsg, int duration) extern{}
-void PlaySoundAround(int sUnit, int sNumber) extern{}
-int UnitToPtr(int unit) extern{}
-int GetScrCodeField(int functionName) extern{}
-
-void ResetPlayerHandlerWhenExitMap() extern{}
-void RegistSignMessage(int sUnit, string sMsg) extern{}
-void UniPrintToAll(string sMsg) extern{}
-void UniPrint(int sUnit, string sMsg) extern{}
-void SelfDamageClassEntry(int plrUnit) extern{}
-void GreenLightningFx(int x1, int y1, int x2, int y2, int time) extern{}
-int FloatToInt(float x) extern{}
-int ToInt(float x) extern{}
-int ImportUnitCollideFunc() extern{}
-void GreenExplosion(float x, float y) extern{}
-int ImageResourceDrawFunctionFix(int bptr) extern{}
-void ApplyImageResourceFix(int thingId, int rscPtr, int drawF) extern{}
-void CmdLine(string commandMessage, int isShow) extern{}
-float IntToFloat(int x) extern{}
-void LinearOrbMove(int unit, float x_vect, float y_vect, float speed, int time) extern{}
-float UnitAngleCos(int unit, float size) extern{}
-float UnitAngleSin(int unit, float size) extern{}
-void InitMathSine(int wp) extern{}
-float MathSine(int angle, float size) extern{}
-float MathSpiral(int num) extern{}
 
 void SetUnitMaxHealth(int unit, int amount)
 {
