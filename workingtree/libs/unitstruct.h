@@ -154,6 +154,15 @@ void SetUnit1C(int sUnit, int sData)
         SetMemory(ptr + 0x1c, sData);
 }
 
+int IsMissileUnit(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 8) & 1;
+    return false;
+}
+
 int IsPlayerUnit(int checkUnit)
 {
     int ptr = UnitToPtr(checkUnit);
@@ -214,6 +223,7 @@ void NOXLibraryEntryPointFunction()
 	"export needinit PreloadVoiceList";
 	"export GetUnit1C";
 	"export SetUnit1C";
+	"export IsMissileUnit";
 	"export IsPlayerUnit";
 	"export IsMonsterUnit";
 	"export IsPlayerUnit";
