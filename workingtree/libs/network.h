@@ -1,11 +1,12 @@
 
 int g_importNetSendClient, g_playmusicPacket;
-int g_netClientExec;
+int g_netClientExec, g_networkUtilClientMain;
 
 int GetMemory(int a){}
 void SetMemory(int a, int b){}
 int UnitToPtr(int a){}
 void CallFunction(int func){}
+void EnableMemoryIO(){}
 
 int GetPlayerIndex(int plrUnit)
 {
@@ -92,7 +93,7 @@ void NetClientSendRaw(int pIndex, int boolDirection, int buffPtr, int buffSize)
 
 void NetClientAfterLinking(int pUnit)
 {
-    ClientSetMemory(pUnit, 0x69ba98 + 0, 0);
+    ClientSetMemory(pUnit, 0x69ba98 + 0, 0x10);
     ClientSetMemory(pUnit, 0x69ba98 + 1, 0x10);
     ClientSetMemory(pUnit, 0x69ba98 + 2, 0x75);
 }
@@ -127,22 +128,27 @@ void NetPlayBgm(int user, int bgmId, int volume)
 	}
 }
 
-void ClientMainWithCallback(int callbackFunction)
+//this function can be override
+void NetworkUtilClientMain()
+{ }
+
+void NetworkUtilClientProcess()
 {
 	int enabled;
 	
 	if (!enabled)
 	{
-		CallFunction(callbackFunction);
+		EnableMemoryIO();
 		SetMemory(0x69ba98, 0x43de10);
+		NetworkUtilClientMain();
 		enabled = true;
 	}
 }
 
-void ClientEntryWithCallback(int cliUnit, int callbackFunction)
+void NetworkUtilClientEntry(int cliUnit)
 {
-	int cliMain = ClientMainWithCallback;
-	int targetAddr = 0x751000;
+	int cliMain = -(g_networkUtilClientMain);
+	int targetAddr = 0x751010;
 	
     if (!MaxHealth(cliUnit))
         return;
@@ -186,10 +192,12 @@ void NOXLibraryEntryPointFunction()
 	"export PlayMusicPacket";
 	"export NetPlayCustomBgm";
 	"export NetPlayBgm";
-	"export ClientMainWithCallback";
-	"export ClientEntryWithCallback";
+	"export NetworkUtilClientMain";
+	"export NetworkUtilClientProcess";
+	"export NetworkUtilClientEntry";
 	
 	g_importNetSendClient = ImportNetSendClient;
 	g_playmusicPacket = PlayMusicPacket;
 	g_netClientExec = NetClientExec;
+	g_networkUtilClientMain = NetworkUtilClientMain;
 }

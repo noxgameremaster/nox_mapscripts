@@ -204,6 +204,15 @@ int GetOwner(int unit)
     return 0;
 }
 
+int IsPoisonedUnit(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+        return GetMemory(ptr + 0x21c) & 0xff;
+    return 0;
+}
+
 void NOXLibraryEntryPointFunction()
 {
 	"export GetMemoryFloat";
@@ -229,4 +238,5 @@ void NOXLibraryEntryPointFunction()
 	"export IsPlayerUnit";
 	"export DistanceUnitToUnit";
 	"export GetOwner";
+	"export IsPoisonedUnit";
 }
