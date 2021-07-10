@@ -15,9 +15,11 @@
 #include "libs\playerupdate.h"
 #include "libs\wandpatch.h"
 #include "libs\network.h"
+#include "libs\memutil.h"
 
 #include "libs\fxeffect.h"
 #include "libs\buff.h"
+#include "libs\playerinfo.h"
 
 int player[20];
 int PlrCam[10];
@@ -491,7 +493,7 @@ void PlayerCommonEntryEvent()
     AppendAllDummyStaffsToWeaponList();
 }
 
-void NetworkUtilClientMain() inline
+static void NetworkUtilClientMain()
 {
     PlayerCommonEntryEvent();
 }
@@ -708,7 +710,7 @@ int OnPlayerInit(int plr, int pUnit)
     {
         if (pUnit ^ GetHost())
         {
-            NetworkUtilClientMain();
+            NetworkUtilClientEntry(pUnit);
         }
         else
         {
@@ -1765,20 +1767,6 @@ void OblivionUseHandler()
         FrameTimerWithArg(1, unit, BurnningSunFlying);
         PlaySoundAround(OTHER, 221);
     }
-}
-
-//플레이어가 현재 장착중인 무기의 id 을 얻습니다
-int PlayerGetEquipedWeapon(int plrUnit)
-{
-    int ptr = UnitToPtr(plrUnit), gid;
-    
-    if (ptr)
-    {
-        gid = GetMemory(GetMemory(ptr + 0x2ec) + 0x68);
-        if (gid)
-            return GetMemory(gid + 0x2c);
-    }
-    return 0;
 }
 
 void DelayGiveToOwner(int sTarget)

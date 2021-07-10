@@ -1,4 +1,5 @@
 
+int g_noxMemset;
 int g_importMemAlloc;
 int	g_importMemFree;
 
@@ -54,14 +55,25 @@ void MemFree(int ptr)
     SetMemory(0x5c3108, temp);
 }
 
+void NoxDwordMemset(int destPtr, int length, int value)
+{
+	int u = 0, ulink = GetMemory(GetMemory(0x75ae28) + ((0x30 * (-(g_noxMemset))) + 0x1c)) + 12;
+	int maxCount = length >> 2;
+	
+	for (u ; u < maxCount ; SetMemory(ulink, u + 1))
+		SetMemory(destPtr + (u << 2), value);
+}
+
 void NOXLibraryEntryPointFunction()
 {
 	"export ImportMemAlloc";
 	"export MemAlloc";
 	"export ImportMemFree";
 	"export MemFree";
+	"export NoxDwordMemset";
 	
 	g_importMemAlloc = ImportMemAlloc;
 	g_importMemFree = ImportMemFree;
+	g_noxMemset = NoxDwordMemset;
 }
 
