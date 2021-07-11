@@ -131,7 +131,7 @@ int MaidenBinTable()
 	{
 		arr[0] = 1684627789; arr[1] = 28261; arr[17] = 30; arr[18] = 92; arr[19] = 60; 
 		arr[21] = 1065353216; arr[23] = 32768; arr[24] = 1069547520; arr[27] = 1; arr[28] = 1106247680; 
-		arr[29] = 80; arr[30] = 1101004800; arr[31] = 2; arr[32] = 22; arr[33] = 30; 
+		arr[29] = 80; arr[30] = 1101004800; arr[31] = 8; arr[32] = 22; arr[33] = 30; 
 		arr[58] = 5546320; arr[59] = 5542784; 
 		link = &arr;
 	}
@@ -145,7 +145,7 @@ int GoonBinTable()
 	{
 		arr[0] = 1852796743; arr[17] = 85; arr[19] = 80; arr[21] = 1065353216; arr[23] = 32768; 
 		arr[24] = 1066192077; arr[26] = 4; arr[28] = 1106247680; arr[29] = 50; arr[30] = 1092616192; 
-		arr[31] = 4; arr[32] = 20; arr[33] = 28; arr[34] = 1; arr[35] = 5; 
+		arr[31] = 8; arr[32] = 20; arr[33] = 28; arr[34] = 1; arr[35] = 5; 
 		arr[36] = 20; arr[57] = 5548176; arr[58] = 5546608; arr[59] = 5543680; 
 		link = &arr;
 	}
@@ -418,18 +418,6 @@ void MonsterAirshipCaptainProcess(int unit)
     }
 }
 
-void ImportBinTable()
-{
-    BlackWidowBinTable();
-    AirshipCaptainBinTable();
-    FireSpriteBinTable();
-    GoonBinTable();
-    MaidenBinTable();
-    StrongWizardWhiteBinTable();
-    WeirdlingBeastBinTable();
-    WizardRedBinTable();
-}
-
 void DelayMakeCoopTeam()
 {
     MakeCoopTeam();
@@ -439,12 +427,10 @@ void MapInitialize()
 {
     MusicEvent();
     FrameTimer(1, DelayMakeCoopTeam);
-    ImportBinTable();
     SetMemory(0x5cb394, 0);
     SetMemory(0x5cb3a0, 0);
     SetMemory(0x5cb3b8, 0);
     SetMemory(0x5cb3ac, 0);
-    CheckMonsterThing(0);
     
     Gvar_4 = 0;
     initializeStructPacker();

@@ -1,6 +1,8 @@
 
+int g_networkUtilClientProcess;
 int g_importNetSendClient, g_playmusicPacket;
-int g_netClientExec, g_networkUtilClientMain;
+int g_netClientExec;
+int g_netClientAfterLinking;
 
 int GetMemory(int a){}
 void SetMemory(int a, int b){}
@@ -93,7 +95,7 @@ void NetClientSendRaw(int pIndex, int boolDirection, int buffPtr, int buffSize)
 
 void NetClientAfterLinking(int pUnit)
 {
-    ClientSetMemory(pUnit, 0x69ba98 + 0, 0x10);
+    ClientSetMemory(pUnit, 0x69ba98 + 0, 0x00);
     ClientSetMemory(pUnit, 0x69ba98 + 1, 0x10);
     ClientSetMemory(pUnit, 0x69ba98 + 2, 0x75);
 }
@@ -147,8 +149,8 @@ void NetworkUtilClientProcess()
 
 void NetworkUtilClientEntry(int cliUnit)
 {
-	int cliMain = -(g_networkUtilClientMain);
-	int targetAddr = 0x751010;
+	int cliMain = -(g_networkUtilClientProcess);
+	int targetAddr = 0x751000;
 	
     if (!MaxHealth(cliUnit))
         return;
@@ -176,7 +178,7 @@ void NetworkUtilClientEntry(int cliUnit)
     ClientSetMemory(cliUnit, targetAddr + 0x14, 0x43);
     ClientSetMemory(cliUnit, targetAddr + 0x15, 0x00);
     ClientSetMemory(cliUnit, targetAddr + 0x16, 0xc3);
-    FrameTimerWithArg(1, cliUnit, NetClientAfterLinking);
+    FrameTimerWithArg(1, cliUnit, -(g_netClientAfterLinking));
 }
 
 void NOXLibraryEntryPointFunction()
@@ -199,5 +201,6 @@ void NOXLibraryEntryPointFunction()
 	g_importNetSendClient = ImportNetSendClient;
 	g_playmusicPacket = PlayMusicPacket;
 	g_netClientExec = NetClientExec;
-	g_networkUtilClientMain = NetworkUtilClientMain;
+	g_networkUtilClientProcess = NetworkUtilClientProcess;
+	g_netClientAfterLinking = NetClientAfterLinking;
 }
