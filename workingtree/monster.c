@@ -770,6 +770,7 @@ void PlayerClassOnAlive(int plr, int pUnit)
         OnPlayerCameraHandler(plr);
 
     PlayerClassMissileWandFix(plr, pUnit);
+    ForceChangePlaerUpdateHandler(pUnit);
 
     int poisonTime[10];
 
@@ -797,6 +798,17 @@ void PlayerClassOnFree(int plr)
     FreePlayerCamera(plr);
     player[plr] = 0;
     player[plr + 10] = 0;
+}
+
+void ForceChangePlaerUpdateHandler(int pUnit)
+{
+    int ptr = UnitToPtr(pUnit);
+
+    if (ptr)
+    {
+        if (GetMemory(ptr + 0x2e8) == 0x4f8100)
+            SetMemory(ptr + 0x2e8, PlayerUpdate4f8100());
+    }
 }
 
 void LoopPreservePlayer()
