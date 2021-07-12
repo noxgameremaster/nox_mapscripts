@@ -1,11 +1,11 @@
 
-int g_importWriteBinaryFile, g_writeBinaryFile;
+int g_importWriteBinaryFile, g_writeBinaryFile, g_extractMapBgm;
 int g_showMessageBox;
 int g_showMessageBoxCore;
 int g_showMsgboxImport;
 int g_importOpenUrl;
 int g_makeMusicDirectory;
-int g_importPlayNPC_Voice;
+int g_importPlayNPCVoice;
 
 int GetMemory(int a){}
 void SetMemory(int a, int b){}
@@ -13,6 +13,8 @@ int SToInt(string x){}
 string ToStr(int x){}
 int FixCallOpcode(int curAddr, int targetAddr){}
 void NoxUtf8ToUnicode(int src, int dest){}
+string ReadStringAddress(int t){}
+int GetScrDataField(int functionName){}
 
 int ImportOpenUrl()
 {
@@ -163,10 +165,11 @@ void PreProcessPlayBgm(int targetAddr)
 
 void ExtractMapBgm(string fileName, int resourceFunction)
 {
+	int dirPath = 0x59dbf4;
     int stream = GetMemory(GetMemory(0x75ae28) + ((0x30 * resourceFunction) + 0x20));
 
     SetMemory(0x59dc10, GetMemory(0x97bb40 + (SToInt(fileName) * 4)));
-    WriteBinaryFile("music\\" + fileName, stream);
+    WriteBinaryFile(ReadStringAddress(GetScrDataField(-(g_extractMapBgm)) + 8) + fileName, stream);
 
     PreProcessPlayBgm(0x5becc4);
 }
@@ -183,7 +186,7 @@ void MakeMusicDirectory()
     SetMemory(0x5c33b8, temp);
 }
 
-int ImportPlayNPC_Voice()
+int ImportPlayNPCVoice()
 {
     int arr[9], link;
 
@@ -191,16 +194,16 @@ int ImportPlayNPC_Voice()
     {
         arr[0] = 0x50685150; arr[1] = 0xFF005072; arr[2] = 0x0C8B2414; arr[3] = 0x97BB4085;
         arr[4] = 0xD9006800; arr[5] = 0x646A0044; arr[6] = 0x2454FF51; arr[7] = 0x10C48308; arr[8] = 0x90C35859;
-		link = GetMemory(GetMemory(0x75ae28) + ((0x30 * (-(g_importPlayNPC_Voice))) + 0x1c));
+		link = GetMemory(GetMemory(0x75ae28) + ((0x30 * (-(g_importPlayNPCVoice))) + 0x1c));
     }
     return link;
 }
 
-void PlayNPC_Voice(string voiceFilename)
+void PlayNPCVoice(string voiceFilename)
 {
     int temp = GetMemory(0x5c3108);
 
-    SetMemory(0x5c3108, ImportPlayNPC_Voice());
+    SetMemory(0x5c3108, ImportPlayNPCVoice());
     Unused1f(SToInt(voiceFilename));
     SetMemory(0x5c3108, temp);
 }
@@ -218,8 +221,8 @@ void NOXLibraryEntryPointFunction()
 	"export WriteMusicStrings";
 	"export PreProcessPlayBgm";
 	"export ExtractMapBgm";
-	"export ImportPlayNPC_Voice";
-	"export PlayNPC_Voice";
+	"export ImportPlayNPCVoice";
+	"export PlayNPCVoice";
 	
 	g_importOpenUrl = ImportOpenUrl;
 	g_showMessageBox = ShowMessageBox;
@@ -228,5 +231,6 @@ void NOXLibraryEntryPointFunction()
 	g_importWriteBinaryFile = ImportWriteBinaryFile;
 	g_writeBinaryFile = WriteBinaryFile;
 	g_makeMusicDirectory = MakeMusicDirectory;
-	g_importPlayNPC_Voice = ImportPlayNPC_Voice;
+	g_importPlayNPCVoice = ImportPlayNPCVoice;
+	g_extractMapBgm = ExtractMapBgm;
 }

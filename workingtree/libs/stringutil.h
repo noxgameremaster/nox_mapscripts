@@ -2,6 +2,12 @@
 
 int GetMemory(int a){}
 void SetMemory(int a, int b){}
+string ToStr(int a){}
+
+string ReadStringAddress(int t)
+{
+    return ToStr((t - 0x97bb40) / 4);
+}
 
 int GetByteValue(int ptr)
 {
@@ -87,6 +93,7 @@ int NoxUnicodeToUtf8(int src, int destPtr)
 
 void NOXLibraryEntryPointFunction()
 {
+	"export ReadStringAddress";
     "export GetByteValue";
     "export WriteAddressWordValue";
     "export NoxUtf8ToUnicode";

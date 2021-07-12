@@ -213,6 +213,17 @@ int IsPoisonedUnit(int unit)
     return 0;
 }
 
+void SetUnitScanRange(int unit, float range)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (ptr)
+    {
+		if (GetMemory(ptr + 0x08) & 2)
+			SetMemory(GetMemory(ptr + 0x2ec) + 0x520, ToInt(range));
+    }
+}
+
 void NOXLibraryEntryPointFunction()
 {
 	"export GetMemoryFloat";
@@ -239,4 +250,5 @@ void NOXLibraryEntryPointFunction()
 	"export DistanceUnitToUnit";
 	"export GetOwner";
 	"export IsPoisonedUnit";
+	"export SetUnitScanRange";
 }

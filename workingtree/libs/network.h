@@ -113,7 +113,7 @@ int PlayMusicPacket()
 
 void NetPlayCustomBgm(int user)
 {
-    if (CurrentHealth(user))
+    if (MaxHealth(user))
     {
         NetClientSend(user, PlayMusicPacket(), 3);
     }
