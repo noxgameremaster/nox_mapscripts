@@ -1738,8 +1738,7 @@ int BlueOrbSummon(int sOwner)
     if (ptr)
     {
         SetMemory(ptr + 0x2e8, 5483536); //projectile update
-        SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-        SetMemory(ptr + 0x2fc, BlueMissileCollide);
+        SetUnitCallbackOnCollide(unit, BlueMissileCollide);
         SetOwner(sOwner, unit);
     }
     return unit;
@@ -1784,8 +1783,7 @@ int SummonOblivionStaff(float sX, float sY)
 
     if (ptr)
     {
-        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        SetMemory(ptr + 0x2fc, OblivionUseHandler);
+        SetUnitCallbackOnUseItem(unit, OblivionUseHandler);
         SetMemory(ptr + 0x2c4, 0x53a720);
     }
     return unit;
@@ -1798,8 +1796,7 @@ int SummonMissileWand(float xProfile, float yProfile)
 
     if (ptr != NULLPTR)
     {
-        ptr[183] = ImportUseItemFunc();
-        ptr[191] = UseMissileWand;
+        SetUnitCallbackOnUseItem(wand, UseMissileWand);
         ptr[3] = 65536;
         int *amount = ptr[184];
 
