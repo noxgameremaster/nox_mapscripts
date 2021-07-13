@@ -11,11 +11,18 @@
 #include "libs\mathlab.h"
 #include "libs\mathspiral.h"
 #include "libs\cmdline.h"
-
+#include "libs\unitstruct.h"
+#include "libs\reaction.h"
+#include "libs\waypoint.h"
 #include "libs\playerupdate.h"
+#include "libs\network.h"
+#include "libs\walls.h"
 
 #define NULLPTR         0
 #define MATH_PI         3.141592
+
+#define OTHER           -1
+#define SELF            -2
 
 int player[20];
 int GAME_MODE = 2; //game_mode (0: auto_pick, 1: all_pick)
@@ -28,18 +35,6 @@ int USERSKILL_TIME[40];
 
 int DEBUGMODE;
 
-void SetUnitMaxHealth(int unit, int amount)
-{
-    int *ptr = UnitToPtr(unit);
-
-    if (ptr != NULLPTR)
-    {
-        int *hpslot = ptr[139];
-
-        hpslot[0] = amount;
-        hpslot[1] = amount;
-    }
-}
 
 int WizardRedBinTable()
 {
@@ -80,46 +75,6 @@ void RedWizardInit(int unit)
         SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, WizardRedBinTable());
 }
 
-int VoiceList(int num)
-{
-	int vlist[75], vlistCount;
-
-	if (vlistCount == 0)
-	{
-		int *ptr = 0x663eec, u;
-
-		ptr = ptr[0];
-		for (u = 0 ; u < 75 ; u += 1)
-		{
-			vlist[u] = ptr;
-			ptr = ptr[19];
-		}
-	}
-	return vlist[num];
-}
-
-int GetUnitThingID(int unit)
-{
-    int *ptr = UnitToPtr(unit);
-
-    if (ptr)
-        return ptr[1];
-    return 0;
-}
-
-int GetOwner(int unit)
-{
-    int *ptr = UnitToPtr(unit);
-
-    if (ptr)
-    {
-        int *owner = ptr[127];
-        if (owner != NULLPTR)
-            return owner[11];
-    }
-    return 0;
-}
-
 void MapExit()
 {
     ResetPlayerHandlerWhenExitMap();
@@ -149,7 +104,7 @@ void MapInitialize()
     FrameTimer(100, selectGameMode);
 
     MusicEvent();
-    FrameTimer(1, NetClientLoop);
+    // FrameTimer(1, NetClientLoop);
 }
 
 void initializeStruct(int arg_0) {
@@ -301,8 +256,8 @@ void PlayerOnAlive(int plr)
 {
     int plrUnit = player[plr];
 
-    MoveObject(BkRevent(plr), GetObjectX(plrUnit), GetObjectY(plrUnit));
     PlayerInputHandler(plr);
+    MoveObject(BkRevent(plr), GetObjectX(plrUnit), GetObjectY(plrUnit));
 
     float dis = Distance(GetObjectX(plrUnit), GetObjectY(plrUnit) + 4.0, GetObjectX(MODEL[plr]), GetObjectY(MODEL[plr]));
 
@@ -385,6 +340,7 @@ void PreservePlayerLoop()
                     1;
                 else if (CurrentHealth(player[i]))
                 {
+                    // g_playerSelect[i];
                     PlayerOnAlive(i);
                     break;
                 }
@@ -409,9 +365,11 @@ void PreservePlayerLoop()
 
 void PlayerInputHandler(int plr)
 {
-    if (HasEnchant(player[plr], "ENCHANT_INFRAVISION"))
-        EnchantOff(player[plr], "ENCHANT_INFRAVISION");
-    CallFunctionWithArg(PlayerInputTable(CheckPlayerInput(player[plr])), plr);
+    int plrUnit = player[plr];
+
+    if (HasEnchant(plrUnit, "ENCHANT_INFRAVISION"))
+        EnchantOff(plrUnit, "ENCHANT_INFRAVISION");
+    CallFunctionWithArg(PlayerInputTable(CheckPlayerInput(plrUnit)), plr);
 }
 
 object PlayerInputTable(int key)
@@ -509,29 +467,41 @@ int setGoldResetBeacon(int arg_0, int arg_1) { //mode(0: release, 1: insert), va
         LookWithAngle(var_0, arg_1);
     return GetDirection(var_0);
 }
-void resetYourGold() {
-    if (setGoldResetBeacon(0, 0) == 0 && GetGold(other) > 0) {
-        ChangeGold(other, -16777216);
+void resetYourGold()
+{
+    if (setGoldResetBeacon(0, 0) == 0 && GetGold(OTHER) > 0) {
+        ChangeGold(OTHER, -GetGold(OTHER));
     }
     else {
-        if (MaxHealth(other) == 150) {
-            Delete(GetLastItem(other));
-            Delete(GetLastItem(other));
-            MoveObject(other, GetWaypointX(3), GetWaypointY(3));
+        if (MaxHealth(OTHER) == 150) {
+            Delete(GetLastItem(OTHER));
+            Delete(GetLastItem(OTHER));
+            MoveObject(OTHER, GetWaypointX(3), GetWaypointY(3));
         }
         else {
-            MoveObject(other, 4723.0, 4028.0);
-            Frozen(other, 1);
-            UniPrint(other, "죄송합니다 , 이 맵은 오직 전사만 입장 가능합니다 .");
+            MoveObject(OTHER, 4723.0, 4028.0);
+            UniPrint(OTHER, "죄송합니다 , 이 맵은 오직 전사만 입장 가능합니다 .");
         }
     }
-    EnchantOff(other, "ENCHANT_AFRAID");
-    EnchantOff(other, "ENCHANT_HASTED");
-    EnchantOff(other, "ENCHANT_SLOWED");
-    EnchantOff(other, "ENCHANT_ANCHORED");
-    if (!HasEnchant(other, "ENCHANT_ANTI_MAGIC"))
-        Enchant(other, "ENCHANT_ANTI_MAGIC", 0.0);
+    EnchantOff(OTHER, "ENCHANT_AFRAID");
+    EnchantOff(OTHER, "ENCHANT_HASTED");
+    EnchantOff(OTHER, "ENCHANT_SLOWED");
+    EnchantOff(OTHER, "ENCHANT_ANCHORED");
+    if (!HasEnchant(OTHER, "ENCHANT_ANTI_MAGIC"))
+        Enchant(OTHER, "ENCHANT_ANTI_MAGIC", 0.0);
+
+    //here
+    int pUnit = GetCaller();
+
+    if (ValidPlayerCheck(pUnit))
+    {
+        if (pUnit == GetHost())
+            PlayerClassCommonWhenEntry();
+        else
+            NetworkUtilClientEntry(pUnit);
+    }
 }
+
 void autoSelectToCharacter()
 {
     int plr = 0;
@@ -743,33 +713,6 @@ void skillOnJump(int arg_0)
 }
 
 //43 way not used
-
-int IsPlayerUnit(int unit)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        return GetMemory(ptr + 8) & 4;
-    return false;
-}
-
-int IsMonsterUnit(int unit)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        return GetMemory(ptr + 8) & 2;
-    return false;
-}
-
-int IsMissileUnit(int unit)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        return GetMemory(ptr + 8) & 1;
-    return false;
-}
 
 void DetectedSpecificIndex(int curId)
 {
@@ -2689,7 +2632,7 @@ void WarHarpoonTouched()
             break;
         }
         else if (!GetCaller())
-            DestroyWallAtUnitPos(self);
+            DestroyWallAtObjectPos(self);
         else
             break;
         Delete(self);
@@ -2703,8 +2646,7 @@ int spawnArrowWithHor(int plr, float xProfile, float yProfile)
     int ptr = GetMemory(0x750710);
 
     SetMemory(ptr + 0x2e8, 5483536); //projectile update
-    SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    SetMemory(ptr + 0x2fc, WarHarpoonTouched);
+    SetUnitCallbackOnCollide(missile, WarHarpoonTouched);
     LookAtObject(missile, owner);
     SetOwner(owner, missile);
     LookWithAngle(missile, GetDirection(missile) + 128);
@@ -2899,12 +2841,12 @@ void catchOgrePlayer()
 }
 int ogreTrg()
 {
-    int switch;
+    int sw;
 
-    if (!switch)
-        switch = Object("catcherOgre");
+    if (!sw)
+        sw = Object("catcherOgre");
 
-    return switch;
+    return sw;
 }
 
 void LichStatueCollide()
@@ -2919,7 +2861,7 @@ void LichStatueCollide()
             Enchant(other, "ENCHANT_CHARMING", 0.3);
         }
         else if (!GetCaller())
-            DestroyWallAtUnitPos(self);
+            DestroyWallAtObjectPos(self);
         else
             break;
         Delete(self);
@@ -2930,12 +2872,8 @@ void LichStatueCollide()
 int LichStatue(float xProfile, float yProfile, int index)
 {
     int statue = CreateObjectAt(SpiritStatues((index % 16) / 2), xProfile, yProfile);
-    int *ptr = 0x750710;
 
-    ptr = ptr[0];
-    ptr[174] = ImportUnitCollideFunc();
-    ptr[191] = LichStatueCollide;
-
+    SetUnitCallbackOnCollide(statue, LichStatueCollide);
     return statue;
 }
 
@@ -3077,28 +3015,6 @@ void DisableRay(int ray)
     ObjectOff(ray);
 }
 
-void UnitNoCollide(int unit)
-{
-    SetUnitFlags(unit, GetUnitFlags(unit) ^ 0x40);
-}
-
-void SetUnitFlags(int unit, int flag)
-{
-	int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        SetMemory(ptr + 0x10, flag);
-}
-
-int GetUnitFlags(int unit)
-{
-	int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        return GetMemory(ptr + 0x10);
-    return 0;
-}
-
 void SelectRandomUnit()
 {
     int arr[10], k, idx = 0;
@@ -3181,19 +3097,6 @@ void drawStrRandomMark(int arg_0, string name)
 	}
 }
 
-int CheckPlayerInput(int plr_unit)
-{
-    int ptr = UnitToPtr(plr_unit), temp;
-
-    if (ptr)
-    {
-        temp = GetMemory(GetMemory(ptr + 0x2ec) + 0x114);
-        if (temp)
-            return GetMemory(0x81b960 + (GetMemory(temp + 0x810) * 3072));
-    }
-    return 0;
-}
-
 void NotifyCurrentCooldown(int plr, int ctime)
 {
     if (CurrentHealth(player[plr]))
@@ -3208,96 +3111,6 @@ void LinkFireSpriteBin(int unit)
 
     if (ptr)
         SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, FireSpriteBinTable());
-}
-
-int GetPlayerIndex(int plrUnit)
-{
-    int ptr = UnitToPtr(plrUnit);
-
-    if (ptr)
-        return GetMemory(GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x810);
-    return -1;
-}
-
-int ValidPlayerCheck(int plrUnit)
-{
-    int plrArr[32], pIndex = GetPlayerIndex(plrUnit);
-
-    if (pIndex >= 0)
-    {
-        if (plrUnit ^ plrArr[pIndex])
-        {
-            plrArr[pIndex] = plrUnit;
-            return true;
-        }
-    }
-    return false;
-}
-
-int NetClientExec()
-{
-    int arr[3];
-
-    arr[0] = 0xdf;
-    return &arr;
-}
-
-void ClientSetMemory(int user, int targetAddr, int byte)
-{
-    int ptr = NetClientExec();
-
-    SetMemory(ptr + 1, targetAddr - 0x6d495c);
-    SetMemory(ptr + 5, byte);
-    NetClientSend(user, ptr, 6);
-}
-
-int ImportNetSendClient()
-{
-    int arr[15], link;
-
-    if (!link)
-    {
-        arr[0] = 0x40EBC068; arr[1] = 0x72506800; arr[2] = 0x83500050; arr[3] = 0x54FF10EC; arr[4] = 0x44891424;
-        arr[5] = 0x54FF0C24; arr[6] = 0x44891424; arr[7] = 0x54FF0824; arr[8] = 0x44891424; arr[9] = 0x54FF0424;
-        arr[10] = 0x04891424; arr[11] = 0x2454FF24; arr[12] = 0x10C48318; arr[13] = 0x08C48358; arr[14] = 0x909090C3;
-        link = &arr;
-    }
-    return link;
-}
-
-void NetClientSend(int plrUnit, int buffPtr, int buffSize)
-{
-    //netClientSend,0x0040EBC0
-    int plrPtr = UnitToPtr(plrUnit), plrIdx;
-    int temp = GetMemory(0x5c315c);
-
-    if (plrPtr)
-    {
-        if (GetMemory(plrPtr + 0x08) & 0x04)
-        {
-            plrIdx = GetMemory(GetMemory(GetMemory(plrPtr + 0x2ec) + 0x114) + 0x810);
-            //5c31ac
-            SetMemory(0x5c315c, ImportNetSendClient());
-            GroupDamage(plrIdx, 1, buffPtr, buffSize);
-            SetMemory(0x5c315c, temp);
-        }
-    }
-}
-
-void NetClientSendRaw(int pIndex, int boolDirection, int buffPtr, int buffSize)
-{
-    int temp = GetMemory(0x5c315c);
-
-    SetMemory(0x5c315c, ImportNetSendClient());
-    GroupDamage(pIndex, boolDirection, buffPtr, buffSize);
-    SetMemory(0x5c315c, temp);
-}
-
-void DelayLink(int pUnit)
-{
-    ClientSetMemory(pUnit, 0x69ba98 + 0, 0);
-    ClientSetMemory(pUnit, 0x69ba98 + 1, 0x10);
-    ClientSetMemory(pUnit, 0x69ba98 + 2, 0x75);
 }
 
 void RectangleImageKeyJ()
@@ -3334,49 +3147,9 @@ void PlayerClassCommonWhenEntry()
     //     ClientTestPacket();     //!RemoveMe
 }
 
-void ClientMain()
+static void NetworkUtilClientMain()
 {
-    int enabled;
-
-    if (!enabled)
-    {
-        EnableMemoryIO();
-        SetMemory(0x69ba98, 0x43de10);
-        PlayerClassCommonWhenEntry();
-
-        enabled = true;
-    }
-}
-
-void ClientEntry(int cliUnit)
-{
-    if (!MaxHealth(cliUnit))
-        return;
-    //6A 00 6A 00/ 68 7F 00 00/ 00 E8 02 63/ DB FF 83 C4/ 0C 68 B0 95/ 4B 00 C3 90: 24Byte
-    ClientSetMemory(cliUnit, 0x751000, 0x6a);
-    ClientSetMemory(cliUnit, 0x751001, 0x00);
-    ClientSetMemory(cliUnit, 0x751002, 0x6a);
-    ClientSetMemory(cliUnit, 0x751003, 0x00);
-    ClientSetMemory(cliUnit, 0x751004, 0x68);
-    ClientSetMemory(cliUnit, 0x751005, ClientMain & 0xff);
-    ClientSetMemory(cliUnit, 0x751006, (ClientMain >> 8) & 0xff);
-    ClientSetMemory(cliUnit, 0x751007, 0);
-    ClientSetMemory(cliUnit, 0x751008, 0);
-    ClientSetMemory(cliUnit, 0x751009, 0xe8);
-    ClientSetMemory(cliUnit, 0x75100a, 0x02);
-    ClientSetMemory(cliUnit, 0x75100b, 0x63);
-    ClientSetMemory(cliUnit, 0x75100c, 0xdb);
-    ClientSetMemory(cliUnit, 0x75100d, 0xff);
-    ClientSetMemory(cliUnit, 0x75100e, 0x83);
-    ClientSetMemory(cliUnit, 0x75100f, 0xc4);
-    ClientSetMemory(cliUnit, 0x751010, 0x0c);
-    ClientSetMemory(cliUnit, 0x751011, 0x68);
-    ClientSetMemory(cliUnit, 0x751012, 0x10);
-    ClientSetMemory(cliUnit, 0x751013, 0xde);
-    ClientSetMemory(cliUnit, 0x751014, 0x43);
-    ClientSetMemory(cliUnit, 0x751015, 0x00);
-    ClientSetMemory(cliUnit, 0x751016, 0xc3);
-    FrameTimerWithArg(1, cliUnit, DelayLink);
+    PlayerClassCommonWhenEntry();
 }
 
 void NetServerMapped(int pIndex, int plrUnit)   //@brief. 서버 측 처리를 여기서 구성합니다
@@ -3387,8 +3160,6 @@ void NetServerMapped(int pIndex, int plrUnit)   //@brief. 서버 측 처리를 �
 void NetClientMapped(int pIndex, int plrUnit)   //@brief. 여기에서 클라이언트 메인을 구성합니다
 {
     UniPrintToAll("클라이언트 진입 내부id:" + IntToString(pIndex));
-    // ClientEntry(plrUnit);
-    FrameTimerWithArg(3, plrUnit, ClientEntry);
 }
 
 int PlayerEntryCondition(int plrUnit)
@@ -3434,21 +3205,6 @@ void NetClientLoop()
             NetClientRegist(u, GetMemory(0x62f9e0 + (u * 0x12dc)));
     }
     FrameTimer(1, NetClientLoop);
-}
-
-void DestroyWallAtUnitPos(int sUnit)
-{
-    int xPos = FloatToInt(GetObjectX(sUnit)), yPos = FloatToInt(GetObjectY(sUnit));
-    int spX, spY, tx, ty, rx;
-
-    if (xPos > yPos) xPos += 23;
-    else             yPos += 23;
-    spX = (xPos + yPos - 22) / 46;
-    spY = (xPos - yPos) / 46;
-    tx = spX * 46;
-    ty = spY * 46;
-    rx = (tx + ty) / 2;
-    WallBreak(Wall(rx / 23, (rx - ty) / 23));
 }
 
 void DrawGeometryRingAt(string orbName, float xProfile, float yProfile, int angleAdder)
@@ -3513,7 +3269,7 @@ void ArmageddonCollide()
             Damage(other, owner, 10, 0);
         }
         else if (!GetCaller())
-            DestroyWallAtUnitPos(self);
+            DestroyWallAtObjectPos(self);
         else
             break;
         ArmageddonExplosion();
@@ -3525,10 +3281,8 @@ void ArmageddonCollide()
 int DemonsArmageddon(float xProfile, float yProfile, int owner)
 {
     int mis = CreateObjectAt("TitanFireball", xProfile, yProfile);
-    int ptr = GetMemory(0x750710);
-
-    SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    SetMemory(ptr + 0x2fc, ArmageddonCollide);
+    
+    SetUnitCallbackOnCollide(mis, ArmageddonCollide);
     SetOwner(owner, mis);
     return mis;
 }
