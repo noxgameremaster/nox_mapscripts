@@ -33,6 +33,23 @@ void UnitNoCollide(int unit)
     SetUnitFlags(unit, GetUnitFlags(unit) ^ 0x40);
 }
 
+int GetUnitSubclass(int unit)
+{
+	int ptr = UnitToPtr(unit);
+	
+	if (ptr)
+		return GetMemory(ptr + 0x0c);
+	return 0;
+}
+
+void SetUnitSubclass(int unit, int subclassFlag)
+{
+	int ptr = UnitToPtr(unit);
+	
+	if (ptr)
+		SetMemory(ptr + 0x0c, subclassFlag);
+}
+
 int GetUnitThingID(int unit)
 {
     int ptr = UnitToPtr(unit);
@@ -224,11 +241,70 @@ void SetUnitScanRange(int unit, float range)
     }
 }
 
+int IsMonsterPoisonImmune(int unit)
+{
+	int ptr = UnitToPtr(unit);
+	
+	if (IsMonsterUnit(unit))
+	{
+		return GetMemory(ptr + 0x0c) & 0x200;
+	}
+	return false;
+}
+
+void SetMonsterPoisonImmune(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (IsMonsterUnit(unit))
+        SetMemory(ptr + 0x0c, GetMemory(ptr + 0x0c) ^ 0x200);
+}
+
+int IsMonsterFireImmune(int unit)
+{
+	int ptr = UnitToPtr(unit);
+	
+	if (IsMonsterUnit(unit))
+	{
+		return GetMemory(ptr + 0x0c) & 0x400;
+	}
+	return false;
+}
+
+void SetMonsterFireImmune(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (IsMonsterUnit(unit))
+        SetMemory(ptr + 0x0c, GetMemory(ptr + 0x0c) ^ 0x400);
+}
+
+int IsMonsterElectricityImmune(int unit)
+{
+	int ptr = UnitToPtr(unit);
+	
+	if (IsMonsterUnit(unit))
+	{
+		return GetMemory(ptr + 0x0c) & 0x800;
+	}
+	return false;
+}
+
+void SetMonsterElectricityImmune(int unit)
+{
+    int ptr = UnitToPtr(unit);
+
+    if (IsMonsterUnit(unit))
+        SetMemory(ptr + 0x0c, GetMemory(ptr + 0x0c) ^ 0x800);
+}
+
 void NOXLibraryEntryPointFunction()
 {
 	"export GetMemoryFloat";
 	"export SetUnitFlags";
 	"export GetUnitFlags";
+	"export GetUnitStatus";
+	"export SetUnitSubclass";
 	"export UnitNoCollide";
 	"export GetUnitThingID";
 	"export SetUnitSpeed";
@@ -251,4 +327,10 @@ void NOXLibraryEntryPointFunction()
 	"export GetOwner";
 	"export IsPoisonedUnit";
 	"export SetUnitScanRange";
+	"export IsMonsterPoisonImmune";
+	"export SetMonsterPoisonImmune";
+	"export IsMonsterFireImmune";
+	"export SetMonsterFireImmune";
+	"export IsMonsterElectricityImmune";
+	"export SetMonsterElectricityImmune";
 }

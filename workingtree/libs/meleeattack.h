@@ -69,10 +69,16 @@ int MonsterStrikeHandlerCopiedCode(int callback)
     return link;
 }
 
+//can override
+int MonsterMeleeAttackRegistCallback()
+{
+	return (-(g_monsterStrikeDefaultCallback));
+}
+
 void InitMonsterStrikeHandler()
 {
 	MonsterStrikeCodeSection();
-	MonsterStrikeHandlerCopiedCode(-(g_monsterStrikeDefaultCallback));
+	MonsterStrikeHandlerCopiedCode(MonsterMeleeAttackRegistCallback());
 }
 
 void RegistUnitStrikeCallback(int callback)
@@ -105,6 +111,7 @@ void NOXLibraryEntryPointFunction()
 	"export MonsterStrikeCodeSection";
 	"export MonsterStrikeDefaultCallback";
 	"export MonsterStrikeHandlerCopiedCode";
+	"export MonsterMeleeAttackRegistCallback";
 	"export needinit InitMonsterStrikeHandler";
 	"export RegistUnitStrikeCallback";
 	"export RegistUnitStrikeHook";

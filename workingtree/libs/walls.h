@@ -34,6 +34,54 @@ void DestroyWallAtObjectPos(int anyunit)
     WallBreak(Wall(rx / 23, (rx - ty) / 23));
 }
 
+void CloseWallAtObjectPos(int anyunit)
+{
+	int xPos, yPos;
+	
+	if (anyunit >= GetHost())
+	{
+		xPos = FloatToInt(GetObjectX(anyunit));
+		yPos = FloatToInt(GetObjectY(anyunit));
+	}
+	else
+	{
+		xPos = FloatToInt(LocationX(anyunit));
+		yPos = FloatToInt(LocationY(anyunit));
+	}
+    if (xPos > yPos) xPos += 23;
+    else             yPos += 23;
+    int spX = (xPos + yPos - 22) / 46;
+    int spY = (xPos - yPos) / 46;
+    int tx = spX * 46;
+    int ty = spY * 46;
+    int rx = (tx + ty) / 2;
+    WallClose(Wall(rx / 23, (rx - ty) / 23));
+}
+
+int GetWallAtObjectPos(int anyunit)
+{
+    int xPos, yPos;
+	
+	if (anyunit >= GetHost())
+	{
+		xPos = FloatToInt(GetObjectX(anyunit));
+		yPos = FloatToInt(GetObjectY(anyunit));
+	}
+	else
+	{
+		xPos = FloatToInt(LocationX(anyunit));
+		yPos = FloatToInt(LocationY(anyunit));
+	}
+    if (xPos > yPos) xPos += 23;
+    else             yPos += 23;
+    int spX = (xPos + yPos - 22) / 46;
+    int spY = (xPos - yPos) / 46;
+    int tx = spX * 46;
+    int ty = spY * 46;
+    int rx = (tx + ty) / 2;
+    return Wall(rx / 23, (rx - ty) / 23);
+}
+
 int GetWallCoorAtObjectPos(int anyunit)
 {
     int xPos, yPos;
@@ -154,6 +202,8 @@ void NOXLibraryEntryPointFunction()
 {
 	"export DestroyWallAtObjectPos";
 	"export GetWallCoorAtObjectPos";
+	"export CloseWallAtObjectPos";
+	"export GetWallAtObjectPos";
 	"export RemoveWallAtObjectPos";
 	"export needinit ImportCreateMagicWall";
 	"export CreateMagicWall";

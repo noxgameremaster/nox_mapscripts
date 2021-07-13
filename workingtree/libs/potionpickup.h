@@ -85,13 +85,19 @@ int PotionPickupPartCode()
     return link;
 }
 
+//you can override it
+int PotionPickupMaxCount()
+{
+	return 9;
+}
+
 void PotionPickupCustomizing()
 {
     int ptr1 = PotionPickupPartCode();
     int ptr2 = PotionPickupPart2Code();
 
     SetMemory(ptr1 + 0x68, (GetMemory(ptr1 + 0x68) & 0xffffff00) | 0xeb);
-    SetMemory(ptr2 + 0x128, (GetMemory(ptr2 + 0x128) & 0xffffff00) | 0x09);
+    SetMemory(ptr2 + 0x128, (GetMemory(ptr2 + 0x128) & 0xffffff00) | PotionPickupMaxCount());
     SetMemory(ptr1 + 0x25a + 1, ptr2 - (ptr1 + 0x25a) - 5);
 }
 
@@ -113,7 +119,8 @@ void NOXLibraryEntryPointFunction()
 	"export CallNode4f31e0";
 	"export PotionPickupPart2Code";
 	"export PotionPickupPartCode";
-	"export PotionPickupCustomizing";
+	"export PotionPickupMaxCount";
+	"export needinit PotionPickupCustomizing";
 	"export PotionPickupRegist";
 	
 	g_callNode4f31e0 = CallNode4f31e0;
