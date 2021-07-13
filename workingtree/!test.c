@@ -1,11 +1,15 @@
 
-#import "typecast"
-#import "mathlab"
-#import "unitutil"
-#import "printutil"
-#import "callmethod"
-#import "fxeffect"
-#import "waypoint"
+#include "noxscript\builtins.h"
+
+#include "libs\typecast.h"
+#include "libs\callmethod.h"
+#include "libs\mathlab.h"
+#include "libs\unitutil.h"
+#include "libs\unitstruct.h"
+#include "libs\printutil.h"
+#include "libs\fxeffect.h"
+#include "libs\waypoint.h"
+#include "libs\username.h"
 
 
 //!test - warHammerBattle
@@ -14,53 +18,13 @@
 #define NULLPTR             0
 #define MOBMAKE_FUNCTION_COUNT      12
 
+#define TRUE 1
+
 int LastUnitID = 129;
-int player[30];
+int player[20];
 int g_subStone[10]; //stones
 int HAMMER[16]; //hammers + cooldown_table
 int g_maxMobCount = 32;
-
-int UnitToPtr(int unit) extern{}
-int CreateObjectAt(string name, float x, float y) extern{}
-int ImportUnitCollideFunc() extern{}
-float ToFloat(int arg) extern{}
-int ToInt(float arg) extern{}
-string ToStr(int arg) extern{ }
-int SToInt(string arg) extern{}
-int GetMemory(int addr) extern {}
-void SetMemory(int addr, int value) extern{ }
-
-void UniPrint(int plrUnit, string msg) extern{}
-void UniPrintToAll(string msg) extern{}
-void UniBroadcast(string sMsg) extern{}
-void UniChatMessage(int sUnit, string sMsg, int duration) extern{}
-void RegistSignMessage(int sUnit, string sMsg) extern{}
-int MathAbs(int num) extern{}
-
-void PlaySoundAround(int sUnit, int sNumber) extern{}
-void GreenExplosion(float x, float y) extern{}
-
-float LocationX(int location) extern{}
-float LocationY(int location) extern{}
-void TeleportLocation(int location, float xProfile, float yProfile) extern{}
-void TeleportLocationVector(int location, float xVect, float yVect) extern{}
-
-void InitMathSine(int wp) extern{}
-
-float MathSine(int angle, float size) extern{}
-float UnitAngleCos(int unit, float size) extern{}
-float UnitAngleSin(int unit, float size) extern{}
-float UnitRatioX(int unit, int target, float size) extern{}
-float UnitRatioY(int unit, int target, float size) extern{}
-
-void CallFunctionWithArg(int func, int arg) extern{}
-int CallFunctionWithArgInt(int func, int arg) extern{}
-
-float IntToFloat(int x) extern{}
-int FloatToInt(float x) extern{}
-
-
-float GetMemoryFloat(int addr) { StopScript(GetMemory(addr)); }
 
 
 int BlackWidowBinTable()
@@ -534,61 +498,6 @@ int MobClassOgre(int sUnit)
     return mob;
 }
 
-void UnitZeroFleeRange(int unit)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0); //Flee Range set to 0
-}
-
-int GetUnitThingID(int unit)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        return GetMemory(ptr + 0x4);
-    return 0;
-}
-
-void SetUnitStatus(int unit, int stat)
-{
-    int temp, ptr = UnitToPtr(unit);
-
-    if (ptr)
-    {
-        temp = GetMemory(ptr + 0x2ec);
-        if (temp)
-            SetMemory(temp + 0x5a0, stat);
-    }
-}
-
-int GetUnitStatus(int unit)
-{
-    int temp, ptr = UnitToPtr(unit);
-
-    if (ptr)
-    {
-        temp = GetMemory(ptr + 0x2ec);
-        if (temp)
-            return GetMemory(temp + 0x5a0);
-    }
-    return 0;
-}
-
-int GetOwner(int unit)
-{
-    int ptr = UnitToPtr(unit), res;
-
-    if (ptr)
-    {
-        res = GetMemory(ptr + 0x1fc);
-        if (res)
-            return GetMemory(res + 0x2c);
-    }
-    return 0;
-}
-
 int CreateMoverFix(int targetUnit, int destLocation, float speed)
 {
     int unitMover = CreateMover(targetUnit, destLocation, speed), unitPtr = UnitToPtr(targetUnit);
@@ -612,7 +521,7 @@ int CreateMoverFix(int targetUnit, int destLocation, float speed)
 void MapStartGuideMessage()
 {
     InitMapPickets();
-    UniBroadcast("지금부터 최강의 해머대전이 펼쳐집니다!\n과연 누가 더 강력한 해머를 소유하게 될 지 벌써부터 궁굼하네요!");
+    UniPrintToAll("지금부터 최강의 해머대전이 펼쳐집니다!\n과연 누가 더 강력한 해머를 소유하게 될 지 벌써부터 궁굼하네요!");
     FrameTimer(60, StartMent);
 }
 
@@ -644,7 +553,7 @@ void MapInitialize()
     VoiceList(0);
     FrameTimer(1, initializeUsemapSetting);
     FrameTimer(2, InitSpells);
-    FrameTimer(10,loopPreservePlayerVar);
+    FrameTimer(10, LoopPreservePlayers);
     FrameTimer(10, LoopHitHammer);
     FrameTimer(10, loopDecreaseCooldown);
     FrameTimer(10, LoopHammerRespawn);
@@ -734,8 +643,7 @@ void getPlayers()
                 {
                     player[k] = GetCaller();
                     player[k + 10] = 1;
-                    player[k + 20] = GetMemory(0x979720);
-                    UniPrintToAll(PlayerName(player[k + 20]) + " 이 전투에 참가했습니다");
+                    UniPrintToAll(PlayerIngameNick(player[k]) + " 이 전투에 참가했습니다");
                     plr = k;
                     break;
                 }
@@ -749,16 +657,6 @@ void getPlayers()
         CantMapPlay();
         break;
     }
-}
-
-string PlayerName(int ptr)
-{
-    int addr = GetMemory(0x97bb40), xwis_id = GetMemory(GetMemory(ptr + 0x2ec) + 0x114) + 0x830;
-
-	SetMemory(addr, GetMemory(xwis_id));
-    SetMemory(addr + 4, GetMemory(xwis_id + 4));
-    SetMemory(addr + 8, GetMemory(xwis_id + 8));
-	StopScript(0);
 }
 
 void PlayerJoinMap(int plr)
@@ -791,40 +689,10 @@ int CheckPlayer()
     return -1;
 }
 
-void loopPreservePlayerVar()
-{
-    int k;
-
-    for (k = 9 ; k >= 0 ; k -= 1)
-    {
-        if (MaxHealth(player[k]))
-        {
-            if (GetMemory(player[k + 20] + 0x10) & 0x40)
-                player[k] = 0;
-            else if (CurrentHealth(player[k]))
-            {
-                if (!HasEnchant(player[k],"ENCHANT_CROWN"))
-                    Enchant(player[k], "ENCHANT_CROWN", 1.0);
-                SetHammerPIndex(k);
-                MoveObject(g_subStone[k], GetObjectX(player[k]) + UnitAngleCos(player[k], 30.0), GetObjectY(player[k]) + UnitAngleSin(player[k], 30.0));
-            }
-        }
-        else
-        {
-            if (player[k + 10])
-            {
-                player[k] = 0;
-                player[k + 10] = 0;
-                UniPrintToAll(PlayerName(player[k + 20]) + " 님께서 게임을 떠나셨습니다");
-            }
-        }
-    }
-    FrameTimer(1, loopPreservePlayerVar);
-}
-
 void SetHammerPIndex(int plr)
 {
     int inv = GetLastItem(player[plr]);
+
     if (HasSubclass(inv, "HAMMER"))
     {
         if (plr ^ GetDirection(inv))
@@ -832,6 +700,69 @@ void SetHammerPIndex(int plr)
             LookWithAngle(inv, plr);
         }
     }
+}
+
+int PlayerClassCheckDeathFlag(int plr)
+{
+    return player[plr + 10] & 2;
+}
+
+void PlayerClassSetDeathFlag(int plr)
+{
+    player[plr + 10] ^= 2;
+}
+
+void PlayerClassOnAlive(int plr, int pUnit)
+{
+    SetHammerPIndex(plr);
+    MoveObject(g_subStone[plr], GetObjectX(pUnit) + UnitAngleCos(pUnit, 30.0), GetObjectY(pUnit) + UnitAngleSin(pUnit, 30.0));
+}
+
+void PlayerClassOnDeath(int plr)
+{
+    UniPrintToAll(PlayerIngameNick(player[plr]) + " 님께서 격추되었습니다");
+}
+
+void PlayerClassOnExit(int plr)
+{
+    player[plr] = 0;
+    player[plr + 10] = 0;
+}
+
+void LoopPreservePlayers()
+{
+    int i;
+
+    for (i = 9 ; i >= 0 ; i-=1)
+    {
+        while (TRUE)
+        {
+            if (MaxHealth(player[i]))
+            {
+                if (GetUnitFlags(player[i]) & 0x40)
+                    1;
+                else if (CurrentHealth(player[i]))
+                {
+                    PlayerClassOnAlive(i, player[i]);
+                    break;
+                }
+                else
+                {
+                    if (PlayerClassCheckDeathFlag(i)) break;
+                    else
+                    {
+                        PlayerClassOnDeath(i);
+                        PlayerClassSetDeathFlag(i);
+                    }
+                    break;
+                }
+            }
+            if (player[i + 10])
+                PlayerClassOnExit(i);
+            break;
+        }
+    }
+    FrameTimer(1, LoopPreservePlayers);
 }
 
 void LoopHitHammer()
@@ -966,22 +897,6 @@ void ScrewTouched()
     }
 }
 
-void SetUnitFlags(int unit, int flag)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        SetMemory(ptr + 0x10, flag);
-}
-
-int GetUnitFlags(int unit)
-{
-    int ptr = UnitToPtr(unit);
-    if (ptr)
-        return GetMemory(ptr + 0x10);
-    return 0;
-}
-
 void CollideObstacleAnkh()
 {
     int owner = GetOwner(self);
@@ -995,13 +910,10 @@ void CollideObstacleAnkh()
 int ObstacleAnkh(int sOwner, float sX, float sY)
 {
     int unit = CreateObjectAt("Ankh", sX, sY);
-    int *uptr = 0x750710;
-    int *ptr = uptr[0];
 
     SetOwner(sOwner, unit);
     SetUnitFlags(unit, GetUnitFlags(unit) ^ 0x10);
-    ptr[174] = ImportUnitCollideFunc();
-    ptr[191] = CollideObstacleAnkh;
+    SetUnitCallbackOnCollide(unit, CollideObstacleAnkh);
     return unit;
 }
 
@@ -1463,23 +1375,6 @@ void HammerEffect(int unit)
 	}
 }
 
-int GetUnit1C(int sUnit)
-{
-    int ptr = UnitToPtr(sUnit);
-
-    if (ptr)
-        return GetMemory(ptr + 0x1c);
-    return 0;
-}
-
-void SetUnit1C(int sUnit, int sSet)
-{
-    int ptr = UnitToPtr(sUnit);
-
-    if (ptr)
-        SetMemory(ptr + 0x1c, sSet);
-}
-
 int ListClassGetPrevNode(int sCur)
 {
     return GetOwner(sCur);
@@ -1639,38 +1534,6 @@ int ColorMaidenAt(int red, int grn, int blue, float xProfile, float yProfile)
     return unit;
 }
 
-int VoiceList(int num)
-{
-    int list[75], addr, k;
-
-    if (!list[0])
-    {
-        addr = GetMemory(0x663eec);
-        for (k = 0 ; k < 75 ; k += 1)
-        {
-            list[k] = addr;
-            addr = GetMemory(addr + 0x4c);
-        }
-    }
-    return list[num];
-}
-
-void SetUnitMaxHealth(int unit, int amount)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-    {
-        SetMemory(GetMemory(ptr + 0x22c), amount);
-        SetMemory(GetMemory(ptr + 0x22c) + 0x4, amount);
-    }
-}
-
-void UnitNoCollide(int ptr)
-{
-    SetMemory(ptr + 0x10, GetMemory(ptr + 0x10) ^ 0x40);
-}
-
 void SplashDamageAt(int owner, int dam, float range, float sX, float sY)
 {
     int ptr = CreateObjectAt("InvisibleLightBlueHigh", sX, sY) + 1, k;
@@ -1701,15 +1564,6 @@ void UnitVisibleSplash()
             Enchant(other, "ENCHANT_VILLAIN", 0.1);
             Damage(other, GetOwner(parent), ToInt(GetObjectZ(parent)), 14);
         }
-    }
-}
-
-void UnitSpeed(int ptr, float amount)
-{
-    if (ptr)
-    {
-        SetMemory(ptr + 0x220, ToInt(amount));
-        SetMemory(ptr + 0x224, ToInt(amount));
     }
 }
 
@@ -1777,20 +1631,13 @@ void SpecialMissileCollide()
 int SpecialMissile(int sOwner, float sX, float sY, float sForce)
 {
     int unit = CreateObjectAt("SpiderSpit", sX, sY);
-    int *uptr = 0x750710;
 
-    if (uptr[0] != NULLPTR)
-    {
-        int *ptr = uptr[0];
+    SetUnitCallbackOnCollide(unit, SpecialMissileCollide);
 
-        ptr[174] = ImportUnitCollideFunc();
-        ptr[191] = SpecialMissileCollide;
-
-        SetOwner(sOwner, unit);
-        LookAtObject(unit, sOwner);
-        LookWithAngle(unit, GetDirection(unit) + 128);
-        PushObject(unit, sForce, GetObjectX(sOwner), GetObjectY(sOwner));
-    }
+    SetOwner(sOwner, unit);
+    LookAtObject(unit, sOwner);
+    LookWithAngle(unit, GetDirection(unit) + 128);
+    PushObject(unit, sForce, GetObjectX(sOwner), GetObjectY(sOwner));
     return unit;
 }
 
@@ -1858,11 +1705,11 @@ void WeaponHitEvent()
         int *ptr = uptr[0];
         int mis = ptr[11];
         //SetMemory(ptr + 0x2e8, 5483536); //projectile update
-        ptr[174] = ImportUnitCollideFunc();
-        ptr[191] = ForceOfNatureCollide;
+
         PlaySoundAround(owner, 38);
         Enchant(mis, "ENCHANT_RUN", 0.0);
         Enchant(mis, "ENCHANT_HASTED", 0.0);
+        SetUnitCallbackOnCollide(mis, ForceOfNatureCollide);
     }
 }
 
@@ -1898,10 +1745,8 @@ void CheckAdvanceHammerLoop(int sUnit)
 void TestHammerChecking()
 {
     int unit = CreateObject("WarHammer", 44);
-    int ptr = GetMemory(0x750710);
 
-    SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    SetMemory(ptr + 0x2fc, HammerCollide);
+    SetUnitCallbackOnCollide(unit, HammerCollide);
 }
 
 void InitModePicket()
