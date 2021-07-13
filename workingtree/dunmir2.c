@@ -12,6 +12,10 @@
 #include "libs\spellutil.h"
 #include "libs\itemproperty.h"
 #include "libs\username.h"
+#include "libs\reaction.h"
+#include "libs\unitstruct.h"
+#include "libs\waypoint.h"
+#include "libs\walls.h"
 
 
 #define NULLPTR         0 
@@ -38,92 +42,8 @@ int DrawMagicIcon(int wp)
     
     ptr = ptr[0];
     ptr[1] = 1416;
+    
     return unit;
-}
-
-int CheckPlayerInput(int plr_unit)
-{
-    int ptr = UnitToPtr(plr_unit), temp;
-
-    if (ptr)
-    {
-        temp = GetMemory(GetMemory(ptr + 0x2ec) + 0x114);
-        if (temp)
-            return GetMemory(0x81b960 + (GetMemory(temp + 0x810) * 3072));
-    }
-    return 0;
-}
-
-void SetUnitVoice(int unit, int set)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        SetMemory(GetMemory(ptr + 0x2ec) + 0x1e8, VoiceList(set));
-}
-
-void SetUnitFlags(int unit, int flag)
-{
-	int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        SetMemory(ptr + 0x10, flag);
-}
-
-int GetUnitFlags(int unit)
-{
-	int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        return GetMemory(ptr + 0x10);
-    return 0;
-}
-
-void UnitNoCollide(int unit)
-{
-    SetUnitFlags(unit, GetUnitFlags(unit) ^ 0x40);
-}
-
-void UnitLinkBinScript(int unit, int binScrAddr)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, binScrAddr);
-}
-
-void UnitZeroFleeRange(int unit)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0); //Flee Range set to 0
-}
-
-void PoisonImmuneUnit(int unit)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        SetMemory(ptr + 0x0c, GetMemory(ptr + 0x0c) ^ 0x200);
-}
-
-void SetUnitScanRange(int unit, float range)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-    {
-        SetMemory(GetMemory(ptr + 0x2ec) + 0x520, ToInt(range));
-    }
-}
-
-void SetUnitSpeed(int unit, float ratio)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        SetMemory(ptr + 0x224, ToInt(ratio));
 }
 
 void BomberSetMonsterCollide(int bombUnit)
@@ -132,50 +52,6 @@ void BomberSetMonsterCollide(int bombUnit)
 
     if (ptr)
         SetMemory(ptr + 0x2b8, 0x4e83b0);
-}
-
-void SetUnitMass(int unit, float ms)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        SetMemory(ptr + 0x78, ToInt(ms));
-}
-
-int IsPoisonedUnit(int unit)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        return GetMemory(ptr + 0x21c) & 0xff;
-    return 0;
-}
-
-void SetUnitMaxHealth(int unit, int amount)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-    {
-        SetMemory(GetMemory(ptr + 0x22c), amount);
-        SetMemory(GetMemory(ptr + 0x22c) + 0x4, amount);
-    }
-}
-
-int VoiceList(int num)
-{
-    int list[75], addr, k;
-
-    if (!list[0])
-    {
-        addr = GetMemory(0x663eec);
-        for (k = 0 ; k < 75 ; k ++)
-        {
-            list[k] = addr;
-            addr = GetMemory(addr + 0x4c);
-        }
-    }
-    return list[num];
 }
 
 int ColorMaidenAt(int red, int grn, int blue, float xProfile, float yProfile)
@@ -401,53 +277,6 @@ int GreenFrogBinTable()
 	return link;
 }
 
-int GetUnitThingID(int unit)
-{
-    int ptr = UnitToPtr(unit);
-
-    if (ptr)
-        return GetMemory(ptr + 0x4);
-    return 0;
-}
-
-void SetUnitStatus(int unit, int stat)
-{
-    int temp, ptr = UnitToPtr(unit);
-
-    if (ptr)
-    {
-        temp = GetMemory(ptr + 0x2ec);
-        if (temp)
-            SetMemory(temp + 0x5a0, stat);
-    }
-}
-
-int GetUnitStatus(int unit)
-{
-    int temp, ptr = UnitToPtr(unit);
-
-    if (ptr)
-    {
-        temp = GetMemory(ptr + 0x2ec);
-        if (temp)
-            return GetMemory(temp + 0x5a0);
-    }
-    return 0;
-}
-
-int GetOwner(int unit)
-{
-    int ptr = UnitToPtr(unit), res;
-
-    if (ptr)
-    {
-        res = GetMemory(ptr + 0x1fc);
-        if (res)
-            return GetMemory(res + 0x2c);
-    }
-    return 0;
-}
-
 void ImportBinTable()
 {
     WizardRedBinTable();
@@ -484,7 +313,6 @@ void MapInitialize()
 
     InitMathSine(1);
 
-    VoiceList(0);
     MasterUnit();
     initializeGuardTower(25);
     
@@ -949,38 +777,6 @@ void guardUnit()
 void nullPointer()
 { }
 
-void DestroyWallAtUnitPos(int sUnit)
-{
-    int xPos = FloatToInt(GetObjectX(sUnit)), yPos = FloatToInt(GetObjectY(sUnit));
-    int spX, spY, tx, ty, rx;
-
-    if (xPos > yPos) xPos += 23;
-    else             yPos += 23;
-    spX = (xPos + yPos - 22) / 46;
-    spY = (xPos - yPos) / 46;
-    tx = spX * 46;
-    ty = spY * 46;
-    rx = (tx + ty) / 2;
-    WallBreak(Wall(rx / 23, (rx - ty) / 23));
-}
-
-int GetUnit1C(int sUnit)
-{
-    int ptr = UnitToPtr(sUnit);
-
-    if (ptr)
-        return GetMemory(ptr + 0x1c);
-    return 0;
-}
-
-void SetUnit1C(int sUnit, int sData)
-{
-    int ptr = UnitToPtr(sUnit);
-
-    if (ptr)
-        SetMemory(ptr + 0x1c, sData);
-}
-
 void OrbClassCollide()
 {
     int owner = GetOwner(SELF);
@@ -994,7 +790,7 @@ void OrbClassCollide()
             Effect("YELLOW_SPARKS", GetObjectX(SELF), GetObjectY(SELF), 0.0, 0.0);
         }
         else if (!GetCaller())
-            DestroyWallAtUnitPos(SELF);
+            DestroyWallAtObjectPos(SELF);
         else
             break;
         Delete(SELF);
@@ -1008,9 +804,7 @@ int OrbClassTakeShot(int sOwner)
     int ptr = GetMemory(0x750710);
 
     SetMemory(ptr + 0x2e8, 5483536); //projectile update
-    SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    CancelTimer(FrameTimerWithArg(10, OrbClassCollide, OrbClassCollide));
-    SetMemory(ptr + 0x2fc, GetMemory(GetMemory(0x83395c) + 8));
+    SetUnitCallbackOnCollide(mis, OrbClassCollide);
     SetOwner(sOwner, mis);
     return mis;
 }
@@ -1030,19 +824,12 @@ void OrbClassUseStaff()
     }
 }
 
-int OrbClassUseFunctionNumber()
-{
-    StopScript(OrbClassUseStaff);
-}
-
 int OrbClassCreate(int sUnit)
 {
     int staff = CreateObjectAt("OblivionOrb", GetObjectX(sUnit), GetObjectY(sUnit));
-    int ptr = GetMemory(0x750710);
 
     OblivionSetting(staff);
-    SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-    SetMemory(ptr + 0x2fc, OrbClassUseFunctionNumber());
+    SetUnitCallbackOnUseItem(staff, OrbClassUseStaff);
     return staff;
 }
 
@@ -1900,8 +1687,7 @@ int ItemDropSpecial(int sUnit)
     int *vptr = ptr[0];
 
     vptr[177] = 5190112;
-    vptr[183] = ImportUseItemFunc();
-    vptr[191] = itemUseFunction[pic];
+    SetUnitCallbackOnUseItem(unit, itemUseFunction[pic]);
     return unit;
 }
 
@@ -2111,13 +1897,11 @@ void ObstacleBreaking()
 int PlacingObstacle(int sUtype, float xProfile, float yProfile, int hitP)
 {
     int obst = CreateObjectAt(ObstacleNameTable(sUtype), xProfile, yProfile);
-    int sPtr = GetMemory(0x750710);
 
     if (obst)
     {
         LookWithAngle(obst, sUtype);
-        SetMemory(sPtr + 0x228, ObstacleBreaking);
-        SetMemory(sPtr + 0x2d4, ImportUnitDieFunc());
+        SetUnitCallbackOnDeath(obst, ObstacleBreaking);
         SetUnitMaxHealth(obst, hitP);
     }
     return obst;
@@ -2695,7 +2479,8 @@ int FieldMobGoon(int sUnit)
     int mob = CreateObjectAt("Goon", GetObjectX(sUnit), GetObjectY(sUnit));
 
     SetUnitMaxHealth(mob, 225);
-    PoisonImmuneUnit(mob);
+    if (!IsMonsterPoisonImmune(mob))
+        SetMonsterPoisonImmune(mob);
     UnitLinkBinScript(mob, GoonBinTable());
     return mob;
 }
@@ -2705,7 +2490,8 @@ int FieldMobFemale(int sUnit)
     int mob = ColorMaidenAt(Random(0, 255), Random(0, 255), Random(0, 255), GetObjectX(sUnit), GetObjectY(sUnit));
 
     SetUnitMaxHealth(mob, 325);
-    PoisonImmuneUnit(mob);
+    if (!IsMonsterPoisonImmune(mob))
+        SetMonsterPoisonImmune(mob);
     SetUnitVoice(mob, 7);
     UnitLinkBinScript(mob, MaidenBinTable());
 
@@ -3060,9 +2846,9 @@ void MapSignSetting()
 void GameGuideMessage()
 {
     if (MapLang)
-        UniBroadcast("How to play:\nRaid the village of Dunmir and destroy all enemies.\nWin by killing the last boss of Dunmir Village");
+        UniPrintToAll("How to play:\nRaid the village of Dunmir and destroy all enemies.\nWin by killing the last boss of Dunmir Village");
     else
-        UniBroadcast("게임방법:\n던미르 마을을 습격하여 모든 적들을 파괴하세요.\n던미르 마을의 마지막 보스를 죽이면 승리합니다");
+        UniPrintToAll("게임방법:\n던미르 마을을 습격하여 모든 적들을 파괴하세요.\n던미르 마을의 마지막 보스를 죽이면 승리합니다");
 }
 
 void HostPlayerTeleport(int sUnit)

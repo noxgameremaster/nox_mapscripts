@@ -628,7 +628,7 @@ void FlameTrapResetCountdown(int trapPtr)
 {
     int count = GetDirection(trapPtr);
 
-    if (IsObjectOn(trapPtr))
+    if (count)
     {
         LookWithAngle(trapPtr, count - 1);
         FrameTimerWithArg(1, trapPtr, FlameTrapResetCountdown);
