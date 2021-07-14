@@ -2593,7 +2593,6 @@ void MapInitialize()
     LastUnit = CreateObject("RedPotion", 1);
     Delete(LastUnit);
 
-    InitMathSine(1);
     SafeZone = CreateObject("InvisibleLightBlueHigh", 12);
     Enchant(CreateObject("InvisibleLightBlueHigh", 12), "ENCHANT_SHIELD", 0.0);
     Enchant(CreateObject("InvisibleLightBlueHigh", 12), "ENCHANT_VAMPIRISM", 0.0);

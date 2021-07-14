@@ -264,11 +264,12 @@ void MapExit()
     MusicEvent();
 }
 
+static int InitMathSineBaseWaypointNumber() { return 42; }
+
 void MapInitialize()
 {
     MusicEvent();
     InitPickets();
-    InitMathSine(42);
     GetCaptain();
     ParentNode();
 

@@ -1190,7 +1190,6 @@ void MapInitialize()
 {
     PlayerFlagPtr = Object("PlayerFlagBase");
     
-    InitMathSine(1);
     MusicEvent();
     FrameTimerWithArg(1, PlayerFlagPtr, DelayInitRun);
 }

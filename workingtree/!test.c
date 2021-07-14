@@ -548,7 +548,6 @@ void MobMakeStandBy()
 void MapInitialize()
 {
     MusicEvent();
-    InitMathSine(1);
     
     VoiceList(0);
     FrameTimer(1, initializeUsemapSetting);

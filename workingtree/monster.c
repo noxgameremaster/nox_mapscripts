@@ -434,7 +434,6 @@ void MapInitialize()
     
     Gvar_4 = 0;
     initializeStructPacker();
-    InitMathSine(1);
 
     //delay
     FrameTimer(1, PutStampString);

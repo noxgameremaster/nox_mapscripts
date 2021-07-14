@@ -80,6 +80,8 @@ void MapExit()
     ResetPlayerHandlerWhenExitMap();
 }
 
+static int InitMathSineBaseWaypointNumber() { return 44; }
+
 void MapInitialize()
 {
     VoiceList(0);
@@ -87,8 +89,6 @@ void MapInitialize()
     initializeStruct(-1);
     
     BkRevent(-1);
-    // MathSine(44, 1.0 / 57.3);
-    InitMathSine(44);
     initializeSelectBeacon();
     initializeChak();
     initializeCharacters();

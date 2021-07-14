@@ -341,12 +341,13 @@ void MonsterWoundedApprentice(int unit)
     }
 }
 
+static int InitMathSineBaseWaypointNumber() { return 73; }
+
 void MapInitialize()
 {
     MusicEvent();
     
     FrameTimer(1, StrFinish);
-    InitMathSine(73);
     
     DefElevators();
     
@@ -837,7 +838,7 @@ void PlayerClassOnAlive(int plr, int pUnit)
                 PlayerClassCreatureAttack(plr, pUnit);
             
         }
-            MovingPlayerCreature(plr);
+        MovingPlayerCreature(plr);
         
     }
 }
