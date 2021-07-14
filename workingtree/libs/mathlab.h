@@ -5,13 +5,11 @@ int ToInt(float x) { StopScript(x); }
 float WayRatioX(int wp1, int wp2)
 {
     return (GetWaypointX(wp1) - GetWaypointX(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
-    "export WayRatioX";
 }
 
 float WayRatioY(int wp1, int wp2)
 {
     return (GetWaypointY(wp1) - GetWaypointY(wp2)) * 1.0 / Distance(GetWaypointX(wp1), GetWaypointY(wp1), GetWaypointX(wp2), GetWaypointY(wp2));
-    "export WayRatioY";
 }
 
 float GetSineValue(int wp, float c)
@@ -21,9 +19,11 @@ float GetSineValue(int wp, float c)
     res = GetWaypointX(wp) - GetWaypointX(wp + 1);
     MoveWaypoint(wp + 1, GetWaypointX(wp) - (c * y_ratio) - x_ratio, GetWaypointY(wp) + (c * x_ratio) - y_ratio);
     return res;
-    "export GetSineValue";
 }
 
+//sin 값을 구합니다
+//angle 은 각도입니다
+//size 은 sin 값에 곱해질 수 입니다
 float MathSine(int angle, float size)
 {
     float var_0[91];
@@ -45,40 +45,55 @@ float MathSine(int angle, float size)
     if (k % 2) i = 90 - i;
     if ((angle / 180) % 2) return -var_0[i] * size;
 	else return var_0[i] * size;
-    "export MathSine";
 }
 
+//유닛이 보는 방향의 x벡터를 구합니다
 float UnitAngleCos(int unit, float size)
 {
     return MathSine((GetDirection(unit) * 45 / 32) + 90, size);
-    "export UnitAngleCos";
 }
 
+//유닛이 보는 방향의 y벡터를 구합니다
 float UnitAngleSin(int unit, float size)
 {
     return MathSine(GetDirection(unit) * 45 / 32, size);
-    "export UnitAngleSin";
 }
 
+//두 유닛간 x벡터를 구합니다
 float UnitRatioX(int unit, int target, float size)
 {
     return (GetObjectX(unit) - GetObjectX(target)) * size / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target));
-    "export UnitRatioX";
 }
 
+//두 유닛간 y벡터를 구합니다
 float UnitRatioY(int unit, int target, float size)
 {
     return (GetObjectY(unit) - GetObjectY(target)) * size / Distance(GetObjectX(unit), GetObjectY(unit), GetObjectX(target), GetObjectY(target));
-    "export UnitRatioY";
 }
 
-void InitMathSine(int wp)
+//you can override it if you need
+int InitMathSineBaseWaypointNumber()
 {
-    "export InitMathSine";
-    MathSine(wp, 1.0 / 57.3);
+	return 1;
+}
+
+//자동으로 호출되므로 수동호출 금지
+void InitMathSine()
+{
+    MathSine(InitMathSineBaseWaypointNumber(), 1.0 / 57.3);
 }
 
 void NOXLibraryEntryPointFunction()
 {
     "export ToInt";
+	"export WayRatioX";
+	"export WayRatioY";
+	"export GetSineValue";
+	"export MathSine";
+	"export UnitAngleCos";
+	"export UnitAngleSin";
+	"export UnitRatioX";
+	"export UnitRatioY";
+	"export InitMathSineBaseWaypointNumber";
+	"export needinit InitMathSine";
 }

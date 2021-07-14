@@ -238,6 +238,7 @@ void UniBroadcast(string sMsg)
 
 void NOXLibraryEntryPointFunction()
 {
+	"export CheckGameKorLanguage";
     "export GetByteValue";
     "export WriteAddressWordValue";
     "export NoxUtf8ToUnicode";

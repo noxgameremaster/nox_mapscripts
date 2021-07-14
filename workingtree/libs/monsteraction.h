@@ -7,6 +7,7 @@ void SetMemory(int a, int b){}
 int ToInt(float a){}
 int GetScrDataField(int a){}
 int UnitToPtr(int a){}
+int IsMonsterUnit(int checkUnit){}
 
 int ImportMonsterActionPush()
 {
@@ -43,10 +44,49 @@ void MonsterForceCastSpell(int sUnit, int sSpellNumber, float xProfile, float yP
 
 	if (act)
 	{
-		SetMemory(act + 4, sSpellNumber);
-		SetMemory(act + 12, ToInt(xProfile));
-		SetMemory(act + 16, ToInt(yProfile));
+		int ptr = UnitToPtr(sUnit);
+		
+		if (GetMemory(ptr + 8) & 2)
+		{
+			SetMemory(act + 4, sSpellNumber);
+			SetMemory(act + 12, ToInt(xProfile));
+			SetMemory(act + 16, ToInt(yProfile));
+		}
 	}
+}
+
+//크리쳐를 보호 모드로 설정합니다
+//이 특징을 적용하려면 유닛이 생성된 후 최소 1 프레임의 딜레이가 필요합니다
+void MonsterSetActionGuard(int sUnit)
+{
+    //Need to delay at least 1 frame
+    int ptr = UnitToPtr(sUnit);
+
+    if (ptr)
+    {
+		if (GetMemory(ptr + 8) & 2)
+		{
+			SetMemory(GetMemory(ptr + 0x2ec) + 0x228, 4);
+			SetMemory(GetMemory(ptr + 0x2ec) + 0x22c, GetMemory(ptr + 0x38));
+			SetMemory(GetMemory(ptr + 0x2ec) + 0x230, GetMemory(ptr + 0x3c));
+			SetMemory(GetMemory(ptr + 0x2ec) + 0x234, (GetMemory(ptr + 0x7c) >> 0x10) & 0xff); //Direction
+			SetMemory(GetMemory(ptr + 0x2ec) + 0x238, 0);
+			SetMemory(GetMemory(ptr + 0x2ec) + 0x23c, 1);
+		}
+    }
+}
+
+//크리쳐의 현재 행동정보를 얻습니다
+int MonsterGetCurrentAction(int cre)
+{
+    int ptr = UnitToPtr(cre);
+
+    if (ptr)
+    {
+		if (GetMemory(ptr + 8) & 2)
+			return GetMemory(GetMemory(ptr + 0x2ec) + 0x228);
+    }
+    return 0;
 }
 
 void NOXLibraryEntryPointFunction()
@@ -54,6 +94,8 @@ void NOXLibraryEntryPointFunction()
 	"export ImportMonsterActionPush";
 	"export MonsterActionPush";
 	"export MonsterForceCastSpell";
+	"export MonsterSetActionGuard";
+	"export MonsterGetCurrentAction";
 	
 	g_importMonsterActionPush = ImportMonsterActionPush;
 	g_monsterActionPush = MonsterActionPush;
