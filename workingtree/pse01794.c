@@ -23,6 +23,7 @@
 
 #include "libs\monsteraction.h"
 #include "libs\imageutil.h"
+#include "libs\magicmissile.h"
 
 int XMonStat = 0;
 int XMainFlag = 0;
@@ -166,30 +167,6 @@ void MapInitialize()
     FrameTimer(2, SetGameTypeCoopMode);
 }
 
-int MakeMagicMissileScrPt(string misName, int owner)
-{
-    float xVect = UnitAngleCos(owner, 18.0), yVect = UnitAngleSin(owner, 18.0);
-    int target = CreateObjectAt("ImaginaryCaster", GetObjectX(owner) + (xVect * 10.0), GetObjectY(owner) + (yVect * 10.0));
-    int mis = CreateObjectAt(misName, GetObjectX(owner) + xVect, GetObjectY(owner) + yVect);
-    int ptr = GetMemory(0x750710);
-    int ecPtr;
-    int casterPtr = UnitToPtr(target);
-
-    DeleteObjectTimer(target, 3);
-    if (ptr)
-    {
-        SetOwner(owner, mis);
-        SetMemory(ptr + 0x220, ToInt(3.3)); //Speed
-        SetMemory(ptr + 0x224, 0); //accel
-        ecPtr = MemAlloc(20);
-        SetMemory(ecPtr, UnitToPtr(owner));
-        SetMemory(ecPtr + 4, casterPtr);
-        SetMemory(ptr + 0x2ec, ecPtr);
-        SetMemory(ptr + 0x2e8, 5488032);
-    }
-    return GetMemory(GetMemory(0x75ae28) + (0x30 * MakeMagicMissileScrPt + 0x1c)) + 0x14;
-}
-
 void ImpShotCollide()
 {
     int owner = GetOwner(self);
@@ -213,11 +190,9 @@ void ImpShotCollide()
 void LoopCatchImpshot(int curId)
 {
     int owner = GetOwner(curId);
-    int scrPt = MakeMagicMissileScrPt("DeathBallFragment", owner);
-    int mis = GetMemory(scrPt), ptr = GetMemory(scrPt + 4);
+    int mis = SummonCustomMagicMissile("DeathBallFragment", owner, 0.0);
 
-    SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    SetMemory(ptr + 0x2fc, ImpShotCollide);
+    SetUnitCallbackOnCollide(mis, ImpShotCollide);
     Delete(curId);
 }
 
@@ -1161,8 +1136,7 @@ int FONCreate(int me, float xProfile, float yProfile)
     if (ptr)
     {
         SetMemory(ptr + 0x2e8, 5483536); //projectile update
-        SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-        SetMemory(ptr + 0x2fc, FONCollide);
+        SetUnitCallbackOnCollide(mis, FONCollide);
         SetOwner(me, mis);
     }
     return mis;
@@ -2059,14 +2033,8 @@ int CreateWhitePotion(int restoreAmount, float xProfile, float yProfile)
 
 void GodModePotionFeatureSwap(int potion)
 {
-    int ptr = UnitToPtr(potion);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        SetMemory(ptr + 0x2fc, UseGodModePotion);
-        Enchant(potion, EnchantList(22), 0.0);
-    }
+    SetUnitCallbackOnUseItem(potion, UseGodModePotion);
+    Enchant(potion, EnchantList(22), 0.0);
 }
 
 int CheckPotionThingID(int unit)
@@ -2917,33 +2885,8 @@ void ForceOfNatureShot()
 
     SetOwner(other, mis);
     SetMemory(ptr + 0x2e8, 5483536); //projectile update
-    SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    SetMemory(ptr + 0x2fc, NatureShotCollide);
+    SetUnitCallbackOnCollide(mis, NatureShotCollide);
     PushObject(mis, 30.0, GetObjectX(other), GetObjectY(other));
-}
-
-int MakeMagicMissile(string misName, int owner)
-{
-    float xVect = UnitAngleCos(owner, 18.0), yVect = UnitAngleSin(owner, 18.0);
-    int target = CreateObjectAt("ImaginaryCaster", GetObjectX(owner) + (xVect * 10.0), GetObjectY(owner) + (yVect * 10.0));
-    int mis = CreateObjectAt(misName, GetObjectX(owner) + xVect, GetObjectY(owner) + yVect);
-    int ptr = GetMemory(0x750710);
-    int ecPtr;
-    int casterPtr = UnitToPtr(target);
-
-    DeleteObjectTimer(target, 3);
-    if (ptr)
-    {
-        SetOwner(owner, mis);
-        SetMemory(ptr + 0x220, ToInt(3.6)); //Speed
-        SetMemory(ptr + 0x224, 0); //accel
-        ecPtr = MemAlloc(20);
-        SetMemory(ecPtr, UnitToPtr(owner));
-        SetMemory(ecPtr + 4, casterPtr);
-        SetMemory(ptr + 0x2ec, ecPtr);
-        SetMemory(ptr + 0x2e8, 5488032);
-    }
-    return mis;
 }
 
 void AutoDetectMissileCollide()
@@ -2968,26 +2911,11 @@ void AutoDetectMissileCollide()
 
 void ShotAutoDetectMissile()
 {
-    int mis = MakeMagicMissile("Pixie", other);
-    int ptr = GetMemory(0x750710);
+    // int mis = MakeMagicMissile("Pixie", other);
+    int mis = SummonCustomMagicMissile("Pixie", OTHER, 0.0);
 
-    if (ptr)
-    {
-        PlaySoundAround(other, 348);
-        SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-        SetMemory(ptr + 0x2fc, AutoDetectMissileCollide);
-    }
-}
-
-void WeaponClassCProperty1Entry(int wUnit, int slot, int execFunctionNumber, int tablePtr)
-{
-    int ptr = UnitToPtr(wUnit);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x2fc, execFunctionNumber);
-        SetMemory(GetMemory(ptr + 0x2b4) + (slot * 4), tablePtr);
-    }
+    PlaySoundAround(other, 348);
+    SetUnitCallbackOnCollide(mis, AutoDetectMissileCollide);
 }
 
 int WizardRedBinTable()
