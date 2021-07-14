@@ -9,6 +9,18 @@ string ReadStringAddress(int t)
     return ToStr((t - 0x97bb40) / 4);
 }
 
+string StringUtilFindUnitNameById(int thingId)
+{
+	if (thingId > 0 && thingId < GetMemory(0x69f228))
+	{
+		int thindDbLink = GetMemory(0x7520d4);
+		int thingDbUnitBase = GetMemory(thindDbLink + (thingId << 2));
+		
+		return ReadStringAddress(thingDbUnitBase + 4);
+	}
+	return ReadStringAddress(0x587a50);
+}
+
 int GetByteValue(int ptr)
 {
     return GetMemory(ptr) & 0xff;
@@ -94,6 +106,7 @@ int NoxUnicodeToUtf8(int src, int destPtr)
 void NOXLibraryEntryPointFunction()
 {
 	"export ReadStringAddress";
+	"export StringUtilFindUnitNameById";
     "export GetByteValue";
     "export WriteAddressWordValue";
     "export NoxUtf8ToUnicode";

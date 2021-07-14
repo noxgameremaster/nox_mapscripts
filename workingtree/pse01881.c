@@ -18,6 +18,8 @@
 #include "libs\unitstruct.h"
 #include "libs\buff.h"
 
+#include "libs\cweaponproperty.h"
+
 #define NULLPTR             0
 
 int player[20];
@@ -107,7 +109,6 @@ void MapInitialize()
 
     InitializeDungeonDropItemFunctions();
     InitFireTraps();
-    InitMathSine(1);
 
     FrameTimer(3, MakeCoopTeam);
     FrameTimer(10, PlayerClassOnLoop);
@@ -440,50 +441,6 @@ int CreateWhitePotion(int restoreAmount, float xProfile, float yProfile)
     return unit;
 }
 
-void TeleportAmulet(int amulet)
-{
-    int ptr = UnitToPtr(amulet);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        SetMemory(ptr + 0x2fc, ItemUseClassTeleportAmulet);
-    }
-}
-
-void ElectricAmulet(int amulet)
-{
-    int ptr = UnitToPtr(amulet);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        SetMemory(ptr + 0x2fc, ItemUseClassElectricAmulet);
-    }
-}
-
-void HealingPotion(int amulet)
-{
-    int ptr = UnitToPtr(amulet);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        SetMemory(ptr + 0x2fc, ItemUseClassHealingPotion);
-    }
-}
-
-void MagicCandle(int magicCandle)
-{
-    int ptr = UnitToPtr(magicCandle);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x2dc, ImportUseItemFunc());
-        SetMemory(ptr + 0x2fc, ItemUseClassCandle);
-    }
-}
-
 int CheckPotionThingID(int unit)
 {
     int thingID = GetUnitThingID(unit), x = unit;
@@ -495,13 +452,13 @@ int CheckPotionThingID(int unit)
     else if (thingID == 641)
         x = CreateBlackPotion(85, GetObjectX(unit), GetObjectY(unit));
     else if (thingID == 1184)
-        TeleportAmulet(unit);
+        SetUnitCallbackOnUseItem(unit, ItemUseClassTeleportAmulet);
     else if (thingID == 239)
-        ElectricAmulet(unit);
+        SetUnitCallbackOnUseItem(unit, ItemUseClassElectricAmulet);
     else if (thingID == 1185)
-        HealingPotion(unit);
+        SetUnitCallbackOnUseItem(unit, ItemUseClassHealingPotion);
     else if (thingID == 1197)
-        MagicCandle(unit);
+        SetUnitCallbackOnUseItem(unit, ItemUseClassCandle);
 
     if (x ^ unit) Delete(unit);
     return x;
@@ -782,6 +739,11 @@ int PlaceLastSavedTeleport(object location)
     return telpo;
 }
 
+static int MonsterMeleeAttackRegistCallback()
+{ 
+    return MonsterStrikeCallback;
+}
+
 void DelayMapInit()
 {
     g_userLastSavedLocation = 51;
@@ -807,7 +769,6 @@ void DelayMapInit()
     FrameTimer(60, InitLastPart);
     FrameTimer(20, InitWeaponContainer);
     FrameTimer(1, InitializeGenerators);
-    RegistUnitStrikeCallback(MonsterStrikeCallback);
 
     SetHostileCritter();
 }
@@ -892,6 +853,25 @@ int SummonMobGoon(int posUnit)
     SetUnitMaxHealth(unit, 275);
 
     return unit;
+}
+
+void DryadSightHandler()
+{ }
+
+void EnableCreatureSight()
+{
+    EnchantOff(SELF, EnchantList(ENCHANT_BLINDED));
+}
+
+int SummonMobDryad(int posUnit)
+{
+    int dry = CreateObjectAtUnit("WizardGreen", posUnit);
+
+    SetUnitMaxHealth(dry, 375);
+    SetUnitStatus(dry, GetUnitStatus(dry) ^ 0x8020);
+    SetCallback(dry, 3, DryadSightHandler);
+    SetCallback(dry, 13, EnableCreatureSight);
+    return dry;
 }
 
 int SummonUrchin(int posUnit)
@@ -1167,93 +1147,6 @@ void EntryArea7()
     SetNextFunction(EndArea7);
 }
 
-void WeaponClassCProperty1Entry(int wUnit, int slot, int execFunctionNumber, int tablePtr)
-{
-    int ptr = UnitToPtr(wUnit);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x2fc, execFunctionNumber);
-        SetMemory(GetMemory(ptr + 0x2b4) + (slot * 4), tablePtr);
-    }
-}
-
-int WeaponClassCProperty2Table()
-{
-    int dat[36], link;
-
-    if (!link)
-    {
-        dat[0] = GetMemory(0x97bb40 + (SToInt("Fire4") * 4));
-        dat[1] = 0x61; dat[6] = 0xb40000; dat[5] = 0x4b0; dat[7] = 0x1b2ff2; dat[9] = 1;
-        //dat[13] = 0x4e04d0;
-        dat[13] = WeaponClassCProperty1Code();
-        dat[14] = ToInt(100.0); //dat[13] = 0x4e06f0; dat[13] = 0x4e0550;
-        link = &dat;
-    }
-    return link;
-}
-
-void WeaponClassCProperty2Entry(int weapon)
-{
-    int i, *ptr = UnitToPtr(weapon);
-
-    if (ptr != NULLPTR)
-    {
-        int *proper = ptr[173];
-
-        proper[2] = WeaponClassCProperty2Table();
-        SetWeaponProperties(weapon, 5, 4, 1, 22);
-    }
-}
-
-int WeaponClassPropertyExecScript()
-{
-    int arr[13], link;
-
-    if (!link)
-    {
-        arr[0] = 0x24448D50; arr[1] = 0xEC83520C; arr[2] = 0x85108B0C; arr[3] = 0x501C74D2; arr[4] = 0x02FC828B; arr[5] = 0x44890000;
-        arr[6] = 0x89580424; arr[7] = 0x8B082454; arr[8] = 0x44890440; arr[9] = 0xE5E80424; arr[10] = 0x83FFDB62; arr[11] = 0x585A0CC4;
-        arr[12] = 0x000090C3;
-        link = &arr;
-        FixCallOpcode(link + 0x26, 0x507310);
-    }
-    return link;
-}
-
-int WeaponClassCProperty1Code()
-{
-    int code[21], call1 = 0x4e0702, call2 = 0x4e0722, call3 = 0x4e0731, nop;
-    int link;
-
-    if (!link)
-    {
-        link = &code;
-        OpcodeCopiesAdvance(link, link + (21 * 4), 0x4e06f0, 0x4e073c);
-
-        SetMemory(link + 46, 0x83);
-        SetMemory(link + 61, 97);
-    }
-    return link;
-}
-
-int WeaponClassCProperty3Table()
-{
-    int dat[36], link;
-
-    if (!link)
-    {
-        dat[0] = GetMemory(0x97bb40 + (SToInt("Fire4") * 4));
-        dat[1] = 0x61; dat[6] = 0xb40000; dat[5] = 0x4b0; dat[7] = 0x1b2ff2; dat[9] = 1;
-        dat[10] = WeaponClassPropertyExecScript();
-        dat[13] = WeaponClassCProperty1Code();
-        dat[14] = ToInt(4.0);
-        link = &dat;
-    }
-    return link;
-}
-
 int DummyUnitCreate(string name, float locX, float locY)
 {
     int unit = CreateObjectAt(name, locX, locY);
@@ -1340,7 +1233,7 @@ int PlaceArrowSword(int location)
     int arrow = CreateObjectAt("Sword", LocationX(location), LocationY(location));
 
     SetWeaponProperties(arrow, 5, 5, 8, 3);
-    WeaponClassCProperty1Entry(arrow, 2, XBowShot, WeaponClassCProperty3Table());
+    RegistWeaponCPropertyExecScript(arrow, 2, XBowShot);
     return arrow;
 }
 
@@ -1407,7 +1300,7 @@ int PlaceEnergyparAxe(int location)
     int par = CreateObjectAt("OgreAxe", LocationX(location), LocationY(location));
 
     SetWeaponProperties(par, 5, 5, 8, 3);
-    WeaponClassCProperty1Entry(par, 2, EnergyparShot, WeaponClassCProperty3Table());
+    RegistWeaponCPropertyExecScript(par, 2, EnergyparShot);
     return par;
 }
 
@@ -1429,11 +1322,9 @@ void AngelCrystalCollide()
 int AngelCrystal(int owner, float vectSize)
 {
     int crystal = CreateObjectAt("GameBall", GetObjectX(owner) + UnitAngleCos(owner, vectSize), GetObjectY(owner) + UnitAngleSin(owner, vectSize));
-    int ptr = GetMemory(0x750710);
 
     SetOwner(owner, CreateObjectAtUnit("InvisibleLightBlueLow", owner));
-    SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    SetMemory(ptr + 0x2fc, AngelCrystalCollide);
+    SetUnitCallbackOnCollide(crystal, AngelCrystalCollide);
     DeleteObjectTimer(crystal, 90);
     DeleteObjectTimer(crystal + 1, 100);
     return crystal;
@@ -1451,7 +1342,7 @@ int PlaceAngelCrystalSword(int location)
     int angel = CreateObjectAt("GreatSword", LocationX(location), LocationY(location));
 
     SetWeaponProperties(angel, 5, 5, 8, 3);
-    WeaponClassCProperty1Entry(angel, 2, ShotAngelCrystal, WeaponClassCProperty3Table());
+    RegistWeaponCPropertyExecScript(angel, 2, ShotAngelCrystal);
     return angel;
 }
 
@@ -1459,7 +1350,7 @@ void PlaceDefaultItems(string itemname, object location)
 {
     int i;
     
-    for (i = 0 ; i < 8 ; i ++)
+    for (i = 0 ; i < 8 ; i += 1)
     {
         CreateObjectAt(itemname, LocationX(location), LocationY(location));
         TeleportLocationVector(location, 23.0, 23.0);
@@ -1485,7 +1376,7 @@ void TripleShurikens(int dirUnit)
     {
         int i;
 
-        for (i = 0 ; i < 13 ; i ++)
+        for (i = 0 ; i < 13 ; i += 1)
         {
             SingleShuriken(owner, GetObjectX(dirUnit) + UnitAngleCos(dirUnit, 18.0), GetObjectY(dirUnit) + UnitAngleSin(dirUnit, 18.0));
             LookWithAngle(dirUnit, GetDirection(dirUnit) + 5);
@@ -1508,16 +1399,24 @@ int PlaceTripleShurikenSword(int location)
     int triple = CreateObjectAt("GreatSword", LocationX(location), LocationY(location));
 
     SetWeaponProperties(triple, 5, 5, 8, 3);
-    WeaponClassCProperty1Entry(triple, 2, CastTripleShurikens, WeaponClassCProperty3Table());
+    RegistWeaponCPropertyExecScript(triple, 2, CastTripleShurikens);
     Enchant(triple, EnchantList(4), 0.0);
     return triple;
+}
+
+void CastFireballShotSword()
+{
+    int mis = CreateObjectAt("TitanFireball", GetObjectX(OTHER) + UnitAngleCos(OTHER, 17.0), GetObjectY(OTHER) + UnitAngleSin(OTHER, 17.0));
+
+    SetOwner(OTHER, mis);
+    PushObject(mis, -33.0, GetObjectX(OTHER), GetObjectY(OTHER));
 }
 
 int PlaceSuperPowerSword(int location)
 {
     int super = CreateObjectAt("GreatSword", LocationX(location), LocationY(location));
 
-    WeaponClassCProperty2Entry(super);
+    RegistWeaponCPropertyExecScript(super, 2, CastFireballShotSword);
     Enchant(super, EnchantList(4), 0.0);
     return super;
 }
@@ -1527,7 +1426,7 @@ int MagicWeaponContainer()
     int count;
     int array[20];
 
-    return GetScrDataField(MagicWeaponContainer);
+    return &count;
 }
 
 //@brief. 컨테이너가 포함한 노드 수를 반환합니다
@@ -1830,10 +1729,8 @@ void LightningShotCollide()
 int LightningShotSingle(float posX, float posY)
 {
     int mis = CreateObjectAt("LightningBolt", posX, posY);
-    int ptr = GetMemory(0x750710);
-
-    SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-    SetMemory(ptr + 0x2fc, LightningShotCollide);
+    
+    SetUnitCallbackOnCollide(mis, LightningShotCollide);
     return mis;
 }
 
@@ -2428,31 +2325,17 @@ void SpiderWebMissileCollide()
 
 void UrchinStone(int missile)
 {
-    int ptr = UnitToPtr(missile);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-        SetMemory(ptr + 0x2fc, UrchinStoneCollide);
-    }
+    SetUnitCallbackOnCollide(missile, UrchinStoneCollide);
     Enchant(missile, EnchantList(21), 0.0);
 }
 
 void SpiderWebMissile(int missile)
 {
-    int ptr = UnitToPtr(missile);
-
-    if (ptr)
-    {
-        SetMemory(ptr + 0x2b8, ImportUnitCollideFunc());
-        SetMemory(ptr + 0x2fc, SpiderWebMissileCollide);
-    }
+    SetUnitCallbackOnCollide(missile, SpiderWebMissileCollide);
 }
 
 void HarpoonEvent(int missile)
 {
-    int ptr = UnitToPtr(missile);
-
     Enchant(missile, EnchantList(21), 0.0);
 }
 
@@ -2598,7 +2481,7 @@ void RemoveSouthWalls()
 {
     int i;
 
-    for (i = 21 ; i ; i --)
+    for (i = 21 ; i ; i -= 1)
     {
         RemoveWallAtObjectPos(95);
         TeleportLocationVector(95, -23.0, 23.0);
@@ -3088,14 +2971,11 @@ int ObeliskTypeAmount(int index)
 int PlaceMonsterObelisk(int location, int type)
 {
     int oblisk = CreateObjectAt(ObeliskTypes(type) + "Generator", LocationX(location), LocationY(location));
-    int *ptr = 0x750710;
 
     LookWithAngle(CreateObjectAt("AmbBeachBirds", LocationX(location), LocationY(location)), type);
-    ptr = ptr[0];
     SetUnitMaxHealth(oblisk, 744);
     ObjectOff(oblisk);
-    ptr[181] = ImportUnitDieFunc();
-    ptr[191] = MonsterObeliskOnDestroy;
+    SetUnitCallbackOnDeath(oblisk, MonsterObeliskOnDestroy);
 
     return oblisk;
 }
@@ -3126,5 +3006,13 @@ void OnClearGen()
             TeleportLocationVector(156, 23.0, 23.0);
         }
         UniPrintToAll("다음 구간으로 향하는 벽이 열렸습니다");
+        FrameTimer(30, SwampLavaMonsters);
     }
+}
+
+void SwampLavaMonsters()
+{
+    SetNextFunction(EndAreaDefault);
+    MobMakerStartSummon(0, PlaceMobMaker(158, 16, SummonMobPlant));
+    MobMakerStartSummon(2, PlaceMobMaker(159, 20, SummonMobGoon));
 }
