@@ -193,7 +193,7 @@ void MonsterGoonProcess(int unit)
     {
         SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, GoonBinTable());
         SetMemory(GetMemory(ptr + 0x2ec) + 0x1e8, VoiceList(63));       //MimicVoice
-        SetUnitMaxHealth(unit, 130);
+        SetUnitMaxHealth(unit, 275);
     }
 }
 
@@ -219,7 +219,8 @@ void MonsterWeirdlingBeastProcess(int unit)
     {
         SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, WeirdlingBeastBinTable());
         //SetMemory(GetMemory(ptr + 0x2ec) + 0x1e8, VoiceList(34));       //HorvathVoice
-        SetUnitMaxHealth(unit, 150);
+        SetUnitMaxHealth(unit, 200);
+        UnitZeroFleeRange(unit);
     }
 }
 
@@ -280,12 +281,12 @@ void MapInitialize()
     FrameTimer(3, loopHorrendousStatus);
 
     //delay_run
-    FrameTimer(10, strCureHealth);
-    FrameTimer(11, strStartButton);
-    FrameTimer(12, strUpgradeHome);
-    FrameTimer(13, strPlasmaStaff);
+    // FrameTimer(10, strCureHealth);
+    // FrameTimer(11, strStartButton);
+    // FrameTimer(12, strUpgradeHome);
+    // FrameTimer(13, strPlasmaStaff);
     FrameTimerWithArg(30, 13, callTurboTrigger);
-    FrameTimer(150, PutShopInfoStamp);
+    // FrameTimer(150, PutShopInfoStamp);
     FrameTimer(160, ShowHorrendousHP);
 }
 
@@ -297,6 +298,8 @@ int PlayerClassOnInit(int plr, int pUnit)
 
     SelfDamageClassEntry(pUnit);
     DiePlayerHandlerEntry(pUnit);
+
+    ChangeGold(pUnit, -GetGold(pUnit));
 
     return plr;
 }
@@ -517,6 +520,14 @@ void TeleportPlayerAt(int wp)
     }
 }
 
+void ChangeUnitAffiliatedTeam(int unit, int teamId)
+{
+    int *ptr = UnitToPtr(unit);
+
+    if (ptr != NULLPTR)
+        ptr[13] = teamId;
+}
+
 int GetCaptain()
 {
     int unit;
@@ -528,7 +539,8 @@ int GetCaptain()
         SetCallback(unit, 3, GiveWeaponToHorrendous);
         SetCallback(unit, 5, HorrendousDie);
         SetDialog(unit, "NORMAL", TeleportPlayerHome, NullPointer);
-        SetOwner(GetHost(), unit);
+        // SetOwner(GetHost(), unit);
+        ChangeUnitAffiliatedTeam(unit, 1);
     }
 
     return unit;
@@ -851,10 +863,11 @@ void SpawnMonster()
     {
         TeleportLocation(9, LocationX(3) + MathSine(i * 4, 1000.0), LocationY(3) + MathSine(i * 4 + 90, 1000.0));
         MOBS[i] = WaveClassCreate(9);
-        SetUnitMaxHealth(MOBS[i], 1000 + MonsterHealth(GetStage(0) - 1));
         CheckMonsterThing(MOBS[i]);
+        // SetUnitMaxHealth(MOBS[i], 1000 + MonsterHealth(GetStage(0) - 1));
+        SetUnitMaxHealth(MOBS[i], MonsterHealth(GetStage(0) - 1));
         SetCallback(MOBS[i], 5, SetDeaths);
-        SetCallback(MOBS[i], 7, RiskMonster);
+        // SetCallback(MOBS[i], 7, RiskMonster);
         SetCallback(MOBS[i], 9, CollisionEvent);
         SetOwner(ParentNode(), MOBS[i]);
         RetreatLevel(MOBS[i], 0.0);
@@ -956,6 +969,46 @@ void CollisionEvent()
     }
 }
 
+int GetUnitTopParent(int unit)
+{
+    int next;
+
+    while (TRUE)
+    {
+        next = GetOwner(unit);
+        if (next)
+            unit = next;
+        else
+            break;
+    }
+    return unit;
+}
+
+int GetKillCreditTopParent()
+{
+    int *victim = GetMemory(0x979724);
+
+    if (victim != NULLPTR)
+    {
+        int *attacker = victim[130];
+
+        if (attacker != NULLPTR)
+            return GetUnitTopParent(attacker[11]);
+    }
+    return NULLPTR;
+}
+
+void KillEvent(int me)
+{
+    int kill = GetKillCreditTopParent();
+
+    if (CurrentHealth(kill))
+    {
+        if (IsPlayerUnit(kill))
+            ChangeGold(kill, Random(100, 400));
+    }
+}
+
 void SetDeaths()
 {
     if (++DEATHS == 90)
@@ -963,6 +1016,7 @@ void SetDeaths()
         UniPrintToAll("이번 스테이지 완료!");
         PlaySoundAround(GetCaptain(), 777);
     }
+    KillEvent(GetTrigger());
     DeleteObjectTimer(self, 30);
 }
 
@@ -1156,136 +1210,6 @@ void drawstrMissionFail(int arg_0, string name)
 	}
 }
 
-void strStartButton()
-{
-	int arr[17];
-	string name = "CharmOrb";
-	int i = 0;
-	arr[0] = 1110434320; arr[1] = 69238660; arr[2] = 17369220; arr[3] = 285741184; arr[4] = 553909284; arr[5] = 138959952; arr[6] = 152077312; arr[7] = 337633791; arr[8] = 37890082; arr[9] = 282624; 
-	arr[10] = 301959432; arr[11] = 303169042; arr[12] = 2375680; arr[13] = 1074284612; arr[14] = 529006752; arr[15] = 16777249; arr[16] = 1069678624; 
-	while(i < 17)
-	{
-		drawstrStartButton(arr[i], name);
-		i ++;
-	}
-}
-
-void drawstrStartButton(int arg_0, string name)
-{
-	int count;
-	int i;
-	float pos_x;
-	float pos_y;
-
-	if (!count)
-	{
-		pos_x = GetWaypointX(31);
-		pos_y = GetWaypointY(31);
-	}
-	for (i = 1 ; i > 0 && count < 527 ; i <<= 1)
-	{
-		if (i & arg_0)
-			CreateObject(name, 31);
-		if (count % 48 == 47)
-			MoveWaypoint(31, GetWaypointX(31) - 94.000000, GetWaypointY(31) + 2.000000);
-		else
-			MoveWaypoint(31, GetWaypointX(31) + 2.000000, GetWaypointY(31));
-		count ++;
-	}
-	if (count >= 527)
-	{
-		count = 0;
-		MoveWaypoint(31, pos_x, pos_y);
-	}
-}
-
-void strCureHealth()
-{
-	int arr[27];
-	string name = "CharmOrb";
-	int i = 0;
-	arr[0] = 2116673776; arr[1] = 1191184388; arr[2] = 1073745904; arr[3] = 33620244; arr[4] = 1644175360; arr[5] = 1078321407; arr[6] = 200802560; arr[7] = 1325695232; arr[8] = 10493986; arr[9] = 276792352; 
-	arr[10] = 252223620; arr[11] = 554172552; arr[12] = 673253376; arr[13] = 12682244; arr[14] = 1006637188; arr[15] = 16848112; arr[16] = 2082635776; arr[17] = 1157629959; arr[18] = 536871040; arr[19] = 33588241; 
-	arr[20] = 2105348; arr[21] = 553945088; arr[22] = 2013339640; arr[23] = 1090780951; arr[24] = 1073774562; arr[25] = 262271; arr[26] = 32768; 
-	while(i < 27)
-	{
-		drawstrCureHealth(arr[i], name);
-		i ++;
-	}
-}
-
-void drawstrCureHealth(int arg_0, string name)
-{
-	int count;
-	int i;
-	float pos_x;
-	float pos_y;
-
-	if (!count)
-	{
-		pos_x = GetWaypointX(32);
-		pos_y = GetWaypointY(32);
-	}
-	for (i = 1 ; i > 0 && count < 837 ; i <<= 1)
-	{
-		if (i & arg_0)
-			CreateObject(name, 32);
-		if (count % 76 == 75)
-			MoveWaypoint(32, GetWaypointX(32) - 150.000000, GetWaypointY(32) + 2.000000);
-		else
-			MoveWaypoint(32, GetWaypointX(32) + 2.000000, GetWaypointY(32));
-		count ++;
-	}
-	if (count >= 837)
-	{
-		count = 0;
-		MoveWaypoint(32, pos_x, pos_y);
-	}
-}
-
-void strUpgradeHome()
-{
-	int arr[19];
-	string name = "CharmOrb";
-	int i = 0;
-	arr[0] = 1077920312; arr[1] = 1074264135; arr[2] = 151521280; arr[3] = 7860480; arr[4] = 537117186; arr[5] = 1077937184; arr[6] = 168034448; arr[7] = 299896961; arr[8] = 271345662; arr[9] = 4; 
-	arr[10] = 8652800; arr[11] = 2082464002; arr[12] = 541069569; arr[13] = 541099008; arr[14] = 2131750912; arr[15] = 67047457; arr[16] = 2013282820; arr[17] = 2139095043; arr[18] = 4080; 
-	while(i < 19)
-	{
-		drawstrUpgradeHome(arr[i], name);
-		i ++;
-	}
-}
-
-void drawstrUpgradeHome(int arg_0, string name)
-{
-	int count;
-	int i;
-	float pos_x;
-	float pos_y;
-
-	if (!count)
-	{
-		pos_x = GetWaypointX(35);
-		pos_y = GetWaypointY(35);
-	}
-	for (i = 1 ; i > 0 && count < 589 ; i <<= 1)
-	{
-		if (i & arg_0)
-			CreateObject(name, 35);
-		if (count % 52 == 51)
-			MoveWaypoint(35, GetWaypointX(35) - 102.000000, GetWaypointY(35) + 2.000000);
-		else
-			MoveWaypoint(35, GetWaypointX(35) + 2.000000, GetWaypointY(35));
-		count ++;
-	}
-	if (count >= 589)
-	{
-		count = 0;
-		MoveWaypoint(35, pos_x, pos_y);
-	}
-}
-
 void strEntryShop()
 {
 	int arr[18];
@@ -1362,50 +1286,6 @@ void callTurboTrigger(int wp)
 void turboTrigger()
 {
     MoveObject(self, GetObjectX(self), GetObjectY(self));
-}
-
-void strPlasmaStaff()
-{
-	int arr[27];
-	string name = "HealOrb";
-	int i = 0;
-	arr[0] = 1009246846; arr[1] = 1606810628; arr[2] = 9472240; arr[3] = 134291730; arr[4] = 574759554; arr[5] = 1212448840; arr[6] = 950043648; arr[7] = 275910945; arr[8] = 553657390; arr[9] = 2085110864; 
-	arr[10] = 149980169; arr[11] = 286527616; arr[12] = 551682084; arr[13] = 1146094592; arr[14] = 592063; arr[15] = 16777216; arr[16] = 1109393960; arr[17] = 133709572; arr[18] = 1620115584; arr[19] = 270606607; 
-	arr[20] = 1077928448; arr[21] = 1212418120; arr[22] = 8390672; arr[23] = 34869264; arr[24] = 33039298; arr[25] = 262208; arr[26] = 134249992; 
-	while(i < 27)
-	{
-		drawstrPlasmaStaff(arr[i], name);
-		i ++;
-	}
-}
-
-void drawstrPlasmaStaff(int arg_0, string name)
-{
-	int count;
-	int i;
-	float pos_x;
-	float pos_y;
-
-	if (!count)
-	{
-		pos_x = GetWaypointX(15);
-		pos_y = GetWaypointY(15);
-	}
-	for (i = 1 ; i > 0 && count < 837 ; i <<= 1)
-	{
-		if (i & arg_0)
-			CreateObject(name, 15);
-		if (count % 76 == 75)
-			MoveWaypoint(15, GetWaypointX(15) - 150.000000, GetWaypointY(15) + 2.000000);
-		else
-			MoveWaypoint(15, GetWaypointX(15) + 2.000000, GetWaypointY(15));
-		count ++;
-	}
-	if (count >= 837)
-	{
-		count = 0;
-		MoveWaypoint(15, pos_x, pos_y);
-	}
 }
 
 int GetMaster()

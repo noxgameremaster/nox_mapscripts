@@ -712,17 +712,20 @@ void CantJoin()
 
 void MovingPlayerCreature(int plr)
 {
-    int glow;
-
-    if (CheckRightClick(player[plr]))
+    if (CurrentHealth(s_plrCre[plr]))
     {
-        glow = CreateObject("Moonglow", 16);
-        LookWithAngle(glow, plr);
-        SetOwner(player[plr], glow);
-        FrameTimerWithArg(1, glow, GoCreatureMove);
+        int glow;
+
+        if (CheckRightClick(player[plr]))
+        {
+            glow = CreateObject("Moonglow", 16);
+            LookWithAngle(glow, plr);
+            SetOwner(player[plr], glow);
+            FrameTimerWithArg(1, glow, GoCreatureMove);
+        }
+        else
+            StopCreature(plr);
     }
-    else
-        StopCreature(plr);
 }
 
 void GoCreatureMove(int ptr)
@@ -799,12 +802,17 @@ void NormalAttack(int glow)
 
 void PlayerClassCreatureAttack(int plr, int pUnit)
 {
-    int plrCre = s_plrCre[plr], glow = CreateObjectAt("Moonglow", GetObjectX(pUnit), GetObjectY(pUnit));
+    int plrCre = s_plrCre[plr];
 
-    LookWithAngle(glow, plr);
-    SetOwner(pUnit, glow);
-    FrameTimerWithArg(1, glow, NormalAttack);
-    Effect("DAMAGE_POOF", GetObjectX(plrCre), GetObjectY(plrCre), 0.0, 0.0);
+    if (CurrentHealth(plrCre))
+    {
+        int glow = CreateObjectAt("Moonglow", GetObjectX(pUnit), GetObjectY(pUnit));
+
+        LookWithAngle(glow, plr);
+        SetOwner(pUnit, glow);
+        FrameTimerWithArg(1, glow, NormalAttack);
+        Effect("DAMAGE_POOF", GetObjectX(plrCre), GetObjectY(plrCre), 0.0, 0.0);
+    }
 }
 
 void PlayerCreatureErase(int plr)
@@ -836,10 +844,8 @@ void PlayerClassOnAlive(int plr, int pUnit)
             PlayerLook(pUnit, s_plrCre[plr]);
             if (CheckPlayerInput(pUnit) == 6)
                 PlayerClassCreatureAttack(plr, pUnit);
-            
         }
         MovingPlayerCreature(plr);
-        
     }
 }
 
