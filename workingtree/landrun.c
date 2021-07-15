@@ -522,6 +522,7 @@ void CreatureDead()
     if (MaxHealth(owner))
     {
         EnchantOff(owner, "ENCHANT_AFRAID");
+        Enchant(owner, "ENCHANT_INVULNERABLE", 2.0);
         MoveObject(owner, LocationX(71), LocationY(71));
         UniPrint(owner, "당신의 크리쳐가 방금 생을 마감했어요...ㅠㅠ");
     }
