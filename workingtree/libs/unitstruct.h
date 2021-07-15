@@ -303,7 +303,7 @@ void NOXLibraryEntryPointFunction()
 	"export GetMemoryFloat";
 	"export SetUnitFlags";
 	"export GetUnitFlags";
-	"export GetUnitStatus";
+	"export GetUnitSubclass";
 	"export SetUnitSubclass";
 	"export UnitNoCollide";
 	"export GetUnitThingID";
