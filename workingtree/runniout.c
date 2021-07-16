@@ -178,7 +178,7 @@ int CheckPlayerDeathFlag(int plr)
 
 void SetPlayerDeathFlag(int plr)
 {
-    player[plr + 10] = player[plr + 10] ^ 0x02;
+    player[plr + 10] ^= 0x02;
 }
 
 int CheckPlayerOnGameFlag(int plr)
@@ -188,19 +188,20 @@ int CheckPlayerOnGameFlag(int plr)
 
 void SetPlayerOnGameFlag(int plr)
 {
-    player[plr + 10] = player[plr + 10] ^ 0x04;
+    player[plr + 10] ^= 0x04;
 }
 
 void PlayerOnDeath(int plrIndex)
 {
     int playerUnit = player[plrIndex];
 
-    if (CheckPlayerOnGameFlag(plrIndex))
-    {
-        DecreaseAlivePlayerCount();
-        SetPlayerOnGameFlag(plrIndex);
-    }
+    // if (CheckPlayerOnGameFlag(plrIndex))
+    // {
+    //     DecreaseAlivePlayerCount();
+    //     SetPlayerOnGameFlag(plrIndex);
+    // }
     UniPrintToAll("* " + PlayerIngameNick(playerUnit) + " 님이 격추되셨습니다");
+    player[plrIndex] = 0;
 }
 
 void PlayerOnShutdown(int plrIndex)
