@@ -22,6 +22,9 @@
 
 #define NULLPTR             0
 
+#define TRUE 1
+#define FALSE 0
+
 int player[20];
 
 #define DROP_ITEM_FUNCTION              7
@@ -769,6 +772,7 @@ void DelayMapInit()
     FrameTimer(60, InitLastPart);
     FrameTimer(20, InitWeaponContainer);
     FrameTimer(1, InitializeGenerators);
+    FrameTimer(1, InitTeleports);
 
     SetHostileCritter();
 }
@@ -1083,6 +1087,87 @@ int SummonBeast(int posUnit)
     UnitZeroFleeRange(mob);
     WeirdlingBeastSubProcess(mob);
     return mob;
+}
+
+int WoundedConjurerBinTable()
+{
+	int link, arr[62];
+
+	if (!link)
+	{
+		arr[0] = 1853189975; arr[1] = 1130653028; arr[2] = 1969909359; arr[3] = 7497074; arr[17] = 200; 
+		arr[19] = 120; arr[21] = 1065353216; arr[23] = 32832; arr[24] = 1065353216; arr[26] = 4; 
+		arr[37] = 1751607628; arr[38] = 1852403316; arr[39] = 1819230823; arr[40] = 116; arr[53] = 1133903872; 
+		arr[55] = 14; arr[56] = 24; arr[60] = 2271; arr[61] = 46912768; 
+		link = &arr;
+	}
+	return link;
+}
+
+void WoundedConjurerSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1080452710);
+		SetMemory(ptr + 0x224, 1080452710);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 32832);
+		SetMemory(GetMemory(ptr + 0x22c), 200);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 200);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, WoundedConjurerBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int SummonWoundedWiz(int posUnit)
+{
+    int mob = CreateObjectAtUnit("WoundedApprentice", posUnit);
+
+    WoundedConjurerSubProcess(mob);
+    return mob;
+}
+
+int FireSpriteBinTable()
+{
+	int link, arr[62];
+
+	if (!link)
+	{
+		arr[0] = 1701996870; arr[1] = 1769107539; arr[2] = 25972; arr[17] = 250; arr[19] = 100; 
+		arr[21] = 1065353216; arr[23] = 65536; arr[24] = 1065353216; arr[37] = 1801545047; arr[38] = 1701996870; 
+		arr[39] = 1819042146; arr[53] = 1133903872; arr[55] = 14; arr[56] = 24; arr[58] = 5545472; 
+		link = &arr;
+	}
+	return link;
+}
+
+void FireSpriteSubProcess(int sUnit)
+{
+	int ptr = UnitToPtr(sUnit);
+
+	if (ptr)
+	{
+		SetMemory(ptr + 0x220, 1077936128);
+		SetMemory(ptr + 0x224, 1077936128);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x5a0, 65536);
+		SetMemory(GetMemory(ptr + 0x22c), 250);
+		SetMemory(GetMemory(ptr + 0x22c) + 0x4, 250);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x1e4, FireSpriteBinTable());
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x54c, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x538, 0);
+		SetMemory(GetMemory(ptr + 0x2ec) + 0x540, 1065353216);
+	}
+}
+
+int SummonMobFireFairy(int posUnit)
+{
+    int fairy = CreateObjectAt("FireSprite", GetObjectX(posUnit), GetObjectY(posUnit));
+
+    FireSpriteSubProcess(fairy);
+    return fairy;
 }
 
 void EndArea6()
@@ -2323,6 +2408,25 @@ void SpiderWebMissileCollide()
     }
 }
 
+void LightningCollide()
+{
+    int owner = GetOwner(SELF);
+
+    if (!GetTrigger())
+        return;
+    if (!owner)
+        return;
+
+    if (CurrentHealth(OTHER) && IsAttackedBy(owner, OTHER))
+    {
+        int damageSub = CreateObjectAt("ImaginaryCaster", GetObjectX(OTHER) - UnitAngleCos(OTHER, 3.0), GetObjectY(OTHER) - UnitAngleSin(OTHER, 3.0));
+
+        SetOwner(owner, damageSub);
+        Damage(OTHER, damageSub, 100, 0);
+        Delete(SELF);
+    }
+}
+
 void UrchinStone(int missile)
 {
     SetUnitCallbackOnCollide(missile, UrchinStoneCollide);
@@ -2341,6 +2445,9 @@ void HarpoonEvent(int missile)
 
 void DetectedSpecificIndex(int curId)
 {
+    if (!IsMissileUnit(curId))
+        return;
+
     int thingId = GetUnitThingID(curId);
 
     if (thingId == 524)
@@ -2349,6 +2456,8 @@ void DetectedSpecificIndex(int curId)
         UrchinStone(curId);
     else if (thingId == 526)
         HarpoonEvent(curId);
+    else if (thingId == 710)
+        SetUnitCallbackOnCollide(curId, LightningCollide);
 }
 
 void LoopSearchIndex()
@@ -3015,4 +3124,136 @@ void SwampLavaMonsters()
     SetNextFunction(EndAreaDefault);
     MobMakerStartSummon(0, PlaceMobMaker(158, 16, SummonMobPlant));
     MobMakerStartSummon(2, PlaceMobMaker(159, 20, SummonMobGoon));
+    MobMakerStartSummon(0, PlaceMobMaker(160, 16, SummonMobPlant));
+    MobMakerStartSummon(2, PlaceMobMaker(161, 8, SummonWoundedWiz));
+    MobMakerStartSummon(2, PlaceMobMaker(162, 20, SummonMobGoon));
+
+    MobMakerStartSummon(3, PlaceMobMaker(163, 20, SummonMobEmberDemon));
+    MobMakerStartSummon(4, PlaceMobMaker(164, 20, SummonMobFireFairy));
+    MobMakerStartSummon(4, PlaceMobMaker(165, 10, SummonMobFireFairy));
+    MobMakerStartSummon(3, PlaceMobMaker(166, 20, SummonMobEmberDemon));
+    MobMakerStartSummon(3, PlaceMobMaker(167, 20, SummonMobEmberDemon));
+}
+
+void TeleportProgress2(int subUnit)
+{
+    while (IsObjectOn(subUnit))
+    {
+        int owner = GetOwner(subUnit);
+
+        if (CurrentHealth(owner))
+        {
+            int count = GetDirection(subUnit), destination = ToInt(GetObjectZ(subUnit));
+
+            if (count)
+            {
+                if (DistanceUnitToUnit(subUnit, owner) < 23.0)
+                {
+                    LookWithAngle(subUnit, --count);
+                    FrameTimerWithArg(1, subUnit, TeleportProgress2);
+                    break;
+                }
+            }
+            else if (IsObjectOn(destination))
+            {
+                Effect("TELEPORT", GetObjectX(subUnit), GetObjectY(subUnit), 0.0, 0.0);
+                Effect("SMOKE_BLAST", GetObjectX(subUnit), GetObjectY(subUnit), 0.0, 0.0);
+                MoveObject(owner, GetObjectX(destination), GetObjectY(destination));
+                PlaySoundAround(owner, 6);
+                Effect("TELEPORT", GetObjectX(owner), GetObjectY(owner), 0.0, 0.0);
+            }
+            EnchantOff(owner, "ENCHANT_BURNING");
+        }
+        Delete(subUnit);
+        Delete(subUnit + 1);
+        break;
+    }
+}
+
+void TeleportPortal()
+{
+    if (CurrentHealth(other) && IsObjectOn(other))
+    {
+        if (!HasEnchant(other, "ENCHANT_BURNING"))
+        {
+            Enchant(other, "ENCHANT_BURNING", 4.0);
+            int unit = CreateObjectAt("InvisibleLightBlueHigh", GetObjectX(OTHER), GetObjectY(OTHER));
+
+            Raise(unit, GetTrigger() + 1);
+            LookWithAngle(unit, 48); //TODO: 1.XX seconds...
+            CreateObjectAt("VortexSource", GetObjectX(unit), GetObjectY(unit));
+            Effect("YELLOW_SPARKS", GetObjectX(unit), GetObjectY(unit), 0.0, 0.0);
+            SetOwner(other, unit);
+            TeleportProgress2(unit);
+            PlaySoundAround(unit, 772);
+            UniPrint(other, "공간이동을 준비 중 입니다. 취소하려면 움직이세요");
+        }
+    }
+}
+
+int TeleportSetup(int srcWp, int dstWp)
+{
+    int unit = CreateObject("WeirdlingBeast", srcWp);
+
+    SetUnitMaxHealth(CreateObject("InvisibleLightBlueHigh", dstWp) - 1, 10);
+    Enchant(CreateObject("InvisibleLightBlueHigh", srcWp), "ENCHANT_ANCHORED", 0.0);
+
+    int teleportFx = CreateObject("TeleportWake", srcWp);
+
+    UnitNoCollide(teleportFx);
+    Frozen(teleportFx, TRUE);
+    Damage(unit, 0, MaxHealth(unit) + 1, -1);
+    SetCallback(unit, 9, TeleportPortal);
+
+    return unit;
+}
+
+void InitTeleports()
+{
+    TeleportSetup(168, 171);
+    TeleportSetup(169, 172);
+    TeleportSetup(170, 173);
+}
+
+void WizardUnitOnRunAway()
+{
+    if (UnitCheckEnchant(SELF, GetLShift(ENCHANT_ANTI_MAGIC)))
+        EnchantOff(SELF, EnchantList(ENCHANT_ANTI_MAGIC));
+}
+
+int SummonNecromancer(int locationId)
+{
+    int unit = CreateObjectAt("Necromancer", LocationX(locationId), LocationY(locationId));
+    int *ptr = UnitToPtr(unit);
+
+    SetUnitMaxHealth(unit, 365);
+    SetCallback(unit, 8, WizardUnitOnRunAway);
+    if (ptr != NULLPTR)
+    {
+        int uec = ptr[187];
+        
+        SetMemory(uec + 0x528, ToInt(1.0));
+        SetMemory(uec + 0x520, ToInt(400.0));
+        uec += 0x5d0;
+        SetMemory(uec + GetSpellNumber("SPELL_LIGHTNING"), 0x40000000);
+		SetMemory(uec + GetSpellNumber("SPELL_SHIELD"), 0x10000000);
+        SetMemory(uec + GetSpellNumber("SPELL_SLOW"), 0x20000000);
+		SetMemory(uec + GetSpellNumber("SPELL_INVISIBILITY"), 0x10000000);
+		SetMemory(uec + GetSpellNumber("SPELL_FIREBALL"), 0x40000000);
+        SetMemory(uec + GetSpellNumber("SPELL_INVERSION"), 0x8000000);
+        SetMemory(uec + GetSpellNumber("SPELL_COUNTERSPELL"), 0x8000000);
+    }
+    return unit;
+}
+
+void SurpriseNecrosInPlace()
+{
+    int checker;
+
+    ObjectOff(SELF);
+    if (checker == FALSE)
+    {
+        checker = TRUE;
+        //Todo.
+    }
 }
