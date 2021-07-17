@@ -80,7 +80,11 @@ int InitMathSineBaseWaypointNumber()
 //자동으로 호출되므로 수동호출 금지
 void InitMathSine()
 {
+	int location = InitMathSineBaseWaypointNumber() + 1;
+	float tempX = GetWaypointX(location), tempY = GetWaypointY(location);
+	
     MathSine(InitMathSineBaseWaypointNumber(), 1.0 / 57.3);
+	MoveWaypoint(location, tempX, tempY);
 }
 
 void NOXLibraryEntryPointFunction()

@@ -151,8 +151,33 @@ int ImportAllowAllDrop()
 	return link;
 }
 
+//버릴 수 없는 아이템을 버리기 가능하도록 설정 합니다
+void SetItemPropertyAllowAllDrop(int item)
+{
+	int ptr = UnitToPtr(item);
+	
+	if (ptr)
+	{
+		SetMemory(ptr + 0x2c8, ImportAllowAllDrop());
+	}
+}
+
+//퀘스트 무기류 픽업 이벤트 제거용
+void DisableOblivionItemPickupEvent(int oblvItem)
+{
+	int ptr = UnitToPtr(oblvItem);
+	
+	if (ptr)
+	{
+		SetMemory(ptr + 0x2c4, 0x53a720);
+	}
+}
+
 void NOXLibraryEntryPointFunction()
 {
+	"export SetItemPropertyAllowAllDrop";
+	"export DisableOblivionItemPickupEvent";
+	
     g_importAllowDrop = ImportAllowAllDrop;
 }
 
